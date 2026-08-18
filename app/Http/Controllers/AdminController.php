@@ -10,9 +10,11 @@ class AdminController extends Controller
 {
     public function dashboard()
     {
-        $events = EventRequest::where('status', 'approved')
-            ->orderBy('start_datetime', 'asc')
-            ->get()
+        $adminCampus = $this->getAdminCampus(Auth::user());
+        $approvedEvents = $this->getAdminScopedApprovedEvents($adminCampus);
+
+        $events = $approvedEvents
+            ->sortBy('start_datetime')
             ->map(function ($event) {
                 return [
                     'title' => $event->title,
@@ -31,9 +33,9 @@ class AdminController extends Controller
                 ->get();
         }
 
-        $totalEvents = EventRequest::where('status', 'approved')->count();
-        $upcomingEvents = EventRequest::where('status', 'approved')
-            ->where('start_datetime', '>=', now())
+        $totalEvents = $approvedEvents->count();
+        $upcomingEvents = $approvedEvents
+            ->filter(fn ($event) => $event->start_datetime >= now())
             ->count();
         $accountBadge = $this->getAccountBadge(Auth::user());
 
@@ -53,27 +55,7 @@ class AdminController extends Controller
 
     public function calendar()
     {
-        $events = EventRequest::where('status', 'approved')
-            ->orderBy('start_datetime', 'asc')
-            ->get()
-            ->map(function ($event) {
-                return [
-                    'title' => $event->title,
-                    'start' => $event->start_datetime,
-                    'end' => $event->end_datetime,
-                    'description' => $event->description,
-                    'venue' => $event->venue_name,
-                    'campus' => $this->resolveCampus($event),
-                ];
-            });
-
-        $totalEvents = EventRequest::where('status', 'approved')->count();
-        $upcomingEvents = EventRequest::where('status', 'approved')
-            ->where('start_datetime', '>=', now())
-            ->count();
-        $accountBadge = $this->getAccountBadge(Auth::user());
-
-        return view('admin.calendar-only', compact('events', 'totalEvents', 'upcomingEvents', 'accountBadge'));
+        return $this->dashboard();
     }
 
     private function resolveCampus($event): string
@@ -133,6 +115,45 @@ class AdminController extends Controller
         }
 
         return compact('label', 'style', 'subtitle');
+    }
+
+    private function getAdminCampus($user): ?string
+    {
+        if (!$user) {
+            return null;
+        }
+
+        $lowerEmail = strtolower($user->email ?? '');
+        $lowerName = strtolower($user->name ?? '');
+
+        if (str_contains($lowerEmail, 'alaminos') || str_contains($lowerName, 'alaminos')) {
+            return 'Alaminos Campus';
+        }
+
+        if (str_contains($lowerEmail, 'lingayen') || str_contains($lowerName, 'lingayen')) {
+            return 'Lingayen Campus';
+        }
+
+        if (str_contains($lowerEmail, 'binmaley') || str_contains($lowerName, 'binmaley')) {
+            return 'Binmaley Campus';
+        }
+
+        return null;
+    }
+
+    private function getAdminScopedApprovedEvents(?string $adminCampus)
+    {
+        $approvedEvents = EventRequest::where('status', 'approved')->get();
+
+        if (!$adminCampus) {
+            return $approvedEvents;
+        }
+
+        return $approvedEvents->filter(function ($event) use ($adminCampus) {
+            $eventCampus = $this->resolveCampus($event);
+
+            return $eventCampus === $adminCampus || $eventCampus === 'All Campus';
+        });
     }
 
     public function requestVenue(Request $request)

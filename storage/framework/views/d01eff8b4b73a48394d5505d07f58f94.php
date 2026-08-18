@@ -9,39 +9,40 @@
 </head>
 <body class="bg-slate-100 min-h-screen">
     <div class="mx-auto max-w-6xl p-6">
-        @include('partials.page-header', [
+        <?php echo $__env->make('partials.page-header', [
             'title' => 'Admin Portal',
             'subtitle' => 'Request a venue or manage calendar data.',
-        ])
+        ], array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
 
         <div class="mt-6 grid gap-4 sm:grid-cols-3">
             <div class="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
                 <p class="text-xs font-semibold uppercase tracking-[0.24em] text-slate-400">Account</p>
-                <div class="mt-3 inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold {{ $accountBadge['style'] ?? 'bg-slate-100 text-slate-800' }}">
-                    {{ $accountBadge['label'] ?? 'ADMIN' }}
+                <div class="mt-3 inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold <?php echo e($accountBadge['style'] ?? 'bg-slate-100 text-slate-800'); ?>">
+                    <?php echo e($accountBadge['label'] ?? 'ADMIN'); ?>
+
                 </div>
-                <p class="mt-2 text-sm text-slate-600">{{ $accountBadge['subtitle'] ?? 'Admin account' }}</p>
+                <p class="mt-2 text-sm text-slate-600"><?php echo e($accountBadge['subtitle'] ?? 'Admin account'); ?></p>
             </div>
             <div class="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
                 <p class="text-xs font-semibold uppercase tracking-[0.24em] text-slate-400">Total events</p>
-                <p class="mt-2 text-3xl font-bold text-slate-900">{{ $totalEvents ?? 0 }}</p>
+                <p class="mt-2 text-3xl font-bold text-slate-900"><?php echo e($totalEvents ?? 0); ?></p>
             </div>
             <div class="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
                 <p class="text-xs font-semibold uppercase tracking-[0.24em] text-slate-400">Upcoming events</p>
-                <p class="mt-2 text-3xl font-bold text-slate-900">{{ $upcomingEvents ?? 0 }}</p>
+                <p class="mt-2 text-3xl font-bold text-slate-900"><?php echo e($upcomingEvents ?? 0); ?></p>
             </div>
         </div>
 
         <nav class="bg-white rounded-xl p-3 shadow-sm border border-gray-200 mb-6">
             <div class="max-w-6xl mx-auto flex justify-between items-center">
                 <div class="flex gap-2 items-center">
-                    <a href="{{ route('admin.calendar') }}" class="px-4 py-2 rounded text-sm bg-indigo-600 text-white">Calendar</a>
-                    <a href="{{ route('admin.dashboard') }}#request-form" class="px-4 py-2 rounded text-sm bg-slate-100 text-slate-800">Request event</a>
-                    <a href="{{ route('admin.venues') }}" class="px-4 py-2 rounded text-sm bg-slate-100 text-slate-800">View Venue Availability</a>
-                    <a href="{{ route('admin.dashboard') }}#request-status" class="px-4 py-2 rounded text-sm bg-slate-100 text-slate-800">Request Status</a>
+                    <a href="<?php echo e(route('admin.calendar')); ?>" class="px-4 py-2 rounded text-sm bg-indigo-600 text-white">Calendar</a>
+                    <a href="<?php echo e(route('admin.dashboard')); ?>#request-form" class="px-4 py-2 rounded text-sm bg-slate-100 text-slate-800">Request event</a>
+                    <a href="<?php echo e(route('admin.venues')); ?>" class="px-4 py-2 rounded text-sm bg-slate-100 text-slate-800">View Venue Availability</a>
+                    <a href="<?php echo e(route('admin.dashboard')); ?>#request-status" class="px-4 py-2 rounded text-sm bg-slate-100 text-slate-800">Request Status</a>
                 </div>
-                <form method="POST" action="{{ route('admin.logout') }}">
-                    @csrf
+                <form method="POST" action="<?php echo e(route('admin.logout')); ?>">
+                    <?php echo csrf_field(); ?>
                     <button type="submit" class="px-3 py-2 rounded bg-rose-500 text-white text-sm">Logout</button>
                 </form>
             </div>
@@ -82,7 +83,7 @@
             var calendarEl = document.getElementById('admin-calendar');
             var eventListEl = document.getElementById('event-list');
             var selectedDateLabelEl = document.getElementById('selected-date-label');
-            var allEvents = {!! isset($events) ? $events->toJson() : '[]' !!};
+            var allEvents = <?php echo isset($events) ? $events->toJson() : '[]'; ?>;
             var campusFilter = document.getElementById('campus-filter');
             var selectedCampus = 'All Campus';
             var selectedDate = new Date();
@@ -195,3 +196,4 @@
     </script>
 </body>
 </html>
+<?php /**PATH C:\Users\Kaye Fernandez\Herd\capstone10\resources\views/admin/calendar-only.blade.php ENDPATH**/ ?>

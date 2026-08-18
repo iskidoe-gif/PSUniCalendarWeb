@@ -9,73 +9,74 @@
 </head>
 <body class="bg-slate-100 min-h-screen">
     <div class="mx-auto max-w-6xl p-6">
-        @include('partials.page-header', [
+        <?php echo $__env->make('partials.page-header', [
             'title' => 'Admin Portal',
             'subtitle' => 'Request a venue or manage calendar data.',
-        ])
+        ], array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
 
         <nav class="bg-white rounded-xl p-3 shadow-sm border border-gray-200 mb-6">
             <div class="max-w-6xl mx-auto flex justify-between items-center">
                 <div class="flex gap-2 items-center">
-                    <a href="{{ route('admin.calendar') }}" data-nav-section="calendar" class="px-4 py-2 rounded text-sm bg-slate-100 text-slate-800">Calendar</a>
-                    <a href="{{ route('admin.dashboard') }}#request-form" data-nav-section="request-form" class="px-4 py-2 rounded text-sm bg-indigo-600 text-white">Request event</a>
-                    <a href="{{ route('admin.venues') }}" data-nav-section="venues" class="px-4 py-2 rounded text-sm bg-slate-100 text-slate-800">View Venue Availability</a>
+                    <a href="<?php echo e(route('admin.calendar')); ?>" data-nav-section="calendar" class="px-4 py-2 rounded text-sm bg-slate-100 text-slate-800">Calendar</a>
+                    <a href="<?php echo e(route('admin.dashboard')); ?>#request-form" data-nav-section="request-form" class="px-4 py-2 rounded text-sm bg-indigo-600 text-white">Request event</a>
+                    <a href="<?php echo e(route('admin.venues')); ?>" data-nav-section="venues" class="px-4 py-2 rounded text-sm bg-slate-100 text-slate-800">View Venue Availability</a>
                     <a href="#request-status" data-nav-section="request-status" class="px-4 py-2 rounded text-sm bg-slate-100 text-slate-800">Request Status</a>
                 </div>
-                <form method="POST" action="{{ route('admin.logout') }}">
-                    @csrf
+                <form method="POST" action="<?php echo e(route('admin.logout')); ?>">
+                    <?php echo csrf_field(); ?>
                     <button type="submit" class="px-3 py-2 rounded bg-rose-500 text-white text-sm">Logout</button>
                 </form>
             </div>
         </nav>
 
-         @if(isset($accountBadge))
+         <?php if(isset($accountBadge)): ?>
             <div class="rounded-3xl border border-slate-200 bg-white px-4 py-3 shadow-sm">
                 <p class="text-xs font-semibold uppercase tracking-[0.24em] text-slate-400">Account</p>
                 <div class="mt-2 flex items-center gap-2">
-                    <span class="inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold {{ $accountBadge['style'] }}">{{ $accountBadge['label'] }}</span>
-                    <span class="text-sm text-slate-600">{{ $accountBadge['subtitle'] }}</span>
+                    <span class="inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold <?php echo e($accountBadge['style']); ?>"><?php echo e($accountBadge['label']); ?></span>
+                    <span class="text-sm text-slate-600"><?php echo e($accountBadge['subtitle']); ?></span>
                 </div>
             </div>
-        @endif
+        <?php endif; ?>
         
         <div class="mt-6 grid gap-4 sm:grid-cols-2">
             <div class="rounded-3xl bg-white p-5 shadow-sm border border-slate-200">
                 <p class="text-xs font-semibold uppercase tracking-[0.24em] text-slate-400">Total events</p>
-                <p class="mt-2 text-3xl font-bold text-slate-900">{{ $totalEvents ?? 0 }}</p>
+                <p class="mt-2 text-3xl font-bold text-slate-900"><?php echo e($totalEvents ?? 0); ?></p>
             </div>
             <div class="rounded-3xl bg-white p-5 shadow-sm border border-slate-200">
                 <p class="text-xs font-semibold uppercase tracking-[0.24em] text-slate-400">Upcoming events</p>
-                <p class="mt-2 text-3xl font-bold text-slate-900">{{ $upcomingEvents ?? 0 }}</p>
+                <p class="mt-2 text-3xl font-bold text-slate-900"><?php echo e($upcomingEvents ?? 0); ?></p>
             </div>
         </div>
 
-        @if(session('success'))
+        <?php if(session('success')): ?>
             <div class="mt-6 rounded-3xl border border-emerald-200 bg-emerald-50 p-4 text-emerald-700">
-                {{ session('success') }}
+                <?php echo e(session('success')); ?>
+
             </div>
-        @endif
-        @if($errors->any())
+        <?php endif; ?>
+        <?php if($errors->any()): ?>
             <div class="mt-6 rounded-3xl border border-rose-200 bg-rose-50 p-4 text-rose-700">
                 <ul class="list-disc list-inside text-sm">
-                    @foreach($errors->all() as $error)
-                        <li>{{ $error }}</li>
-                    @endforeach
+                    <?php $__currentLoopData = $errors->all(); $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $error): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                        <li><?php echo e($error); ?></li>
+                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                 </ul>
             </div>
-        @endif
+        <?php endif; ?>
 
         <div id="request-form" class="mt-8 rounded-3xl bg-white border border-slate-200 p-6 shadow-sm">
-            <form action="{{ route('admin.request') }}" method="POST" enctype="multipart/form-data" class="space-y-5">
-                @csrf
+            <form action="<?php echo e(route('admin.request')); ?>" method="POST" enctype="multipart/form-data" class="space-y-5">
+                <?php echo csrf_field(); ?>
                 <div class="grid gap-4 md:grid-cols-2">
                     <label class="block">
                         <span class="text-sm font-medium text-slate-700">Event Title</span>
-                        <input type="text" name="title" value="{{ old('title') }}" required class="mt-2 w-full rounded-2xl border border-slate-300 px-4 py-3 focus:ring-2 focus:ring-indigo-500" />
+                        <input type="text" name="title" value="<?php echo e(old('title')); ?>" required class="mt-2 w-full rounded-2xl border border-slate-300 px-4 py-3 focus:ring-2 focus:ring-indigo-500" />
                     </label>
                     <label class="block">
                         <span class="text-sm font-medium text-slate-700">Venue Name</span>
-                        <input type="text" name="venue_name" value="{{ old('venue_name') }}" required class="mt-2 w-full rounded-2xl border border-slate-300 px-4 py-3 focus:ring-2 focus:ring-indigo-500" />
+                        <input type="text" name="venue_name" value="<?php echo e(old('venue_name')); ?>" required class="mt-2 w-full rounded-2xl border border-slate-300 px-4 py-3 focus:ring-2 focus:ring-indigo-500" />
                     </label>
                 </div>
                 <div class="grid gap-4 md:grid-cols-2">
@@ -83,26 +84,26 @@
                         <span class="text-sm font-medium text-slate-700">Campus</span>
                         <select name="campus" required class="mt-2 w-full rounded-2xl border border-slate-300 px-4 py-3 focus:ring-2 focus:ring-indigo-500">
                             <option value="">Select campus</option>
-                            <option value="Alaminos Campus" {{ old('campus') === 'Alaminos Campus' ? 'selected' : '' }}>Alaminos Campus</option>
-                            <option value="Lingayen Campus" {{ old('campus') === 'Lingayen Campus' ? 'selected' : '' }}>Lingayen Campus</option>
-                            <option value="Binmaley Campus" {{ old('campus') === 'Binmaley Campus' ? 'selected' : '' }}>Binmaley Campus</option>
+                            <option value="Alaminos Campus" <?php echo e(old('campus') === 'Alaminos Campus' ? 'selected' : ''); ?>>Alaminos Campus</option>
+                            <option value="Lingayen Campus" <?php echo e(old('campus') === 'Lingayen Campus' ? 'selected' : ''); ?>>Lingayen Campus</option>
+                            <option value="Binmaley Campus" <?php echo e(old('campus') === 'Binmaley Campus' ? 'selected' : ''); ?>>Binmaley Campus</option>
                         </select>
                     </label>
                 </div>
                 <div class="grid gap-4 md:grid-cols-2">
                     <label class="block">
                         <span class="text-sm font-medium text-slate-700">Start Date</span>
-                        <input type="datetime-local" name="start_datetime" value="{{ old('start_datetime') }}" required class="mt-2 w-full rounded-2xl border border-slate-300 px-4 py-3 focus:ring-2 focus:ring-indigo-500" />
+                        <input type="datetime-local" name="start_datetime" value="<?php echo e(old('start_datetime')); ?>" required class="mt-2 w-full rounded-2xl border border-slate-300 px-4 py-3 focus:ring-2 focus:ring-indigo-500" />
                     </label>
                     <label class="block">
                         <span class="text-sm font-medium text-slate-700">End Date</span>
-                        <input type="datetime-local" name="end_datetime" value="{{ old('end_datetime') }}" required class="mt-2 w-full rounded-2xl border border-slate-300 px-4 py-3 focus:ring-2 focus:ring-indigo-500" />
+                        <input type="datetime-local" name="end_datetime" value="<?php echo e(old('end_datetime')); ?>" required class="mt-2 w-full rounded-2xl border border-slate-300 px-4 py-3 focus:ring-2 focus:ring-indigo-500" />
                     </label>
                 </div>
 
                 <label class="block">
                     <span class="text-sm font-medium text-slate-700">Description</span>
-                    <textarea name="description" rows="4" class="mt-2 w-full rounded-2xl border border-slate-300 px-4 py-3 focus:ring-2 focus:ring-indigo-500">{{ old('description') }}</textarea>
+                    <textarea name="description" rows="4" class="mt-2 w-full rounded-2xl border border-slate-300 px-4 py-3 focus:ring-2 focus:ring-indigo-500"><?php echo e(old('description')); ?></textarea>
                 </label>
 
                 <label class="block">
@@ -156,18 +157,18 @@
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-100">
-                        @forelse($adminRequests ?? [] as $r)
+                        <?php $__empty_1 = true; $__currentLoopData = $adminRequests ?? []; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $r): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
                             <tr>
-                                <td class="py-3 px-4 font-semibold text-gray-800">{{ $r->title }}</td>
-                                <td class="py-3 px-4">{{ $r->venue_name }}</td>
-                                <td class="py-3 px-4">{{ date('M d, Y', strtotime($r->start_datetime)) }}</td>
-                                <td class="py-3 px-4 capitalize">{{ $r->status }}</td>
+                                <td class="py-3 px-4 font-semibold text-gray-800"><?php echo e($r->title); ?></td>
+                                <td class="py-3 px-4"><?php echo e($r->venue_name); ?></td>
+                                <td class="py-3 px-4"><?php echo e(date('M d, Y', strtotime($r->start_datetime))); ?></td>
+                                <td class="py-3 px-4 capitalize"><?php echo e($r->status); ?></td>
                             </tr>
-                        @empty
+                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
                             <tr>
                                 <td colspan="4" class="py-6 px-4 text-center text-sm text-slate-500">You have not submitted any requests yet.</td>
                             </tr>
-                        @endforelse
+                        <?php endif; ?>
                     </tbody>
                 </table>
             </div>
@@ -186,7 +187,7 @@
                 var calendar;
                 var eventListEl = document.getElementById('event-list');
                 var selectedDateLabelEl = document.getElementById('selected-date-label');
-                var allEvents = {!! isset($events) ? $events->toJson() : '[]' !!};
+                var allEvents = <?php echo isset($events) ? $events->toJson() : '[]'; ?>;
                 var campusFilter = document.getElementById('campus-filter');
                 var selectedCampus = 'All Campus';
                 var selectedDate = new Date();
@@ -352,3 +353,4 @@
     </div>
 </body>
 </html>
+<?php /**PATH C:\Users\Kaye Fernandez\Herd\capstone10\resources\views/admin/dashboard.blade.php ENDPATH**/ ?>

@@ -12,8 +12,6 @@
         <h1 class="text-3xl font-semibold text-slate-900">Pangasinan State University</h1>
         <p class="mt-2 text-slate-500">University Calendar</p>
 
-        @include('partials.calendar-navbar')
-
         <div class="mt-8 rounded-3xl bg-white p-6 shadow-sm border border-slate-200">
             <div class="mb-4 flex items-center justify-between">
                 <h2 class="text-lg font-bold text-gray-800">Master Live Calendar</h2>

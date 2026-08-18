@@ -23,3 +23,11 @@ test('superadmin can create a venue from the venue management page', function ()
     $response->assertRedirect('/superadmin/manage-venues');
     $this->assertDatabaseHas('venues', ['name' => 'Laboratory Building']);
 });
+
+test('public calendar does not show request, venue, or logout controls', function () {
+    $this->get('/')->assertOk()
+        ->assertSee('Calendar')
+        ->assertDontSee('View Venue Availability')
+        ->assertDontSee('Venue Management')
+        ->assertDontSee('Logout');
+});

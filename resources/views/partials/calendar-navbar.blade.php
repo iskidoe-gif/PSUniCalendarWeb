@@ -19,9 +19,9 @@
         $calendarRoute = route('user.calendar');
         $requestAnchor = null;
         $requestsRoute = null;
-        $venuesRoute = route('admin.venues');
-        $statusAnchor = route('user.calendar');
-        $venueLabel = 'View Venue Availability';
+        $venuesRoute = null;
+        $statusAnchor = null;
+        $venueLabel = null;
     }
 @endphp
 
@@ -47,13 +47,15 @@
             @if($requestsRoute)
                 <a href="{{ $requestsRoute }}" data-nav-section="requests" class="px-4 py-2 rounded text-sm {{ request()->routeIs('superadmin.pending') ? $activeNavClass : $inactiveNavClass }}">Requests</a>
             @endif
-            <a href="{{ $venuesRoute }}" data-nav-section="venues" class="px-4 py-2 rounded text-sm {{ ($isAdminNav && request()->routeIs('admin.venues')) || ($isSuperadminNav && request()->routeIs('superadmin.venues', 'superadmin.venues.events')) ? $activeNavClass : $inactiveNavClass }}">{{ $venueLabel }}</a>
+            @if($venuesRoute)
+                <a href="{{ $venuesRoute }}" data-nav-section="venues" class="px-4 py-2 rounded text-sm {{ ($isAdminNav && request()->routeIs('admin.venues')) || ($isSuperadminNav && request()->routeIs('superadmin.venues', 'superadmin.venues.events')) ? $activeNavClass : $inactiveNavClass }}">{{ $venueLabel }}</a>
+            @endif
             @if($statusAnchor)
                 <a href="{{ $statusAnchor }}" data-nav-section="request-status" class="px-4 py-2 rounded text-sm {{ $isSuperadminNav && request()->routeIs('superadmin.pending') ? $activeNavClass : $inactiveNavClass }}">Request Status</a>
             @endif
         </div>
         <div>
-            @if(auth()->check())
+            @if(auth()->check() && auth()->user()->role)
                 <form method="POST" action="{{ auth()->user()->role === 'superadmin' ? route('superadmin.logout') : (auth()->user()->role === 'admin' ? route('admin.logout') : route('superadmin.logout')) }}">
                     @csrf
                     <button type="submit" class="px-3 py-2 rounded bg-rose-500 text-white text-sm">Logout</button>

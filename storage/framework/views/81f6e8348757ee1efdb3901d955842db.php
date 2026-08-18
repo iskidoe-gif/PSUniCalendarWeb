@@ -19,9 +19,9 @@
         $calendarRoute = route('user.calendar');
         $requestAnchor = null;
         $requestsRoute = null;
-        $venuesRoute = route('admin.venues');
-        $statusAnchor = route('user.calendar');
-        $venueLabel = 'View Venue Availability';
+        $venuesRoute = null;
+        $statusAnchor = null;
+        $venueLabel = null;
     }
 ?>
 
@@ -47,13 +47,15 @@
             <?php if($requestsRoute): ?>
                 <a href="<?php echo e($requestsRoute); ?>" data-nav-section="requests" class="px-4 py-2 rounded text-sm <?php echo e(request()->routeIs('superadmin.pending') ? $activeNavClass : $inactiveNavClass); ?>">Requests</a>
             <?php endif; ?>
-            <a href="<?php echo e($venuesRoute); ?>" data-nav-section="venues" class="px-4 py-2 rounded text-sm <?php echo e(($isAdminNav && request()->routeIs('admin.venues')) || ($isSuperadminNav && request()->routeIs('superadmin.venues', 'superadmin.venues.events')) ? $activeNavClass : $inactiveNavClass); ?>"><?php echo e($venueLabel); ?></a>
+            <?php if($venuesRoute): ?>
+                <a href="<?php echo e($venuesRoute); ?>" data-nav-section="venues" class="px-4 py-2 rounded text-sm <?php echo e(($isAdminNav && request()->routeIs('admin.venues')) || ($isSuperadminNav && request()->routeIs('superadmin.venues', 'superadmin.venues.events')) ? $activeNavClass : $inactiveNavClass); ?>"><?php echo e($venueLabel); ?></a>
+            <?php endif; ?>
             <?php if($statusAnchor): ?>
                 <a href="<?php echo e($statusAnchor); ?>" data-nav-section="request-status" class="px-4 py-2 rounded text-sm <?php echo e($isSuperadminNav && request()->routeIs('superadmin.pending') ? $activeNavClass : $inactiveNavClass); ?>">Request Status</a>
             <?php endif; ?>
         </div>
         <div>
-            <?php if(auth()->check()): ?>
+            <?php if(auth()->check() && auth()->user()->role): ?>
                 <form method="POST" action="<?php echo e(auth()->user()->role === 'superadmin' ? route('superadmin.logout') : (auth()->user()->role === 'admin' ? route('admin.logout') : route('superadmin.logout'))); ?>">
                     <?php echo csrf_field(); ?>
                     <button type="submit" class="px-3 py-2 rounded bg-rose-500 text-white text-sm">Logout</button>
