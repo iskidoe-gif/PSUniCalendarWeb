@@ -9,8 +9,8 @@
 </head>
 <body class="bg-slate-100 min-h-screen">
     <div class="mx-auto max-w-6xl p-6">
-        <h1 class="text-3xl font-semibold text-slate-900">University Calendar</h1>
-        <p class="mt-2 text-slate-500">Welcome to the public calendar portal. View upcoming events and request spaces.</p>
+        <h1 class="text-3xl font-semibold text-slate-900">Pangasinan State University</h1>
+        <p class="mt-2 text-slate-500">University Calendar</p>
 
         @include('partials.calendar-navbar')
 
