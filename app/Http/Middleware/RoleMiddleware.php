@@ -11,9 +11,10 @@ class RoleMiddleware
     public function handle(Request $request, Closure $next, string $role)
     {
         $user = Auth::user();
+        $loginRoute = $role . '.login';
 
         if (! $user) {
-            return redirect()->route($role === 'admin' ? 'admin.login' : 'superadmin.login');
+            return redirect()->route($loginRoute);
         }
 
         if ($user->role !== $role) {
@@ -21,7 +22,7 @@ class RoleMiddleware
             $request->session()->invalidate();
             $request->session()->regenerateToken();
 
-            return redirect()->route($role === 'admin' ? 'admin.login' : 'superadmin.login');
+            return redirect()->route($loginRoute);
         }
 
         return $next($request);

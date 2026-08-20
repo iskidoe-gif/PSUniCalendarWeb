@@ -71,5 +71,45 @@ class DatabaseSeeder extends Seeder
                 'remember_token' => \Illuminate\Support\Str::random(10),
             ])->save();
         }
+
+        // Create office-specific accounts for testing.
+        $offices = [
+            [
+                'email' => 'registrar@psu.local',
+                'name' => 'Office of the Registrar',
+                'password' => 'Registrar@123',
+            ],
+            [
+                'email' => 'studentaffairs@psu.local',
+                'name' => 'Office of Student Affairs',
+                'password' => 'StudentAffairs@123',
+            ],
+            [
+                'email' => 'guidance@psu.local',
+                'name' => 'Guidance Office',
+                'password' => 'Guidance@123',
+            ],
+        ];
+
+        foreach ($offices as $office) {
+            $officeUser = User::firstOrCreate(
+                ['email' => $office['email']],
+                [
+                    'name' => $office['name'],
+                    'email_verified_at' => now(),
+                    'password' => Hash::make($office['password']),
+                    'role' => 'office',
+                    'remember_token' => \Illuminate\Support\Str::random(10),
+                ]
+            );
+
+            $officeUser->forceFill([
+                'name' => $office['name'],
+                'email_verified_at' => now(),
+                'password' => Hash::make($office['password']),
+                'role' => 'office',
+                'remember_token' => \Illuminate\Support\Str::random(10),
+            ])->save();
+        }
     }
 }

@@ -8,6 +8,8 @@ use App\Http\Controllers\AdminAuthController;
 use App\Http\Controllers\SuperadminController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\OfficeAuthController;
+use App\Http\Controllers\OfficeController;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 
@@ -36,6 +38,16 @@ Route::middleware(['auth', 'role:superadmin'])->prefix('superadmin')->group(func
     Route::get('/manage-venues/{venue}', [SuperadminController::class, 'venueEvents'])->name('superadmin.venues.events');
     Route::post('/approve/{id}', [EventApprovalController::class, 'approve'])->name('superadmin.approve');
     Route::post('/reject/{id}', [EventApprovalController::class, 'reject'])->name('superadmin.reject');
+});
+
+Route::get('/office/login', [OfficeAuthController::class, 'showLogin'])->name('office.login');
+Route::post('/office/login', [OfficeAuthController::class, 'login'])->name('office.login.submit');
+Route::post('/office/logout', [OfficeAuthController::class, 'logout'])->name('office.logout');
+
+Route::middleware(['auth', 'role:office'])->prefix('office')->group(function () {
+    Route::get('/', [OfficeController::class, 'dashboard'])->name('office.dashboard');
+    Route::get('/calendar', [OfficeController::class, 'calendar'])->name('office.calendar');
+    Route::post('/request-venue', [OfficeController::class, 'requestVenue'])->name('office.request');
 });
 
 Route::get('/', [UserController::class, 'index'])->name('user.calendar');
