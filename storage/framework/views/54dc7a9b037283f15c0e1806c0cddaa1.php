@@ -10,7 +10,7 @@
 <body class="bg-slate-100 min-h-screen">
     <div class="mx-auto max-w-6xl p-6">
         <h1 class="text-3xl font-semibold text-slate-900">Pangasinan State University</h1>
-        <p class="mt-2 text-slate-500">University Calendar</p>
+        <p class="mt-2 text-slate-500">University Event Calendar · Published events</p>
 
         <div class="mt-8 rounded-3xl bg-white p-6 shadow-sm border border-slate-200">
             <div class="mb-4 flex items-center justify-between">
@@ -32,6 +32,31 @@
 
             <div id="calendar" class="min-h-[500px]"></div>
         </div>
+
+        <section class="mt-8 rounded-3xl bg-white p-6 shadow-sm border border-slate-200">
+            <div class="mb-4 flex items-center justify-between gap-4">
+                <h2 class="text-lg font-bold text-gray-800">Published events</h2>
+                <span class="text-sm text-slate-500">View only</span>
+            </div>
+            <div class="divide-y divide-slate-100">
+                <?php $__empty_1 = true; $__currentLoopData = $events; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $event): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
+                    <article class="flex flex-wrap items-start justify-between gap-3 py-4">
+                        <div>
+                            <h3 class="font-semibold text-slate-900"><?php echo e($event['title']); ?></h3>
+                            <p class="mt-1 text-sm text-slate-600"><?php echo e(\Illuminate\Support\Carbon::parse($event['start'])->format('D, M j, Y · g:i A')); ?> · <?php echo e($event['venue']); ?></p>
+                            <p class="mt-1 text-sm text-slate-500"><?php echo e($event['campus']); ?><?php if($event['description']): ?> · <?php echo e($event['description']); ?><?php endif; ?></p>
+                        </div>
+                        <?php if($event['sdg_number']): ?>
+                            <span class="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-800">SDG <?php echo e($event['sdg_number']); ?></span>
+                        <?php else: ?>
+                            <span class="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">Not aligned to SDG</span>
+                        <?php endif; ?>
+                    </article>
+                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
+                    <p class="py-5 text-sm text-slate-500">No events have been published yet.</p>
+                <?php endif; ?>
+            </div>
+        </section>
 
         <div id="selected-date-events" class="mt-8 rounded-3xl bg-white p-6 shadow-sm border border-slate-200">
             <div class="flex items-center justify-between mb-4">

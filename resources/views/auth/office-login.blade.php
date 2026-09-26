@@ -42,7 +42,8 @@
             <button type="submit" class="w-full rounded-2xl bg-indigo-600 px-4 py-3 text-sm font-semibold text-white hover:bg-indigo-700 transition">Sign in</button>
         </form>
 
-        <p class="mt-6 text-center text-sm text-slate-500">Only authorized office accounts may access this portal.</p>
+        <p class="mt-6 text-center text-sm text-slate-500">For event-requesting offices.</p>
+        <a href="{{ route('planning_office.login') }}" class="mt-3 block text-center text-sm font-semibold text-emerald-800 hover:underline">Planning Office sign in</a>
     </div>
 </body>
 </html>

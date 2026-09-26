@@ -19,19 +19,19 @@ class DatabaseSeeder extends Seeder
         $user = User::firstOrCreate(
             ['email' => 'admin@psu.edu'],
             [
-                'name' => 'Superadmin',
+                'name' => 'Planning Office',
                 'email_verified_at' => now(),
                 'password' => Hash::make('Admin@123'),
-                'role' => 'superadmin',
+                'role' => 'planning_office',
                 'remember_token' => \Illuminate\Support\Str::random(10),
             ]
         );
 
         $user->forceFill([
-            'name' => 'Superadmin',
+            'name' => 'Planning Office',
             'email_verified_at' => now(),
             'password' => Hash::make('Admin@123'),
-            'role' => 'superadmin',
+            'role' => 'planning_office',
             'remember_token' => \Illuminate\Support\Str::random(10),
         ])->save();
 

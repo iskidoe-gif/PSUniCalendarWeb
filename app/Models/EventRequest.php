@@ -16,14 +16,20 @@ class EventRequest extends Model
         'title',
         'venue_name',
         'campus',
+        'sdg_number',
         'description',
         'start_datetime',
         'end_datetime',
         'status',
+        'planning_note',
+        'google_event_id',
         'digital_documents',
     ];
 
     protected $casts = [
         'digital_documents' => 'array',
+        'sdg_number' => 'integer',
+        'start_datetime' => 'datetime',
+        'end_datetime' => 'datetime',
     ];
 }

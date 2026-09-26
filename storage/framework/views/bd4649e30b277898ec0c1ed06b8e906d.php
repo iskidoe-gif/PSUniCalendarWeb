@@ -3,28 +3,29 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Superadmin Login - UniCalendar</title>
+    <title>Admin Login - UniCalendar</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-slate-100 min-h-screen flex items-center justify-center px-4">
     <div class="w-full max-w-md bg-white rounded-3xl shadow-xl border border-slate-200 p-8">
         <div class="mb-6 text-center">
-            <h1 class="text-2xl font-bold text-slate-900">Superadmin Login</h1>
-            <p class="text-sm text-slate-500 mt-2">Sign in to manage the university calendar system.</p>
+            <h1 class="text-2xl font-bold text-slate-900">Admin Login</h1>
+            <p class="text-sm text-slate-500 mt-2">Sign in to access the admin portal.</p>
         </div>
 
-        @if ($errors->any())
+        <?php if($errors->any()): ?>
             <div class="mb-4 rounded-2xl bg-rose-50 border border-rose-200 p-4 text-sm text-rose-700">
-                {{ $errors->first() }}
-            </div>
-        @endif
+                <?php echo e($errors->first()); ?>
 
-        <form method="POST" action="{{ route('superadmin.login.submit') }}" class="space-y-5">
-            @csrf
+            </div>
+        <?php endif; ?>
+
+        <form method="POST" action="<?php echo e(route('admin.login.submit')); ?>" class="space-y-5">
+            <?php echo csrf_field(); ?>
 
             <div>
                 <label for="email" class="block text-sm font-medium text-slate-700 mb-2">Email</label>
-                <input id="email" name="email" type="email" value="{{ old('email') }}" required autofocus class="w-full rounded-2xl border border-slate-300 px-4 py-3 text-sm text-slate-900 outline-none focus:ring-2 focus:ring-indigo-500" />
+                <input id="email" name="email" type="email" value="<?php echo e(old('email')); ?>" required autofocus class="w-full rounded-2xl border border-slate-300 px-4 py-3 text-sm text-slate-900 outline-none focus:ring-2 focus:ring-indigo-500" />
             </div>
 
             <div>
@@ -43,7 +44,8 @@
             <button type="submit" class="w-full rounded-2xl bg-indigo-600 px-4 py-3 text-sm font-semibold text-white hover:bg-indigo-700 transition">Sign in</button>
         </form>
 
-        <p class="mt-6 text-center text-sm text-slate-500">Only authorized superadmins may access this dashboard.</p>
+        <p class="mt-6 text-center text-sm text-slate-500">Only authorized admins may access this portal.</p>
     </div>
 </body>
 </html>
+<?php /**PATH C:\PSUniCalendarWeb\resources\views/auth/admin-login.blade.php ENDPATH**/ ?>

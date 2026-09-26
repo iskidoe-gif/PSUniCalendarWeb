@@ -5,11 +5,15 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
-class SuperAdminAuthController extends Controller
+class PlanningOfficeAuthController extends Controller
 {
     public function showLogin()
     {
-        return view('auth.superadmin-login');
+        if (Auth::check() && Auth::user()->role === 'planning_office') {
+            return redirect()->route('planning_office.dashboard');
+        }
+
+        return view('auth.planning-office-login');
     }
 
     public function login(Request $request)
@@ -20,21 +24,17 @@ class SuperAdminAuthController extends Controller
         ]);
 
         if (Auth::attempt($credentials, $request->boolean('remember'))) {
-            $user = Auth::user();
+            $request->session()->regenerate();
 
-            if ($user->role !== 'superadmin') {
+            if (Auth::user()->role !== 'planning_office') {
                 Auth::logout();
-                $request->session()->invalidate();
-                $request->session()->regenerateToken();
 
                 return back()->withErrors([
-                    'email' => 'This account does not have superadmin access.',
+                    'email' => 'This account does not have Planning Office access.',
                 ])->onlyInput('email');
             }
 
-            $request->session()->regenerate();
-
-            return redirect()->intended(route('superadmin.dashboard'));
+            return redirect()->intended(route('planning_office.dashboard'));
         }
 
         return back()->withErrors([
@@ -45,10 +45,9 @@ class SuperAdminAuthController extends Controller
     public function logout(Request $request)
     {
         Auth::logout();
-
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return redirect()->route('superadmin.login');
+        return redirect()->route('planning_office.login');
     }
 }

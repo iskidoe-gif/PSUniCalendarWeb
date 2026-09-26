@@ -3,9 +3,9 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\EventApprovalController;
 use App\Http\Controllers\EventRequestController;
-use App\Http\Controllers\SuperAdminAuthController;
+use App\Http\Controllers\PlanningOfficeAuthController;
 use App\Http\Controllers\AdminAuthController;
-use App\Http\Controllers\SuperadminController;
+use App\Http\Controllers\PlanningOfficeController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\OfficeAuthController;
@@ -24,21 +24,10 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->group(function () {
     Route::get('/venues', [AdminController::class, 'venues'])->name('admin.venues');
 });
 
-Route::get('/superadmin/login', [SuperAdminAuthController::class, 'showLogin'])->name('superadmin.login');
-Route::post('/superadmin/login', [SuperAdminAuthController::class, 'login'])->name('superadmin.login.submit');
-Route::post('/superadmin/logout', [SuperAdminAuthController::class, 'logout'])->name('superadmin.logout');
-
-Route::middleware(['auth', 'role:superadmin'])->prefix('superadmin')->group(function () {
-    Route::get('/', [SuperadminController::class, 'dashboard'])->name('superadmin.dashboard');
-    Route::get('/pending-approvals', [SuperadminController::class, 'pendingApprovals'])->name('superadmin.pending');
-    Route::get('/manage-venues', [SuperadminController::class, 'manageVenues'])->name('superadmin.venues');
-    Route::post('/manage-venues', [SuperadminController::class, 'storeVenue'])->name('superadmin.venues.store');
-    Route::put('/manage-venues/{venue}', [SuperadminController::class, 'updateVenue'])->name('superadmin.venues.update');
-    Route::delete('/manage-venues/{venue}', [SuperadminController::class, 'destroyVenue'])->name('superadmin.venues.destroy');
-    Route::get('/manage-venues/{venue}', [SuperadminController::class, 'venueEvents'])->name('superadmin.venues.events');
-    Route::post('/approve/{id}', [EventApprovalController::class, 'approve'])->name('superadmin.approve');
-    Route::post('/reject/{id}', [EventApprovalController::class, 'reject'])->name('superadmin.reject');
-});
+Route::redirect('/superadmin/login', '/planning-office/login');
+Route::redirect('/superadmin', '/planning-office');
+Route::redirect('/superadmin/pending-approvals', '/planning-office/pending-approvals');
+Route::redirect('/superadmin/manage-venues', '/planning-office/manage-venues');
 
 Route::get('/office/login', [OfficeAuthController::class, 'showLogin'])->name('office.login');
 Route::post('/office/login', [OfficeAuthController::class, 'login'])->name('office.login.submit');
@@ -50,21 +39,27 @@ Route::middleware(['auth', 'role:office'])->prefix('office')->group(function () 
     Route::post('/request-venue', [OfficeController::class, 'requestVenue'])->name('office.request');
 });
 
+Route::get('/planning-office/login', [PlanningOfficeAuthController::class, 'showLogin'])->name('planning_office.login');
+Route::post('/planning-office/login', [PlanningOfficeAuthController::class, 'login'])->name('planning_office.login.submit');
+Route::post('/planning-office/logout', [PlanningOfficeAuthController::class, 'logout'])->name('planning_office.logout');
+
+Route::middleware(['auth', 'role:planning_office'])->prefix('planning-office')->group(function () {
+    Route::get('/', [PlanningOfficeController::class, 'dashboard'])->name('planning_office.dashboard');
+    Route::get('/calendar', [PlanningOfficeController::class, 'dashboard'])->name('planning_office.calendar');
+    Route::get('/pending-approvals', [PlanningOfficeController::class, 'pendingApprovals'])->name('planning_office.pending');
+    Route::post('/approve/{id}', [EventApprovalController::class, 'approve'])->name('planning_office.approve');
+    Route::post('/reject/{id}', [EventApprovalController::class, 'reject'])->name('planning_office.reject');
+    Route::get('/manage-venues', [PlanningOfficeController::class, 'manageVenues'])->name('planning_office.venues');
+    Route::post('/manage-venues', [PlanningOfficeController::class, 'storeVenue'])->name('planning_office.venues.store');
+    Route::put('/manage-venues/{venue}', [PlanningOfficeController::class, 'updateVenue'])->name('planning_office.venues.update');
+    Route::delete('/manage-venues/{venue}', [PlanningOfficeController::class, 'destroyVenue'])->name('planning_office.venues.destroy');
+    Route::get('/manage-venues/{venue}', [PlanningOfficeController::class, 'venueEvents'])->name('planning_office.venues.events');
+});
+
 Route::get('/', [UserController::class, 'index'])->name('user.calendar');
 Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::get('/event-requests/create', [EventRequestController::class, 'create'])->name('event-requests.create');
     Route::post('/event-requests', [EventRequestController::class, 'store'])->name('event-requests.store');
-});
-
-Route::domain('superadmin.unicalendar.test')->group(function () {
-    Route::get('/login', [SuperAdminAuthController::class, 'showLogin']);
-    Route::post('/login', [SuperAdminAuthController::class, 'login']);
-    Route::post('/logout', [SuperAdminAuthController::class, 'logout']);
-
-    Route::middleware(['auth', 'role:superadmin'])->group(function () {
-        Route::get('/', [SuperadminController::class, 'dashboard']);
-        Route::post('/approve/{id}', [EventApprovalController::class, 'approve']);
-    });
 });
 
 Route::domain('admin.unicalendar.test')->group(function () {
@@ -76,6 +71,11 @@ Route::domain('admin.unicalendar.test')->group(function () {
         Route::get('/', [AdminController::class, 'dashboard']);
         Route::post('/request-venue', [AdminController::class, 'requestVenue']);
     });
+});
+
+Route::domain('superadmin.unicalendar.test')->group(function () {
+    Route::redirect('/', '/planning-office');
+    Route::redirect('/login', '/planning-office/login');
 });
 
 // Development helper: create an admin user when visiting this route.

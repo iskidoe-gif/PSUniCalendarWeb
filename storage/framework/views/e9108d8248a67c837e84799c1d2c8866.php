@@ -7,51 +7,53 @@
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-100 font-sans antialiased">
-    @php($requests = $requests ?? collect())
+    <?php ($requests = $requests ?? collect()); ?>
 
     <div class="min-h-screen">
         <main class="overflow-y-auto p-8">
             <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.css" rel="stylesheet">
 
-            @if (session('success'))
+            <?php if(session('success')): ?>
                 <div class="mb-6 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
-                    {{ session('success') }}
-                </div>
-            @endif
+                    <?php echo e(session('success')); ?>
 
-            @if (session('error'))
-                <div class="mb-6 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
-                    {{ session('error') }}
                 </div>
-            @endif
+            <?php endif; ?>
+
+            <?php if(session('error')): ?>
+                <div class="mb-6 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
+                    <?php echo e(session('error')); ?>
+
+                </div>
+            <?php endif; ?>
 
             <div class="flex justify-between items-center mb-6">
                 <h1 class="text-2xl font-bold text-gray-800">Planning Office Overview</h1>
                 <div class="text-sm text-gray-500">University-wide event and venue administration</div>
             </div>
 
-            @include('partials.calendar-navbar')
+            <?php echo $__env->make('partials.calendar-navbar', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
 
             <div class="mb-8 grid gap-4 md:grid-cols-2 xl:grid-cols-5">
                 <div class="rounded-2xl border border-emerald-200 bg-emerald-50 p-4 shadow-sm">
                     <p class="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-700">Alaminos Campus</p>
-                    <p class="mt-3 text-3xl font-bold text-emerald-900">{{ $campusEventCounts['Alaminos Campus'] ?? 0 }}</p>
+                    <p class="mt-3 text-3xl font-bold text-emerald-900"><?php echo e($campusEventCounts['Alaminos Campus'] ?? 0); ?></p>
                 </div>
                 <div class="rounded-2xl border border-indigo-200 bg-indigo-50 p-4 shadow-sm">
                     <p class="text-xs font-semibold uppercase tracking-[0.2em] text-indigo-700">Lingayen Campus</p>
-                    <p class="mt-3 text-3xl font-bold text-indigo-900">{{ $campusEventCounts['Lingayen Campus'] ?? 0 }}</p>
+                    <p class="mt-3 text-3xl font-bold text-indigo-900"><?php echo e($campusEventCounts['Lingayen Campus'] ?? 0); ?></p>
                 </div>
                 <div class="rounded-2xl border border-amber-200 bg-amber-50 p-4 shadow-sm">
                     <p class="text-xs font-semibold uppercase tracking-[0.2em] text-amber-700">Binmaley Campus</p>
-                    <p class="mt-3 text-3xl font-bold text-amber-900">{{ $campusEventCounts['Binmaley Campus'] ?? 0 }}</p>
+                    <p class="mt-3 text-3xl font-bold text-amber-900"><?php echo e($campusEventCounts['Binmaley Campus'] ?? 0); ?></p>
                 </div>
                 <div class="rounded-2xl border border-slate-200 bg-slate-100 p-4 shadow-sm">
                     <p class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-700">University-wide events</p>
-                    <p class="mt-3 text-3xl font-bold text-slate-900">{{ $universityWideEvents ?? 0 }}</p>
+                    <p class="mt-3 text-3xl font-bold text-slate-900"><?php echo e($universityWideEvents ?? 0); ?></p>
                 </div>
                 <div class="rounded-2xl border border-rose-200 bg-rose-50 p-4 shadow-sm">
                     <p class="text-xs font-semibold uppercase tracking-[0.2em] text-rose-700">Upcoming events</p>
-                    <p class="mt-3 text-3xl font-bold text-rose-900">{{ $upcomingEvents ?? 0 }}</p>
+                    <p class="mt-3 text-3xl font-bold text-rose-900"><?php echo e($upcomingEvents ?? 0); ?></p>
                 </div>
             </div>
 
@@ -104,7 +106,7 @@
                     const selectedDateLabelEl = document.getElementById('selected-date-label');
                     if (!calendarEl || !eventListEl || !selectedDateLabelEl) return;
 
-                    const allEvents = {!! $events->toJson() !!};
+                    const allEvents = <?php echo $events->toJson(); ?>;
                     const campusFilter = document.getElementById('campus-filter');
                     let selectedCampus = 'All Campus';
                     let selectedDate = new Date();
@@ -391,3 +393,4 @@
     </div>
 </body>
 </html>
+<?php /**PATH C:\PSUniCalendarWeb\resources\views/superadmin/dashboard.blade.php ENDPATH**/ ?>

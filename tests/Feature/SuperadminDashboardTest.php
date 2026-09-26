@@ -6,35 +6,35 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 
 uses(RefreshDatabase::class);
 
-test('superadmin dashboard renders for authenticated superadmins', function () {
+test('planning office dashboard renders for authenticated office users', function () {
     $user = User::factory()->create([
-        'email' => 'superadmin@example.com',
-        'role' => 'superadmin',
+        'email' => 'planning-office@example.com',
+        'role' => 'planning_office',
     ]);
 
-    $response = $this->actingAs($user)->get('/superadmin');
+    $response = $this->actingAs($user)->get('/planning-office');
 
     $response->assertStatus(200);
-    $response->assertSee('System Overview');
+    $response->assertSee('Planning Office Overview');
 });
 
-test('superadmin dashboard keeps the live master calendar visible', function () {
+test('planning office dashboard keeps the live master calendar visible', function () {
     $user = User::factory()->create([
-        'email' => 'superadmin-no-calendar@example.com',
-        'role' => 'superadmin',
+        'email' => 'planning-office-no-calendar@example.com',
+        'role' => 'planning_office',
     ]);
 
-    $response = $this->actingAs($user)->get('/superadmin');
+    $response = $this->actingAs($user)->get('/planning-office');
 
     $response->assertStatus(200);
     $response->assertSee('Master Live Calendar');
     $this->get('/superadmin/calendar')->assertNotFound();
 });
 
-test('superadmin dashboard shows campus event totals and upcoming events summary', function () {
+test('planning office dashboard shows campus event totals and upcoming events summary', function () {
     $user = User::factory()->create([
-        'email' => 'superadmin-summary@example.com',
-        'role' => 'superadmin',
+        'email' => 'planning-office-summary@example.com',
+        'role' => 'planning_office',
     ]);
 
     EventRequest::create([
@@ -85,7 +85,7 @@ test('superadmin dashboard shows campus event totals and upcoming events summary
         'status' => 'approved',
     ]);
 
-    $response = $this->actingAs($user)->get('/superadmin');
+    $response = $this->actingAs($user)->get('/planning-office');
 
     $response->assertStatus(200);
     $response->assertSee('Alaminos Campus');
@@ -97,10 +97,10 @@ test('superadmin dashboard shows campus event totals and upcoming events summary
     $response->assertSee('1', false);
 });
 
-test('superadmin can review pending requests with campus metadata', function () {
+test('planning office can review pending requests with campus metadata', function () {
     $user = User::factory()->create([
-        'email' => 'superadmin-review@example.com',
-        'role' => 'superadmin',
+        'email' => 'planning-office-review@example.com',
+        'role' => 'planning_office',
     ]);
 
     EventRequest::create([
@@ -115,13 +115,13 @@ test('superadmin can review pending requests with campus metadata', function () 
         'status' => 'pending',
     ]);
 
-    $response = $this->actingAs($user)->get('/superadmin/pending-approvals');
+    $response = $this->actingAs($user)->get('/planning-office/pending-approvals');
 
     $response->assertStatus(200);
-    $response->assertSee('Pending Approvals');
+    $response->assertSee('Request review');
     $response->assertSee('Alaminos Campus');
-    $response->assertSee('Approve');
-    $response->assertSee('Reject');
+    $response->assertSee('Save and approve');
+    $response->assertSee('Reject request');
 });
 
 test('admin dashboard totals are scoped to the admin campus plus university-wide events', function () {

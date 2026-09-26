@@ -78,6 +78,15 @@
                         <input type="text" name="venue_name" value="{{ old('venue_name') }}" required class="mt-2 w-full rounded-2xl border border-slate-300 px-4 py-3 focus:ring-2 focus:ring-indigo-500" />
                     </label>
                 </div>
+                <label class="block">
+                    <span class="text-sm font-medium text-slate-700">SDG alignment (optional)</span>
+                    <select name="sdg_number" class="mt-2 w-full rounded-2xl border border-slate-300 px-4 py-3 focus:ring-2 focus:ring-indigo-500">
+                        <option value="">Not aligned to an SDG</option>
+                        @foreach(['No Poverty', 'Zero Hunger', 'Good Health and Well-being', 'Quality Education', 'Gender Equality', 'Clean Water and Sanitation', 'Affordable and Clean Energy', 'Decent Work and Economic Growth', 'Industry, Innovation and Infrastructure', 'Reduced Inequalities', 'Sustainable Cities and Communities', 'Responsible Consumption and Production', 'Climate Action', 'Life Below Water', 'Life on Land', 'Peace, Justice and Strong Institutions', 'Partnerships for the Goals'] as $index => $sdg)
+                            <option value="{{ $index + 1 }}" {{ (string) old('sdg_number') === (string) ($index + 1) ? 'selected' : '' }}>SDG {{ $index + 1 }}: {{ $sdg }}</option>
+                        @endforeach
+                    </select>
+                </label>
                 <div class="grid gap-4 md:grid-cols-2">
                     <label class="block">
                         <span class="text-sm font-medium text-slate-700">Campus</span>
@@ -152,7 +161,7 @@
                             <th class="py-3 px-4">Event Title</th>
                             <th class="py-3 px-4">Venue</th>
                             <th class="py-3 px-4">Date</th>
-                            <th class="py-3 px-4">Status</th>
+                            <th class="py-3 px-4">Status and planning note</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-100">
@@ -161,7 +170,11 @@
                                 <td class="py-3 px-4 font-semibold text-gray-800">{{ $r->title }}</td>
                                 <td class="py-3 px-4">{{ $r->venue_name }}</td>
                                 <td class="py-3 px-4">{{ date('M d, Y', strtotime($r->start_datetime)) }}</td>
-                                <td class="py-3 px-4 capitalize">{{ $r->status }}</td>
+                                <td class="py-3 px-4">
+                                    <span class="font-semibold {{ $r->status === 'rejected' ? 'text-rose-700' : ($r->status === 'conflict' ? 'text-amber-700' : 'text-emerald-700') }}">{{ $r->status === 'conflict' ? 'Conflict review' : ucfirst($r->status) }}</span>
+                                    @if($r->planning_note)<p class="mt-1 max-w-xs text-xs text-slate-500">{{ $r->planning_note }}</p>@endif
+                                    @if($r->sdg_number)<p class="mt-1 text-xs text-emerald-700">SDG {{ $r->sdg_number }} alignment</p>@endif
+                                </td>
                             </tr>
                         @empty
                             <tr>

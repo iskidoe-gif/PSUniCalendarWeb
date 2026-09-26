@@ -4,17 +4,13 @@ namespace App\Http\Controllers;
 
 use App\Models\EventRequest;
 use App\Models\Venue;
+use App\Services\EventConflictChecker;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 
-class SuperadminController extends Controller
+class PlanningOfficeController extends Controller
 {
     public function dashboard()
     {
-        $requests = EventRequest::where('status', 'pending')
-            ->orderBy('created_at', 'desc')
-            ->get();
-
         $approvedEvents = EventRequest::where('status', 'approved')
             ->orderBy('start_datetime', 'asc')
             ->get();
@@ -27,6 +23,7 @@ class SuperadminController extends Controller
                 'description' => $event->description,
                 'venue' => $event->venue_name,
                 'campus' => $this->resolveCampus($event),
+                'sdg_number' => $event->sdg_number,
             ];
         });
 
@@ -36,12 +33,9 @@ class SuperadminController extends Controller
             });
 
         $universityWideEvents = $approvedEvents->filter(fn ($event) => $this->resolveCampus($event) === 'All Campus')->count();
-        $upcomingEvents = $approvedEvents->filter(function ($event) {
-            return !empty($event->start_datetime) && $event->start_datetime >= now();
-        })->count();
+        $upcomingEvents = $approvedEvents->filter(fn ($event) => $event->start_datetime >= now())->count();
 
         return view('superadmin.dashboard', compact(
-            'requests',
             'events',
             'campusEventCounts',
             'universityWideEvents',
@@ -49,36 +43,40 @@ class SuperadminController extends Controller
         ));
     }
 
-    private function resolveCampus($event): string
+    private function resolveCampus(EventRequest $event): string
     {
-        if (!empty($event->campus)) {
+        if ($event->campus) {
             return $event->campus;
         }
 
         $venue = strtolower($event->venue_name ?? '');
 
-        if (str_contains($venue, 'alaminos')) {
-            return 'Alaminos Campus';
-        }
-
-        if (str_contains($venue, 'lingayen')) {
-            return 'Lingayen Campus';
-        }
-
-        if (str_contains($venue, 'binmaley')) {
-            return 'Binmaley Campus';
+        foreach (['Alaminos', 'Lingayen', 'Binmaley'] as $campus) {
+            if (str_contains($venue, strtolower($campus))) {
+                return $campus . ' Campus';
+            }
         }
 
         return 'All Campus';
     }
 
-    public function pendingApprovals()
+    public function pendingApprovals(EventConflictChecker $conflictChecker)
     {
-        $requests = EventRequest::where('status', 'pending')
-            ->orderBy('created_at', 'desc')
-            ->get();
+        $requests = EventRequest::whereIn('status', ['pending', 'conflict'])
+            ->orderByRaw("CASE WHEN status = 'conflict' THEN 0 ELSE 1 END")
+            ->orderBy('created_at')
+            ->get()
+            ->each(function (EventRequest $request) use ($conflictChecker) {
+                $request->setAttribute('conflicts', $conflictChecker->find(
+                    $request->venue_name,
+                    $request->campus,
+                    $request->start_datetime,
+                    $request->end_datetime,
+                    $request->id
+                ));
+            });
 
-        return view('superadmin.pending-approvals', compact('requests'));
+        return view('office.pending-approvals', compact('requests'));
     }
 
     public function manageVenues()
@@ -102,9 +100,7 @@ class SuperadminController extends Controller
                 ['id' => 2, 'name' => 'Science Hall', 'venue_name' => 'Science Hall', 'events_count' => 1],
                 ['id' => 3, 'name' => 'Student Center', 'venue_name' => 'Student Center', 'events_count' => 3],
                 ['id' => 4, 'name' => 'Sports Gym', 'venue_name' => 'Sports Gym', 'events_count' => 1],
-            ])->map(function ($venue) {
-                return (object) $venue;
-            });
+            ])->map(fn ($venue) => (object) $venue);
         }
 
         return view('superadmin.manage-venues', compact('venues'));
@@ -112,34 +108,34 @@ class SuperadminController extends Controller
 
     public function storeVenue(Request $request)
     {
-        $request->validate([
+        $validated = $request->validate([
             'name' => ['required', 'string', 'max:255', 'unique:venues,name'],
         ]);
 
-        Venue::create(['name' => trim($request->name)]);
+        Venue::create(['name' => trim($validated['name'])]);
 
-        return redirect()->route('superadmin.venues')->with('success', 'Venue added successfully.');
+        return redirect()->route('planning_office.venues')->with('success', 'Venue added successfully.');
     }
 
     public function updateVenue(Request $request, Venue $venue)
     {
-        $request->validate([
+        $validated = $request->validate([
             'name' => ['required', 'string', 'max:255', 'unique:venues,name,' . $venue->id],
         ]);
 
-        $venue->update(['name' => trim($request->name)]);
+        $venue->update(['name' => trim($validated['name'])]);
 
-        return redirect()->route('superadmin.venues')->with('success', 'Venue updated successfully.');
+        return redirect()->route('planning_office.venues')->with('success', 'Venue updated successfully.');
     }
 
     public function destroyVenue(Venue $venue)
     {
         $venue->delete();
 
-        return redirect()->route('superadmin.venues')->with('success', 'Venue removed successfully.');
+        return redirect()->route('planning_office.venues')->with('success', 'Venue removed successfully.');
     }
 
-    public function venueEvents($venue)
+    public function venueEvents(string $venue)
     {
         $events = EventRequest::where('status', 'approved')
             ->where('venue_name', $venue)
@@ -149,4 +145,3 @@ class SuperadminController extends Controller
         return view('superadmin.venue-events', compact('events', 'venue'));
     }
 }
-

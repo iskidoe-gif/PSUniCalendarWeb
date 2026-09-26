@@ -15,7 +15,7 @@
                     <p class="text-sm text-gray-500 mt-1">All approved events scheduled at this venue.</p>
                 </div>
                 <div>
-                    <a href="{{ route('superadmin.venues') }}" class="px-4 py-2 bg-slate-200 rounded text-sm">Back to Venues</a>
+                    <a href="{{ route('planning_office.venues') }}" class="px-4 py-2 bg-slate-200 rounded text-sm">Back to Venues</a>
                 </div>
             </div>
 
