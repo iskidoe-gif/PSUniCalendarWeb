@@ -24,6 +24,7 @@ class EventRequest extends Model
         'planning_note',
         'google_event_id',
         'digital_documents',
+        'read_at',
     ];
 
     protected $casts = [
@@ -31,5 +32,16 @@ class EventRequest extends Model
         'sdg_number' => 'integer',
         'start_datetime' => 'datetime',
         'end_datetime' => 'datetime',
+        'read_at' => 'datetime',
     ];
+
+    /**
+     * Statuses that mean "this office can still edit or cancel this request".
+     */
+    public const EDITABLE_STATUSES = ['pending', 'conflict'];
+
+    /**
+     * Statuses that represent a Planning Office decision the office hasn't seen yet.
+     */
+    public const NOTIFIABLE_STATUSES = ['approved', 'rejected', 'conflict'];
 }

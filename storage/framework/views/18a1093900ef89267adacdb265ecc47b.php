@@ -13,18 +13,19 @@
             <p class="text-sm text-slate-500 mt-2">Sign in to access the office dashboard.</p>
         </div>
 
-        @if ($errors->any())
+        <?php if($errors->any()): ?>
             <div class="mb-4 rounded-2xl bg-rose-50 border border-rose-200 p-4 text-sm text-rose-700">
-                {{ $errors->first() }}
-            </div>
-        @endif
+                <?php echo e($errors->first()); ?>
 
-        <form method="POST" action="{{ route('office.login.submit') }}" class="space-y-5">
-            @csrf
+            </div>
+        <?php endif; ?>
+
+        <form method="POST" action="<?php echo e(route('office.login.submit')); ?>" class="space-y-5">
+            <?php echo csrf_field(); ?>
 
             <div>
                 <label for="email" class="block text-sm font-medium text-slate-700 mb-2">Email</label>
-                <input id="email" name="email" type="email" value="{{ old('email') }}" required autofocus class="w-full rounded-2xl border border-slate-300 px-4 py-3 text-sm text-slate-900 outline-none focus:ring-2 focus:ring-indigo-500" />
+                <input id="email" name="email" type="email" value="<?php echo e(old('email')); ?>" required autofocus class="w-full rounded-2xl border border-slate-300 px-4 py-3 text-sm text-slate-900 outline-none focus:ring-2 focus:ring-indigo-500" />
             </div>
 
             <div>
@@ -44,4 +45,4 @@
 
         </div>
 </body>
-</html>
+</html><?php /**PATH C:\capstone system\PSUniCalendarWeb\resources\views/auth/office-login.blade.php ENDPATH**/ ?>

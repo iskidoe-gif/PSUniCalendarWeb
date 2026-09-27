@@ -37,6 +37,22 @@ Route::middleware(['auth', 'role:office'])->prefix('office')->group(function () 
     Route::get('/', [OfficeController::class, 'dashboard'])->name('office.dashboard');
     Route::get('/calendar', [OfficeController::class, 'calendar'])->name('office.calendar');
     Route::post('/request-venue', [OfficeController::class, 'requestVenue'])->name('office.request');
+
+    // Quick actions / shortcuts
+    Route::get('/requests/{id}/duplicate', [OfficeController::class, 'duplicateRequest'])->name('office.requests.duplicate');
+    Route::get('/requests/{id}/edit', [OfficeController::class, 'editRequestForm'])->name('office.requests.edit');
+    Route::post('/requests/{id}/cancel', [OfficeController::class, 'cancelRequest'])->name('office.requests.cancel');
+    Route::post('/favorite-venues', [OfficeController::class, 'toggleFavoriteVenue'])->name('office.favorite-venues.toggle');
+
+    // Notifications
+    Route::post('/notifications/read', [OfficeController::class, 'markNotificationsRead'])->name('office.notifications.read');
+
+    // Reporting
+    Route::get('/requests/export', [OfficeController::class, 'exportCsv'])->name('office.requests.export');
+
+    // Profile
+    Route::patch('/profile', [OfficeController::class, 'updateProfile'])->name('office.profile.update');
+    Route::patch('/change-password', [OfficeController::class, 'changePassword'])->name('office.password.update');
 });
 
 Route::get('/planning-office/login', [PlanningOfficeAuthController::class, 'showLogin'])->name('planning_office.login');

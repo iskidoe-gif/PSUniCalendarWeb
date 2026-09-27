@@ -10,21 +10,22 @@
     <div class="w-full max-w-md bg-white rounded-3xl shadow-xl border border-slate-200 p-8">
         <div class="mb-6 text-center">
             <h1 class="text-2xl font-bold text-slate-900">Office Login</h1>
-            <p class="text-sm text-slate-500 mt-2">Sign in to access the office dashboard.</p>
+            <p class="text-sm text-slate-500 mt-2">Sign in to access the office portal.</p>
         </div>
 
-        @if ($errors->any())
+        <?php if($errors->any()): ?>
             <div class="mb-4 rounded-2xl bg-rose-50 border border-rose-200 p-4 text-sm text-rose-700">
-                {{ $errors->first() }}
-            </div>
-        @endif
+                <?php echo e($errors->first()); ?>
 
-        <form method="POST" action="{{ route('office.login.submit') }}" class="space-y-5">
-            @csrf
+            </div>
+        <?php endif; ?>
+
+        <form method="POST" action="<?php echo e(route('office.login.submit')); ?>" class="space-y-5">
+            <?php echo csrf_field(); ?>
 
             <div>
                 <label for="email" class="block text-sm font-medium text-slate-700 mb-2">Email</label>
-                <input id="email" name="email" type="email" value="{{ old('email') }}" required autofocus class="w-full rounded-2xl border border-slate-300 px-4 py-3 text-sm text-slate-900 outline-none focus:ring-2 focus:ring-indigo-500" />
+                <input id="email" name="email" type="email" value="<?php echo e(old('email')); ?>" required autofocus class="w-full rounded-2xl border border-slate-300 px-4 py-3 text-sm text-slate-900 outline-none focus:ring-2 focus:ring-indigo-500" />
             </div>
 
             <div>
@@ -42,6 +43,8 @@
             <button type="submit" class="w-full rounded-2xl bg-indigo-600 px-4 py-3 text-sm font-semibold text-white hover:bg-indigo-700 transition">Sign in</button>
         </form>
 
-        </div>
+        <p class="mt-6 text-center text-sm text-slate-500">For event-requesting offices.</p>
+        <a href="<?php echo e(route('planning_office.login')); ?>" class="mt-3 block text-center text-sm font-semibold text-emerald-800 hover:underline">Planning Office sign in</a>
+    </div>
 </body>
-</html>
+</html><?php /**PATH C:\capstone system\PSUniCalendarWeb\resources\views\auth\office-login.blade.php ENDPATH**/ ?>

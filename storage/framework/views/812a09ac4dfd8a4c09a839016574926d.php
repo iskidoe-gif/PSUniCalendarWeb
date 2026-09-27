@@ -16,16 +16,16 @@
 </head>
 <body class="bg-slate-100 min-h-screen">
     <div class="mx-auto max-w-6xl p-6">
-        @include('partials.page-header', [
+        <?php echo $__env->make('partials.page-header', [
             'title' => 'Office Dashboard',
             'subtitle' => 'Request a venue or manage calendar data.',
-        ])
+        ], array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
 
         <nav class="bg-white rounded-xl p-3 shadow-sm border border-gray-200 mb-6 no-print">
             <div class="max-w-6xl mx-auto flex justify-between items-center">
                 <div class="flex gap-2 items-center">
-                    <a href="{{ route('office.calendar') }}" data-nav-section="calendar" class="px-4 py-2 rounded text-sm bg-slate-100 text-slate-800">Calendar</a>
-                    <a href="{{ route('office.dashboard') }}#request-form" data-nav-section="request-form" class="px-4 py-2 rounded text-sm bg-indigo-600 text-white">Request event</a>
+                    <a href="<?php echo e(route('office.calendar')); ?>" data-nav-section="calendar" class="px-4 py-2 rounded text-sm bg-slate-100 text-slate-800">Calendar</a>
+                    <a href="<?php echo e(route('office.dashboard')); ?>#request-form" data-nav-section="request-form" class="px-4 py-2 rounded text-sm bg-indigo-600 text-white">Request event</a>
                     <a href="#request-status" data-nav-section="request-status" class="px-4 py-2 rounded text-sm bg-slate-100 text-slate-800">Request Status</a>
                 </div>
                 <div class="flex items-center gap-3">
@@ -35,32 +35,32 @@
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.4-1.4A2 2 0 0118 14.2V11a6 6 0 10-12 0v3.2a2 2 0 01-.6 1.4L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
                             </svg>
-                            @if($unreadNotifications->count() > 0)
-                                <span class="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-rose-500 text-[10px] font-bold text-white">{{ $unreadNotifications->count() }}</span>
-                            @endif
+                            <?php if($unreadNotifications->count() > 0): ?>
+                                <span class="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-rose-500 text-[10px] font-bold text-white"><?php echo e($unreadNotifications->count()); ?></span>
+                            <?php endif; ?>
                         </button>
                         <div id="notif-dropdown" class="hidden absolute right-0 z-20 mt-2 w-80 rounded-2xl border border-slate-200 bg-white p-3 shadow-xl">
                             <div class="flex items-center justify-between px-1 pb-2">
                                 <p class="text-sm font-semibold text-slate-800">Notifications</p>
-                                @if($unreadNotifications->count() > 0)
-                                    <form method="POST" action="{{ route('office.notifications.read') }}">
-                                        @csrf
+                                <?php if($unreadNotifications->count() > 0): ?>
+                                    <form method="POST" action="<?php echo e(route('office.notifications.read')); ?>">
+                                        <?php echo csrf_field(); ?>
                                         <button type="submit" class="text-xs font-medium text-indigo-600 hover:underline">Mark all read</button>
                                     </form>
-                                @endif
+                                <?php endif; ?>
                             </div>
                             <div class="max-h-72 overflow-y-auto divide-y divide-slate-100">
-                                @forelse($unreadNotifications as $n)
+                                <?php $__empty_1 = true; $__currentLoopData = $unreadNotifications; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $n): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
                                     <div class="px-1 py-2">
-                                        <p class="text-sm font-medium text-slate-800">{{ $n->title }}</p>
+                                        <p class="text-sm font-medium text-slate-800"><?php echo e($n->title); ?></p>
                                         <p class="text-xs text-slate-500">
                                             Status changed to
-                                            <span class="font-semibold {{ $n->status === 'approved' ? 'text-emerald-600' : ($n->status === 'rejected' ? 'text-rose-600' : 'text-amber-600') }}">{{ $n->status === 'conflict' ? 'conflict review' : $n->status }}</span>
+                                            <span class="font-semibold <?php echo e($n->status === 'approved' ? 'text-emerald-600' : ($n->status === 'rejected' ? 'text-rose-600' : 'text-amber-600')); ?>"><?php echo e($n->status === 'conflict' ? 'conflict review' : $n->status); ?></span>
                                         </p>
                                     </div>
-                                @empty
+                                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
                                     <p class="px-1 py-4 text-sm text-slate-400 text-center">You're all caught up.</p>
-                                @endforelse
+                                <?php endif; ?>
                             </div>
                         </div>
                     </div>
@@ -72,38 +72,39 @@
                         </svg>
                     </button>
 
-                    <form method="POST" action="{{ route('office.logout') }}">
-                        @csrf
+                    <form method="POST" action="<?php echo e(route('office.logout')); ?>">
+                        <?php echo csrf_field(); ?>
                         <button type="submit" class="px-3 py-2 rounded bg-rose-500 text-white text-sm">Logout</button>
                     </form>
                 </div>
             </div>
         </nav>
 
-        @if($reminder)
+        <?php if($reminder): ?>
             <div id="reminder-banner" class="mb-6 rounded-3xl border border-amber-200 bg-amber-50 px-5 py-4 text-amber-800 flex items-center gap-3">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 flex-none" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m0 3.75h.008v.008H12v-.008zM21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
                 <p class="text-sm font-medium">
-                    Upcoming: <strong>{{ $reminder->title }}</strong> at {{ $reminder->venue_name }} on {{ $reminder->start_datetime->format('M j, Y g:i A') }}
-                    ({{ $reminder->start_datetime->diffForHumans() }})
+                    Upcoming: <strong><?php echo e($reminder->title); ?></strong> at <?php echo e($reminder->venue_name); ?> on <?php echo e($reminder->start_datetime->format('M j, Y g:i A')); ?>
+
+                    (<?php echo e($reminder->start_datetime->diffForHumans()); ?>)
                 </p>
             </div>
-        @endif
+        <?php endif; ?>
 
-         @if(isset($accountBadge))
+         <?php if(isset($accountBadge)): ?>
             <div class="rounded-3xl border border-slate-200 bg-white px-4 py-3 shadow-sm">
                 <p class="text-xs font-semibold uppercase tracking-[0.24em] text-slate-400">Account</p>
                 <div class="mt-2 flex items-center gap-2">
-                    <span class="inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold {{ $accountBadge['style'] }}">{{ $accountBadge['label'] }}</span>
-                    <span class="text-sm text-slate-600">{{ $accountBadge['subtitle'] }}</span>
+                    <span class="inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold <?php echo e($accountBadge['style']); ?>"><?php echo e($accountBadge['label']); ?></span>
+                    <span class="text-sm text-slate-600"><?php echo e($accountBadge['subtitle']); ?></span>
                 </div>
             </div>
-        @endif
+        <?php endif; ?>
 
         <!-- Settings modal -->
-        <div id="settings-modal" class="{{ $errors->hasAny(['current_password', 'new_password', 'name', 'email', 'contact_person', 'contact_number', 'profile_password']) || session('open_password_form') || session('open_profile_form') ? '' : 'hidden' }} fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-4 no-print" role="dialog" aria-modal="true" aria-labelledby="settings-title">
+        <div id="settings-modal" class="<?php echo e($errors->hasAny(['current_password', 'new_password', 'name', 'email', 'contact_person', 'contact_number', 'profile_password']) || session('open_password_form') || session('open_profile_form') ? '' : 'hidden'); ?> fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-4 no-print" role="dialog" aria-modal="true" aria-labelledby="settings-title">
             <div class="w-full max-w-md max-h-[90vh] overflow-y-auto rounded-3xl bg-white p-6 shadow-xl">
                 <div class="flex items-center justify-between">
                     <h2 id="settings-title" class="text-lg font-bold text-slate-900">Settings</h2>
@@ -112,38 +113,52 @@
 
                 <!-- Office profile -->
                 <div id="office-profile" class="mt-4 border-t border-slate-100 pt-4">
-                    @php $profileFormOpen = $errors->hasAny(['name', 'email', 'contact_person', 'contact_number', 'profile_password']) || session('open_profile_form'); @endphp
+                    <?php $profileFormOpen = $errors->hasAny(['name', 'email', 'contact_person', 'contact_number', 'profile_password']) || session('open_profile_form'); ?>
                     <div class="flex items-center justify-between">
                         <h3 class="text-sm font-semibold text-slate-800">Office profile</h3>
-                        <div id="profile-view-actions" class="{{ $profileFormOpen ? 'hidden' : '' }} flex items-center gap-3">
+                        <div id="profile-view-actions" class="<?php echo e($profileFormOpen ? 'hidden' : ''); ?> flex items-center gap-3">
                             <button type="button" id="confidential-toggle" class="text-xs font-medium text-indigo-600 hover:underline">Show confidential info</button>
                             <button type="button" id="profile-edit-btn" class="text-xs font-medium text-indigo-600 hover:underline">Edit</button>
                         </div>
                     </div>
 
-                    <form id="profile-form" class="{{ $profileFormOpen ? '' : 'hidden' }} mt-3 space-y-3" method="POST" action="{{ route('office.profile.update') }}">
-                        @csrf
-                        @method('PATCH')
-                        @foreach([
+                    <form id="profile-form" class="<?php echo e($profileFormOpen ? '' : 'hidden'); ?> mt-3 space-y-3" method="POST" action="<?php echo e(route('office.profile.update')); ?>">
+                        <?php echo csrf_field(); ?>
+                        <?php echo method_field('PATCH'); ?>
+                        <?php $__currentLoopData = [
                             ['name', 'Office Name', 'text', auth()->user()->name, true],
                             ['contact_person', 'Contact Person', 'text', auth()->user()->contact_person, false],
                             ['contact_number', 'Contact Number', 'tel', auth()->user()->contact_number, false],
                             ['email', 'Email', 'email', auth()->user()->email, true],
-                        ] as [$field, $label, $type, $value, $required])
+                        ]; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as [$field, $label, $type, $value, $required]): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                             <label class="block text-sm">
-                                <span class="text-slate-600">{{ $label }}</span>
-                                <input type="{{ $type }}" name="{{ $field }}" value="{{ old($field, $value) }}" {{ $required ? 'required' : '' }} class="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm" />
-                                @error($field)
-                                    <span class="text-xs text-rose-600">{{ $message }}</span>
-                                @enderror
+                                <span class="text-slate-600"><?php echo e($label); ?></span>
+                                <input type="<?php echo e($type); ?>" name="<?php echo e($field); ?>" value="<?php echo e(old($field, $value)); ?>" <?php echo e($required ? 'required' : ''); ?> class="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm" />
+                                <?php $__errorArgs = [$field];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?>
+                                    <span class="text-xs text-rose-600"><?php echo e($message); ?></span>
+                                <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>
                             </label>
-                        @endforeach
+                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                         <label class="block text-sm">
                             <span class="text-slate-600">Current Password <span class="text-xs text-slate-400">(required to save changes)</span></span>
                             <input type="password" name="profile_password" required autocomplete="current-password" class="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm" />
-                            @error('profile_password')
-                                <span class="text-xs text-rose-600">{{ $message }}</span>
-                            @enderror
+                            <?php $__errorArgs = ['profile_password'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?>
+                                <span class="text-xs text-rose-600"><?php echo e($message); ?></span>
+                            <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>
                         </label>
                         <div class="flex justify-end gap-2 pt-1">
                             <button type="button" id="profile-cancel-btn" class="rounded-xl bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-200">Cancel</button>
@@ -151,22 +166,22 @@
                         </div>
                     </form>
 
-                    <div id="profile-view" class="{{ $profileFormOpen ? 'hidden' : '' }} mt-3 grid gap-3 sm:grid-cols-2 text-sm">
+                    <div id="profile-view" class="<?php echo e($profileFormOpen ? 'hidden' : ''); ?> mt-3 grid gap-3 sm:grid-cols-2 text-sm">
                         <div>
                             <p class="text-xs uppercase tracking-wide text-slate-400">Office Name</p>
-                            <p class="font-medium text-slate-800">{{ auth()->user()->name }}</p>
+                            <p class="font-medium text-slate-800"><?php echo e(auth()->user()->name); ?></p>
                         </div>
                         <div>
                             <p class="text-xs uppercase tracking-wide text-slate-400">Contact Person</p>
-                            <p class="font-medium text-slate-800 confidential-value" data-value="{{ auth()->user()->contact_person ?: '—' }}">••••••••</p>
+                            <p class="font-medium text-slate-800 confidential-value" data-value="<?php echo e(auth()->user()->contact_person ?: '—'); ?>">••••••••</p>
                         </div>
                         <div>
                             <p class="text-xs uppercase tracking-wide text-slate-400">Contact Number</p>
-                            <p class="font-medium text-slate-800 confidential-value" data-value="{{ auth()->user()->contact_number ?: '—' }}">••••••••</p>
+                            <p class="font-medium text-slate-800 confidential-value" data-value="<?php echo e(auth()->user()->contact_number ?: '—'); ?>">••••••••</p>
                         </div>
                         <div>
                             <p class="text-xs uppercase tracking-wide text-slate-400">Email</p>
-                            <p class="font-medium text-slate-800 break-all confidential-value" data-value="{{ auth()->user()->email }}">••••••••</p>
+                            <p class="font-medium text-slate-800 break-all confidential-value" data-value="<?php echo e(auth()->user()->email); ?>">••••••••</p>
                         </div>
                     </div>
                 </div>
@@ -174,22 +189,36 @@
                 <div class="mt-4 border-t border-slate-100 pt-4">
                     <h3 class="text-sm font-semibold text-slate-800">Change password</h3>
 
-                    <form id="password-form" class="mt-3 space-y-3" method="POST" action="{{ route('office.password.update') }}">
-                        @csrf
-                        @method('PATCH')
+                    <form id="password-form" class="mt-3 space-y-3" method="POST" action="<?php echo e(route('office.password.update')); ?>">
+                        <?php echo csrf_field(); ?>
+                        <?php echo method_field('PATCH'); ?>
                         <label class="block text-sm">
                             <span class="text-slate-600">Current Password</span>
                             <input type="password" name="current_password" required autocomplete="current-password" class="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm" />
-                            @error('current_password')
-                                <span class="text-xs text-rose-600">{{ $message }}</span>
-                            @enderror
+                            <?php $__errorArgs = ['current_password'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?>
+                                <span class="text-xs text-rose-600"><?php echo e($message); ?></span>
+                            <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>
                         </label>
                         <label class="block text-sm">
                             <span class="text-slate-600">New Password</span>
                             <input type="password" name="new_password" required minlength="8" autocomplete="new-password" class="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm" />
-                            @error('new_password')
-                                <span class="text-xs text-rose-600">{{ $message }}</span>
-                            @enderror
+                            <?php $__errorArgs = ['new_password'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?>
+                                <span class="text-xs text-rose-600"><?php echo e($message); ?></span>
+                            <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>
                         </label>
                         <label class="block text-sm">
                             <span class="text-slate-600">Confirm New Password</span>
@@ -207,104 +236,108 @@
         <div class="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             <div class="rounded-3xl bg-white p-5 shadow-sm border border-slate-200">
                 <p class="text-xs font-semibold uppercase tracking-[0.24em] text-slate-400">Total events</p>
-                <p class="mt-2 text-3xl font-bold text-slate-900">{{ $totalEvents ?? 0 }}</p>
+                <p class="mt-2 text-3xl font-bold text-slate-900"><?php echo e($totalEvents ?? 0); ?></p>
             </div>
             <div class="rounded-3xl bg-white p-5 shadow-sm border border-slate-200">
                 <p class="text-xs font-semibold uppercase tracking-[0.24em] text-slate-400">Upcoming events</p>
-                <p class="mt-2 text-3xl font-bold text-slate-900">{{ $upcomingEvents ?? 0 }}</p>
+                <p class="mt-2 text-3xl font-bold text-slate-900"><?php echo e($upcomingEvents ?? 0); ?></p>
             </div>
             <div class="rounded-3xl bg-white p-5 shadow-sm border border-slate-200">
                 <p class="text-xs font-semibold uppercase tracking-[0.24em] text-slate-400">Pending requests</p>
-                <p class="mt-2 text-3xl font-bold text-amber-600">{{ $pendingCount ?? 0 }}</p>
+                <p class="mt-2 text-3xl font-bold text-amber-600"><?php echo e($pendingCount ?? 0); ?></p>
             </div>
             <div class="rounded-3xl bg-white p-5 shadow-sm border border-slate-200">
                 <p class="text-xs font-semibold uppercase tracking-[0.24em] text-slate-400">Approved requests</p>
-                <p class="mt-2 text-3xl font-bold text-emerald-600">{{ $approvedCount ?? 0 }}</p>
+                <p class="mt-2 text-3xl font-bold text-emerald-600"><?php echo e($approvedCount ?? 0); ?></p>
             </div>
             <div class="rounded-3xl bg-white p-5 shadow-sm border border-slate-200">
                 <p class="text-xs font-semibold uppercase tracking-[0.24em] text-slate-400">Rejected requests</p>
-                <p class="mt-2 text-3xl font-bold text-rose-600">{{ $rejectedCount ?? 0 }}</p>
+                <p class="mt-2 text-3xl font-bold text-rose-600"><?php echo e($rejectedCount ?? 0); ?></p>
             </div>
             <div class="rounded-3xl bg-white p-5 shadow-sm border border-slate-200">
                 <p class="text-xs font-semibold uppercase tracking-[0.24em] text-slate-400">Cancelled requests</p>
-                <p class="mt-2 text-3xl font-bold text-slate-500">{{ $cancelledCount ?? 0 }}</p>
+                <p class="mt-2 text-3xl font-bold text-slate-500"><?php echo e($cancelledCount ?? 0); ?></p>
             </div>
         </div>
 
         <div class="mt-4 rounded-3xl bg-indigo-50 border border-indigo-100 px-5 py-3 text-sm text-indigo-800">
-            You submitted <strong>{{ $submittedThisMonth ?? 0 }}</strong> request(s) this month, <strong>{{ $approvedThisMonth ?? 0 }}</strong> of which were approved.
+            You submitted <strong><?php echo e($submittedThisMonth ?? 0); ?></strong> request(s) this month, <strong><?php echo e($approvedThisMonth ?? 0); ?></strong> of which were approved.
         </div>
 
-        @if(session('success'))
+        <?php if(session('success')): ?>
             <div class="mt-6 rounded-3xl border border-emerald-200 bg-emerald-50 p-4 text-emerald-700">
-                {{ session('success') }}
+                <?php echo e(session('success')); ?>
+
             </div>
-        @endif
-        @if(session('info'))
+        <?php endif; ?>
+        <?php if(session('info')): ?>
             <div class="mt-6 rounded-3xl border border-indigo-200 bg-indigo-50 p-4 text-indigo-700">
-                {{ session('info') }}
+                <?php echo e(session('info')); ?>
+
             </div>
-        @endif
-        @if(session('error'))
+        <?php endif; ?>
+        <?php if(session('error')): ?>
             <div class="mt-6 rounded-3xl border border-rose-200 bg-rose-50 p-4 text-rose-700">
-                {{ session('error') }}
+                <?php echo e(session('error')); ?>
+
             </div>
-        @endif
-        @if($errors->any())
+        <?php endif; ?>
+        <?php if($errors->any()): ?>
             <div class="mt-6 rounded-3xl border border-rose-200 bg-rose-50 p-4 text-rose-700">
                 <ul class="list-disc list-inside text-sm">
-                    @foreach($errors->all() as $error)
-                        <li>{{ $error }}</li>
-                    @endforeach
+                    <?php $__currentLoopData = $errors->all(); $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $error): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                        <li><?php echo e($error); ?></li>
+                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                 </ul>
             </div>
-        @endif
+        <?php endif; ?>
 
         <div id="request-form" class="mt-8 rounded-3xl bg-white border border-slate-200 p-6 shadow-sm">
-            @if(old('edit_id'))
+            <?php if(old('edit_id')): ?>
                 <div class="mb-4 flex items-center justify-between rounded-2xl border border-indigo-200 bg-indigo-50 px-4 py-3 text-sm text-indigo-800">
-                    <span>Editing request #{{ old('edit_id') }}.</span>
-                    <a href="{{ route('office.dashboard') }}#request-form" class="font-medium hover:underline">Cancel edit</a>
+                    <span>Editing request #<?php echo e(old('edit_id')); ?>.</span>
+                    <a href="<?php echo e(route('office.dashboard')); ?>#request-form" class="font-medium hover:underline">Cancel edit</a>
                 </div>
-            @endif
+            <?php endif; ?>
 
-            @if($favoriteVenues->count())
+            <?php if($favoriteVenues->count()): ?>
                 <div class="mb-4">
                     <p class="text-xs font-semibold uppercase tracking-wide text-slate-400 mb-2">Favorite venues</p>
                     <div class="flex flex-wrap gap-2">
-                        @foreach($favoriteVenues as $fav)
-                            <button type="button" class="favorite-venue-chip rounded-full border border-indigo-200 bg-indigo-50 px-3 py-1 text-xs font-medium text-indigo-700 hover:bg-indigo-100" data-venue="{{ $fav->venue_name }}" data-campus="{{ $fav->campus }}">
-                                ★ {{ $fav->venue_name }}
+                        <?php $__currentLoopData = $favoriteVenues; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $fav): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                            <button type="button" class="favorite-venue-chip rounded-full border border-indigo-200 bg-indigo-50 px-3 py-1 text-xs font-medium text-indigo-700 hover:bg-indigo-100" data-venue="<?php echo e($fav->venue_name); ?>" data-campus="<?php echo e($fav->campus); ?>">
+                                ★ <?php echo e($fav->venue_name); ?>
+
                             </button>
-                        @endforeach
+                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                     </div>
                 </div>
-            @endif
+            <?php endif; ?>
 
-            <form action="{{ route('office.request') }}" method="POST" enctype="multipart/form-data" class="space-y-5">
-                @csrf
-                <input type="hidden" name="edit_id" value="{{ old('edit_id') }}">
+            <form action="<?php echo e(route('office.request')); ?>" method="POST" enctype="multipart/form-data" class="space-y-5">
+                <?php echo csrf_field(); ?>
+                <input type="hidden" name="edit_id" value="<?php echo e(old('edit_id')); ?>">
 
                 <div class="grid gap-4 md:grid-cols-2">
                     <label class="block">
                         <span class="text-sm font-medium text-slate-700">Event Title</span>
-                        <input type="text" name="title" value="{{ old('title') }}" required class="mt-2 w-full rounded-2xl border border-slate-300 px-4 py-3 focus:ring-2 focus:ring-indigo-500" />
+                        <input type="text" name="title" value="<?php echo e(old('title')); ?>" required class="mt-2 w-full rounded-2xl border border-slate-300 px-4 py-3 focus:ring-2 focus:ring-indigo-500" />
                     </label>
                     <label class="block">
                         <span class="text-sm font-medium text-slate-700 flex items-center justify-between">
                             Venue Name
                             <button type="button" id="favorite-toggle-btn" class="text-xs font-medium text-indigo-600 hover:underline">☆ Save as favorite</button>
                         </span>
-                        <input type="text" id="venue_name_input" name="venue_name" value="{{ old('venue_name') }}" required class="mt-2 w-full rounded-2xl border border-slate-300 px-4 py-3 focus:ring-2 focus:ring-indigo-500" />
+                        <input type="text" id="venue_name_input" name="venue_name" value="<?php echo e(old('venue_name')); ?>" required class="mt-2 w-full rounded-2xl border border-slate-300 px-4 py-3 focus:ring-2 focus:ring-indigo-500" />
                     </label>
                 </div>
                 <label class="block">
                     <span class="text-sm font-medium text-slate-700">SDG alignment (optional)</span>
                     <select name="sdg_number" class="mt-2 w-full rounded-2xl border border-slate-300 px-4 py-3 focus:ring-2 focus:ring-indigo-500">
                         <option value="">Not aligned to an SDG</option>
-                        @foreach(['No Poverty', 'Zero Hunger', 'Good Health and Well-being', 'Quality Education', 'Gender Equality', 'Clean Water and Sanitation', 'Affordable and Clean Energy', 'Decent Work and Economic Growth', 'Industry, Innovation and Infrastructure', 'Reduced Inequalities', 'Sustainable Cities and Communities', 'Responsible Consumption and Production', 'Climate Action', 'Life Below Water', 'Life on Land', 'Peace, Justice and Strong Institutions', 'Partnerships for the Goals'] as $index => $sdg)
-                            <option value="{{ $index + 1 }}" {{ (string) old('sdg_number') === (string) ($index + 1) ? 'selected' : '' }}>SDG {{ $index + 1 }}: {{ $sdg }}</option>
-                        @endforeach
+                        <?php $__currentLoopData = ['No Poverty', 'Zero Hunger', 'Good Health and Well-being', 'Quality Education', 'Gender Equality', 'Clean Water and Sanitation', 'Affordable and Clean Energy', 'Decent Work and Economic Growth', 'Industry, Innovation and Infrastructure', 'Reduced Inequalities', 'Sustainable Cities and Communities', 'Responsible Consumption and Production', 'Climate Action', 'Life Below Water', 'Life on Land', 'Peace, Justice and Strong Institutions', 'Partnerships for the Goals']; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $index => $sdg): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                            <option value="<?php echo e($index + 1); ?>" <?php echo e((string) old('sdg_number') === (string) ($index + 1) ? 'selected' : ''); ?>>SDG <?php echo e($index + 1); ?>: <?php echo e($sdg); ?></option>
+                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                     </select>
                 </label>
                 <div class="grid gap-4 md:grid-cols-2">
@@ -312,70 +345,72 @@
                         <span class="text-sm font-medium text-slate-700">Campus</span>
                         <select name="campus" id="campus_select" required class="mt-2 w-full rounded-2xl border border-slate-300 px-4 py-3 focus:ring-2 focus:ring-indigo-500">
                             <option value="">Select campus</option>
-                            <option value="Alaminos Campus" {{ old('campus') === 'Alaminos Campus' ? 'selected' : '' }}>Alaminos Campus</option>
-                            <option value="Lingayen Campus" {{ old('campus') === 'Lingayen Campus' ? 'selected' : '' }}>Lingayen Campus</option>
-                            <option value="Binmaley Campus" {{ old('campus') === 'Binmaley Campus' ? 'selected' : '' }}>Binmaley Campus</option>
+                            <option value="Alaminos Campus" <?php echo e(old('campus') === 'Alaminos Campus' ? 'selected' : ''); ?>>Alaminos Campus</option>
+                            <option value="Lingayen Campus" <?php echo e(old('campus') === 'Lingayen Campus' ? 'selected' : ''); ?>>Lingayen Campus</option>
+                            <option value="Binmaley Campus" <?php echo e(old('campus') === 'Binmaley Campus' ? 'selected' : ''); ?>>Binmaley Campus</option>
                         </select>
                     </label>
                 </div>
                 <div class="grid gap-4 md:grid-cols-2">
                     <label class="block">
                         <span class="text-sm font-medium text-slate-700">Start Date</span>
-                        <input type="datetime-local" name="start_datetime" value="{{ old('start_datetime') }}" required class="mt-2 w-full rounded-2xl border border-slate-300 px-4 py-3 focus:ring-2 focus:ring-indigo-500" />
+                        <input type="datetime-local" name="start_datetime" value="<?php echo e(old('start_datetime')); ?>" required class="mt-2 w-full rounded-2xl border border-slate-300 px-4 py-3 focus:ring-2 focus:ring-indigo-500" />
                     </label>
                     <label class="block">
                         <span class="text-sm font-medium text-slate-700">End Date</span>
-                        <input type="datetime-local" name="end_datetime" value="{{ old('end_datetime') }}" required class="mt-2 w-full rounded-2xl border border-slate-300 px-4 py-3 focus:ring-2 focus:ring-indigo-500" />
+                        <input type="datetime-local" name="end_datetime" value="<?php echo e(old('end_datetime')); ?>" required class="mt-2 w-full rounded-2xl border border-slate-300 px-4 py-3 focus:ring-2 focus:ring-indigo-500" />
                     </label>
                 </div>
 
                 <label class="block">
                     <span class="text-sm font-medium text-slate-700">Description</span>
-                    <textarea name="description" rows="4" class="mt-2 w-full rounded-2xl border border-slate-300 px-4 py-3 focus:ring-2 focus:ring-indigo-500">{{ old('description') }}</textarea>
+                    <textarea name="description" rows="4" class="mt-2 w-full rounded-2xl border border-slate-300 px-4 py-3 focus:ring-2 focus:ring-indigo-500"><?php echo e(old('description')); ?></textarea>
                 </label>
 
                 <label class="block">
                     <span class="text-sm font-medium text-slate-700">Supporting Documents</span>
-                    <p class="text-xs text-slate-500">Optional files for the request. Allowed: pdf, jpg, jpeg, png, doc, docx. @if(old('edit_id'))Leave empty to keep the previously uploaded files.@endif</p>
+                    <p class="text-xs text-slate-500">Optional files for the request. Allowed: pdf, jpg, jpeg, png, doc, docx. <?php if(old('edit_id')): ?>Leave empty to keep the previously uploaded files.<?php endif; ?></p>
                     <input type="file" name="digital_documents[]" multiple class="mt-3 w-full text-sm text-slate-700" />
                 </label>
 
-                <button type="submit" class="rounded-2xl bg-indigo-600 px-6 py-3 text-white font-semibold hover:bg-indigo-700">{{ old('edit_id') ? 'Update Request' : 'Request Venue' }}</button>
+                <button type="submit" class="rounded-2xl bg-indigo-600 px-6 py-3 text-white font-semibold hover:bg-indigo-700"><?php echo e(old('edit_id') ? 'Update Request' : 'Request Venue'); ?></button>
             </form>
         </div>
 
         <section class="mt-8 rounded-3xl bg-white border border-slate-200 p-6 shadow-sm">
             <h2 class="text-xl font-bold text-slate-900">Your request status</h2>
             <div class="mt-4 divide-y divide-slate-100">
-                @forelse($officeRequests ?? [] as $request)
+                <?php $__empty_1 = true; $__currentLoopData = $officeRequests ?? []; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $request): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
                     <div class="flex flex-wrap items-center justify-between gap-3 py-3">
                         <div>
-                            <p class="font-semibold text-slate-900">{{ $request->title }}</p>
+                            <p class="font-semibold text-slate-900"><?php echo e($request->title); ?></p>
                             <p class="text-sm text-slate-500">
-                                {{ $request->venue_name }} · {{ $request->start_datetime->format('M j, Y g:i A') }}
-                                @if($request->end_datetime)
-                                    – {{ $request->end_datetime->isSameDay($request->start_datetime) ? $request->end_datetime->format('g:i A') : $request->end_datetime->format('M j, Y g:i A') }}
-                                @endif
+                                <?php echo e($request->venue_name); ?> · <?php echo e($request->start_datetime->format('M j, Y g:i A')); ?>
+
+                                <?php if($request->end_datetime): ?>
+                                    – <?php echo e($request->end_datetime->isSameDay($request->start_datetime) ? $request->end_datetime->format('g:i A') : $request->end_datetime->format('M j, Y g:i A')); ?>
+
+                                <?php endif; ?>
                             </p>
-                            @if($request->planning_note)<p class="mt-1 text-sm text-slate-600">Planning Office: {{ $request->planning_note }}</p>@endif
+                            <?php if($request->planning_note): ?><p class="mt-1 text-sm text-slate-600">Planning Office: <?php echo e($request->planning_note); ?></p><?php endif; ?>
                         </div>
                         <div class="flex items-center gap-2">
-                            <span class="rounded-full px-3 py-1 text-xs font-semibold {{ $request->status === 'approved' ? 'bg-emerald-100 text-emerald-800' : ($request->status === 'rejected' ? 'bg-rose-100 text-rose-800' : ($request->status === 'conflict' ? 'bg-amber-100 text-amber-800' : ($request->status === 'cancelled' ? 'bg-slate-200 text-slate-600' : 'bg-slate-100 text-slate-700'))) }}">{{ $request->status === 'conflict' ? 'Conflict review' : ucfirst($request->status) }}</span>
+                            <span class="rounded-full px-3 py-1 text-xs font-semibold <?php echo e($request->status === 'approved' ? 'bg-emerald-100 text-emerald-800' : ($request->status === 'rejected' ? 'bg-rose-100 text-rose-800' : ($request->status === 'conflict' ? 'bg-amber-100 text-amber-800' : ($request->status === 'cancelled' ? 'bg-slate-200 text-slate-600' : 'bg-slate-100 text-slate-700')))); ?>"><?php echo e($request->status === 'conflict' ? 'Conflict review' : ucfirst($request->status)); ?></span>
                             <div class="flex items-center gap-1 no-print">
-                                <a href="{{ route('office.requests.duplicate', $request->id) }}" title="Duplicate" class="rounded-lg p-1.5 text-slate-500 hover:bg-slate-100" >⧉</a>
-                                @if(in_array($request->status, ['pending', 'conflict']))
-                                    <a href="{{ route('office.requests.edit', $request->id) }}" title="Edit" class="rounded-lg p-1.5 text-slate-500 hover:bg-slate-100">✎</a>
-                                    <form method="POST" action="{{ route('office.requests.cancel', $request->id) }}" onsubmit="return confirm('Cancel this request?');">
-                                        @csrf
+                                <a href="<?php echo e(route('office.requests.duplicate', $request->id)); ?>" title="Duplicate" class="rounded-lg p-1.5 text-slate-500 hover:bg-slate-100" >⧉</a>
+                                <?php if(in_array($request->status, ['pending', 'conflict'])): ?>
+                                    <a href="<?php echo e(route('office.requests.edit', $request->id)); ?>" title="Edit" class="rounded-lg p-1.5 text-slate-500 hover:bg-slate-100">✎</a>
+                                    <form method="POST" action="<?php echo e(route('office.requests.cancel', $request->id)); ?>" onsubmit="return confirm('Cancel this request?');">
+                                        <?php echo csrf_field(); ?>
                                         <button type="submit" title="Cancel" class="rounded-lg p-1.5 text-rose-500 hover:bg-rose-50">✕</button>
                                     </form>
-                                @endif
+                                <?php endif; ?>
                             </div>
                         </div>
                     </div>
-                @empty
+                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
                     <p class="py-4 text-sm text-slate-500">No requests submitted from this account.</p>
-                @endforelse
+                <?php endif; ?>
             </div>
         </section>
 
@@ -415,19 +450,19 @@
                 </div>
             </div>
 
-            <form id="request-filter-form" method="GET" action="{{ route('office.dashboard') }}#request-status" class="mb-4 grid gap-3 sm:grid-cols-4 no-print">
-                <input type="search" name="q" value="{{ $filterQuery ?? '' }}" placeholder="Search title or venue..." autocomplete="off" class="rounded-xl border border-slate-300 px-3 py-2 text-sm sm:col-span-2" />
+            <form id="request-filter-form" method="GET" action="<?php echo e(route('office.dashboard')); ?>#request-status" class="mb-4 grid gap-3 sm:grid-cols-4 no-print">
+                <input type="search" name="q" value="<?php echo e($filterQuery ?? ''); ?>" placeholder="Search title or venue..." autocomplete="off" class="rounded-xl border border-slate-300 px-3 py-2 text-sm sm:col-span-2" />
                 <select name="status" class="rounded-xl border border-slate-300 px-3 py-2 text-sm">
-                    <option value="all" {{ ($filterStatus ?? 'all') === 'all' ? 'selected' : '' }}>All status</option>
-                    <option value="pending" {{ ($filterStatus ?? '') === 'pending' ? 'selected' : '' }}>Pending</option>
-                    <option value="conflict" {{ ($filterStatus ?? '') === 'conflict' ? 'selected' : '' }}>Conflict review</option>
-                    <option value="approved" {{ ($filterStatus ?? '') === 'approved' ? 'selected' : '' }}>Approved</option>
-                    <option value="rejected" {{ ($filterStatus ?? '') === 'rejected' ? 'selected' : '' }}>Rejected</option>
-                    <option value="cancelled" {{ ($filterStatus ?? '') === 'cancelled' ? 'selected' : '' }}>Cancelled</option>
+                    <option value="all" <?php echo e(($filterStatus ?? 'all') === 'all' ? 'selected' : ''); ?>>All status</option>
+                    <option value="pending" <?php echo e(($filterStatus ?? '') === 'pending' ? 'selected' : ''); ?>>Pending</option>
+                    <option value="conflict" <?php echo e(($filterStatus ?? '') === 'conflict' ? 'selected' : ''); ?>>Conflict review</option>
+                    <option value="approved" <?php echo e(($filterStatus ?? '') === 'approved' ? 'selected' : ''); ?>>Approved</option>
+                    <option value="rejected" <?php echo e(($filterStatus ?? '') === 'rejected' ? 'selected' : ''); ?>>Rejected</option>
+                    <option value="cancelled" <?php echo e(($filterStatus ?? '') === 'cancelled' ? 'selected' : ''); ?>>Cancelled</option>
                 </select>
                 <div class="flex gap-2">
-                    <input type="date" name="from" value="{{ $filterFrom ?? '' }}" class="w-1/2 rounded-xl border border-slate-300 px-2 py-2 text-sm" />
-                    <input type="date" name="to" value="{{ $filterTo ?? '' }}" class="w-1/2 rounded-xl border border-slate-300 px-2 py-2 text-sm" />
+                    <input type="date" name="from" value="<?php echo e($filterFrom ?? ''); ?>" class="w-1/2 rounded-xl border border-slate-300 px-2 py-2 text-sm" />
+                    <input type="date" name="to" value="<?php echo e($filterTo ?? ''); ?>" class="w-1/2 rounded-xl border border-slate-300 px-2 py-2 text-sm" />
                 </div>
                 <div class="sm:col-span-4 flex items-center gap-3">
                     <button type="reset" class="rounded-xl bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-200">Reset</button>
@@ -447,31 +482,31 @@
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-100">
-                        @foreach($officeRequests ?? [] as $r)
+                        <?php $__currentLoopData = $officeRequests ?? []; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $r): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                             <tr class="request-row"
-                                data-search="{{ mb_strtolower($r->title . ' ' . $r->venue_name) }}"
-                                data-status="{{ $r->status }}"
-                                data-date="{{ $r->start_datetime?->toDateString() }}">
-                                <td class="py-3 px-4 font-semibold text-gray-800">{{ $r->title }}</td>
-                                <td class="py-3 px-4">{{ $r->venue_name }}</td>
-                                <td class="py-3 px-4">{{ date('M d, Y', strtotime($r->start_datetime)) }}</td>
-                                <td class="py-3 px-4 capitalize">{{ $r->status === 'conflict' ? 'Conflict review' : $r->status }}</td>
+                                data-search="<?php echo e(mb_strtolower($r->title . ' ' . $r->venue_name)); ?>"
+                                data-status="<?php echo e($r->status); ?>"
+                                data-date="<?php echo e($r->start_datetime?->toDateString()); ?>">
+                                <td class="py-3 px-4 font-semibold text-gray-800"><?php echo e($r->title); ?></td>
+                                <td class="py-3 px-4"><?php echo e($r->venue_name); ?></td>
+                                <td class="py-3 px-4"><?php echo e(date('M d, Y', strtotime($r->start_datetime))); ?></td>
+                                <td class="py-3 px-4 capitalize"><?php echo e($r->status === 'conflict' ? 'Conflict review' : $r->status); ?></td>
                                 <td class="py-3 px-4 no-print">
                                     <div class="flex items-center gap-1">
-                                        <a href="{{ route('office.requests.duplicate', $r->id) }}" class="text-xs font-medium text-indigo-600 hover:underline">Duplicate</a>
-                                        @if(in_array($r->status, ['pending', 'conflict']))
+                                        <a href="<?php echo e(route('office.requests.duplicate', $r->id)); ?>" class="text-xs font-medium text-indigo-600 hover:underline">Duplicate</a>
+                                        <?php if(in_array($r->status, ['pending', 'conflict'])): ?>
                                             <span class="text-slate-300">·</span>
-                                            <a href="{{ route('office.requests.edit', $r->id) }}" class="text-xs font-medium text-indigo-600 hover:underline">Edit</a>
+                                            <a href="<?php echo e(route('office.requests.edit', $r->id)); ?>" class="text-xs font-medium text-indigo-600 hover:underline">Edit</a>
                                             <span class="text-slate-300">·</span>
-                                            <form method="POST" action="{{ route('office.requests.cancel', $r->id) }}" onsubmit="return confirm('Cancel this request?');">
-                                                @csrf
+                                            <form method="POST" action="<?php echo e(route('office.requests.cancel', $r->id)); ?>" onsubmit="return confirm('Cancel this request?');">
+                                                <?php echo csrf_field(); ?>
                                                 <button type="submit" class="text-xs font-medium text-rose-600 hover:underline">Cancel</button>
                                             </form>
-                                        @endif
+                                        <?php endif; ?>
                                     </div>
                                 </td>
                             </tr>
-                        @endforeach
+                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                         <tr id="request-filter-empty" class="hidden">
                             <td colspan="5" class="py-6 px-4 text-center text-sm text-slate-500">No requests match your filters.</td>
                         </tr>
@@ -483,14 +518,14 @@
         <div id="activity-log" class="mt-8 rounded-3xl bg-white border border-slate-200 p-6 shadow-sm no-print">
             <h2 class="text-lg font-bold text-slate-900 mb-3">Recent activity</h2>
             <div class="space-y-2">
-                @forelse($recentActivity ?? [] as $log)
+                <?php $__empty_1 = true; $__currentLoopData = $recentActivity ?? []; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $log): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
                     <div class="flex items-center justify-between text-sm border-b border-slate-50 pb-2 last:border-0 last:pb-0">
-                        <span class="text-slate-700">{{ $log->description }}</span>
-                        <span class="text-xs text-slate-400">{{ $log->created_at->diffForHumans() }}</span>
+                        <span class="text-slate-700"><?php echo e($log->description); ?></span>
+                        <span class="text-xs text-slate-400"><?php echo e($log->created_at->diffForHumans()); ?></span>
                     </div>
-                @empty
+                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
                     <p class="text-sm text-slate-400">No activity yet.</p>
-                @endforelse
+                <?php endif; ?>
             </div>
         </div>
 
@@ -507,7 +542,7 @@
                 var calendar;
                 var eventListEl = document.getElementById('event-list');
                 var selectedDateLabelEl = document.getElementById('selected-date-label');
-                var allEvents = {!! isset($events) ? $events->toJson() : '[]' !!};
+                var allEvents = <?php echo isset($events) ? $events->toJson() : '[]'; ?>;
                 var campusFilter = document.getElementById('campus-filter');
                 var selectedCampus = 'All Campus';
                 var selectedDate = new Date();
@@ -822,8 +857,8 @@
 
                         var form = document.createElement('form');
                         form.method = 'POST';
-                        form.action = "{{ route('office.favorite-venues.toggle') }}";
-                        form.innerHTML = '@csrf' +
+                        form.action = "<?php echo e(route('office.favorite-venues.toggle')); ?>";
+                        form.innerHTML = '<?php echo csrf_field(); ?>' +
                             '<input type="hidden" name="venue_name" value="' + venue.replace(/"/g, '&quot;') + '">' +
                             '<input type="hidden" name="campus" value="' + campus.replace(/"/g, '&quot;') + '">';
                         document.body.appendChild(form);
@@ -835,3 +870,4 @@
     </div>
 </body>
 </html>
+<?php /**PATH C:\capstone system\PSUniCalendarWeb\resources\views/office/dashboard.blade.php ENDPATH**/ ?>
