@@ -70,6 +70,16 @@ Route::middleware(['auth', 'role:planning_office'])->prefix('planning-office')->
     Route::put('/manage-venues/{venue}', [PlanningOfficeController::class, 'updateVenue'])->name('planning_office.venues.update');
     Route::delete('/manage-venues/{venue}', [PlanningOfficeController::class, 'destroyVenue'])->name('planning_office.venues.destroy');
     Route::get('/manage-venues/{venue}', [PlanningOfficeController::class, 'venueEvents'])->name('planning_office.venues.events');
+
+    // Offices (grouped by campus in the sidebar)
+    Route::get('/offices/{office}', [PlanningOfficeController::class, 'showOffice'])->name('planning_office.offices.show');
+    Route::patch('/offices/{office}/campus', [PlanningOfficeController::class, 'updateOfficeCampus'])->name('planning_office.offices.campus');
+
+    // System
+    Route::get('/notifications', [PlanningOfficeController::class, 'notifications'])->name('planning_office.notifications');
+    Route::get('/settings', [PlanningOfficeController::class, 'settings'])->name('planning_office.settings');
+    Route::patch('/settings/profile', [PlanningOfficeController::class, 'updateSettingsProfile'])->name('planning_office.settings.profile');
+    Route::patch('/settings/password', [PlanningOfficeController::class, 'updateSettingsPassword'])->name('planning_office.settings.password');
 });
 
 Route::get('/', [UserController::class, 'index'])->name('user.calendar');

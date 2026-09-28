@@ -72,22 +72,49 @@ class DatabaseSeeder extends Seeder
             ])->save();
         }
 
-        // Create office-specific accounts for testing.
+        // Create office-specific accounts for testing, grouped by campus.
         $offices = [
             [
                 'email' => 'registrar@psu.local',
                 'name' => 'Office of the Registrar',
                 'password' => 'Registrar@123',
+                'campus' => 'Lingayen Campus',
             ],
             [
                 'email' => 'studentaffairs@psu.local',
                 'name' => 'Office of Student Affairs',
                 'password' => 'StudentAffairs@123',
+                'campus' => 'Lingayen Campus',
             ],
             [
                 'email' => 'guidance@psu.local',
                 'name' => 'Guidance Office',
                 'password' => 'Guidance@123',
+                'campus' => 'Lingayen Campus',
+            ],
+            [
+                'email' => 'registrar.alaminos@psu.local',
+                'name' => 'Office of the Registrar - Alaminos',
+                'password' => 'Registrar@123',
+                'campus' => 'Alaminos Campus',
+            ],
+            [
+                'email' => 'studentaffairs.alaminos@psu.local',
+                'name' => 'Office of Student Affairs - Alaminos',
+                'password' => 'StudentAffairs@123',
+                'campus' => 'Alaminos Campus',
+            ],
+            [
+                'email' => 'registrar.binmaley@psu.local',
+                'name' => 'Office of the Registrar - Binmaley',
+                'password' => 'Registrar@123',
+                'campus' => 'Binmaley Campus',
+            ],
+            [
+                'email' => 'studentaffairs.binmaley@psu.local',
+                'name' => 'Office of Student Affairs - Binmaley',
+                'password' => 'StudentAffairs@123',
+                'campus' => 'Binmaley Campus',
             ],
         ];
 
@@ -99,6 +126,7 @@ class DatabaseSeeder extends Seeder
                     'email_verified_at' => now(),
                     'password' => Hash::make($office['password']),
                     'role' => 'office',
+                    'campus' => $office['campus'],
                     'remember_token' => \Illuminate\Support\Str::random(10),
                 ]
             );
@@ -108,6 +136,7 @@ class DatabaseSeeder extends Seeder
                 'email_verified_at' => now(),
                 'password' => Hash::make($office['password']),
                 'role' => 'office',
+                'campus' => $office['campus'],
                 'remember_token' => \Illuminate\Support\Str::random(10),
             ])->save();
         }

@@ -1,13 +1,8 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Planning Office Review · UniCalendar</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-</head>
-<body class="min-h-screen bg-slate-100 text-slate-900">
-    <main class="mx-auto max-w-7xl px-4 py-8 sm:px-6">
+@extends('layouts.planning-office')
+
+@section('title', 'Review Requests')
+
+@section('content')
         <header class="mb-6 flex flex-wrap items-end justify-between gap-4">
             <div>
                 <p class="text-xs font-bold uppercase tracking-[0.2em] text-emerald-800">Planning Office</p>
@@ -16,13 +11,6 @@
             </div>
             <a href="{{ route('planning_office.dashboard') }}" class="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold">Back to dashboard</a>
         </header>
-
-        @if(session('success'))
-            <div class="mb-5 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">{{ session('success') }}</div>
-        @endif
-        @if(session('error'))
-            <div class="mb-5 rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-800">{{ session('error') }}</div>
-        @endif
         @if($errors->any())
             <div class="mb-5 rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-800">{{ $errors->first() }}</div>
         @endif
@@ -110,6 +98,4 @@
                 <div class="rounded-xl border border-dashed border-slate-300 bg-white px-6 py-12 text-center text-slate-500">No requests are awaiting review.</div>
             @endforelse
         </div>
-    </main>
-</body>
-</html>
+@endsection

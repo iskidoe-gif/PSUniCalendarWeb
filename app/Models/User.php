@@ -10,12 +10,17 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
-#[Fillable(['name', 'email', 'password', 'role', 'contact_person', 'contact_number'])]
+#[Fillable(['name', 'email', 'password', 'role', 'campus', 'contact_person', 'contact_number'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
+
+    /**
+     * Campuses an office account can belong to, in sidebar order.
+     */
+    public const CAMPUSES = ['Alaminos Campus', 'Lingayen Campus', 'Binmaley Campus'];
 
     /**
      * Get the attributes that should be cast.

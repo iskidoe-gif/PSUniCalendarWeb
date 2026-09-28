@@ -2,10 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\ActivityLog;
 use App\Models\EventRequest;
+use App\Models\User;
 use App\Models\Venue;
 use App\Services\EventConflictChecker;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rule;
 
 class PlanningOfficeController extends Controller
 {
@@ -35,12 +40,115 @@ class PlanningOfficeController extends Controller
         $universityWideEvents = $approvedEvents->filter(fn ($event) => $this->resolveCampus($event) === 'All Campus')->count();
         $upcomingEvents = $approvedEvents->filter(fn ($event) => $event->start_datetime >= now())->count();
 
+        $pendingCount = EventRequest::where('status', 'pending')->count();
+        $conflictCount = EventRequest::where('status', 'conflict')->count();
+        $venueCount = Venue::count();
+        $officeCount = User::where('role', 'office')->count();
+
         return view('superadmin.dashboard', compact(
             'events',
             'campusEventCounts',
             'universityWideEvents',
-            'upcomingEvents'
+            'upcomingEvents',
+            'pendingCount',
+            'conflictCount',
+            'venueCount',
+            'officeCount'
         ));
+    }
+
+    public function showOffice(User $office)
+    {
+        abort_unless($office->role === 'office', 404);
+
+        $requests = EventRequest::where('email', $office->email)
+            ->orderByDesc('created_at')
+            ->get();
+
+        $statusCounts = [
+            'pending' => $requests->whereIn('status', ['pending', 'conflict'])->count(),
+            'approved' => $requests->where('status', 'approved')->count(),
+            'rejected' => $requests->where('status', 'rejected')->count(),
+            'cancelled' => $requests->where('status', 'cancelled')->count(),
+        ];
+
+        $recentActivity = ActivityLog::where('email', $office->email)->latest()->limit(10)->get();
+
+        return view('superadmin.office', compact('office', 'requests', 'statusCounts', 'recentActivity'));
+    }
+
+    public function updateOfficeCampus(Request $request, User $office)
+    {
+        abort_unless($office->role === 'office', 404);
+
+        $validated = $request->validate([
+            'campus' => ['required', Rule::in(User::CAMPUSES)],
+        ]);
+
+        $office->update(['campus' => $validated['campus']]);
+
+        return redirect()->route('planning_office.offices.show', $office)
+            ->with('success', "{$office->name} is now listed under {$validated['campus']}.");
+    }
+
+    public function notifications()
+    {
+        $needsReview = EventRequest::whereIn('status', ['pending', 'conflict'])
+            ->orderByRaw("CASE WHEN status = 'conflict' THEN 0 ELSE 1 END")
+            ->orderBy('created_at')
+            ->get();
+
+        $upcomingSoon = EventRequest::where('status', 'approved')
+            ->whereBetween('start_datetime', [now(), now()->addDays(7)])
+            ->orderBy('start_datetime')
+            ->get();
+
+        $recentActivity = ActivityLog::latest()->limit(20)->get();
+        $officeNames = User::where('role', 'office')->pluck('name', 'email');
+
+        return view('superadmin.notifications', compact('needsReview', 'upcomingSoon', 'recentActivity', 'officeNames'));
+    }
+
+    public function settings()
+    {
+        return view('superadmin.settings', ['user' => Auth::user()]);
+    }
+
+    public function updateSettingsProfile(Request $request)
+    {
+        $user = Auth::user();
+
+        $validated = $request->validateWithBag('profile', [
+            'name' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'email', 'max:255', Rule::unique('users', 'email')->ignore($user->id)],
+            'current_password' => ['required'],
+        ]);
+
+        if (! Hash::check($validated['current_password'], $user->password)) {
+            return back()->withInput()->withErrors(['current_password' => 'Password is incorrect.'], 'profile');
+        }
+
+        $user->update(['name' => $validated['name'], 'email' => $validated['email']]);
+
+        return redirect()->route('planning_office.settings')->with('success', 'Account details updated.');
+    }
+
+    public function updateSettingsPassword(Request $request)
+    {
+        $user = Auth::user();
+
+        $validated = $request->validateWithBag('password', [
+            'current_password' => ['required'],
+            'new_password' => ['required', 'confirmed', 'min:8'],
+        ]);
+
+        if (! Hash::check($validated['current_password'], $user->password)) {
+            return back()->withErrors(['current_password' => 'Current password is incorrect.'], 'password');
+        }
+
+        $user->update(['password' => Hash::make($validated['new_password'])]);
+
+        return redirect()->route('planning_office.settings')->with('success', 'Password updated successfully.');
     }
 
     private function resolveCampus(EventRequest $event): string

@@ -1,67 +1,65 @@
-@extends('layouts.planning-office')
+<?php $__env->startSection('title', 'Dashboard'); ?>
 
-@section('title', 'Dashboard')
-
-@push('head')
+<?php $__env->startPush('head'); ?>
     <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.css" rel="stylesheet">
-@endpush
+<?php $__env->stopPush(); ?>
 
-@section('content')
+<?php $__env->startSection('content'); ?>
     <div class="mb-6 flex flex-wrap items-end justify-between gap-4">
         <div>
             <p class="text-xs font-bold uppercase tracking-[0.2em] text-emerald-800">Planning Office</p>
             <h1 class="mt-1 text-2xl font-bold text-gray-800">Dashboard</h1>
             <p class="mt-1 text-sm text-gray-500">University-wide event and venue administration</p>
         </div>
-        <p class="text-sm text-gray-500">{{ now()->format('l, F j, Y') }}</p>
+        <p class="text-sm text-gray-500"><?php echo e(now()->format('l, F j, Y')); ?></p>
     </div>
 
-    {{-- Quick actions --}}
+    
     <div class="mb-6 grid gap-4 md:grid-cols-3">
-        <a href="{{ route('planning_office.pending') }}" class="group flex items-center justify-between rounded-2xl border border-amber-200 bg-white p-5 shadow-sm transition hover:border-amber-400 hover:shadow">
+        <a href="<?php echo e(route('planning_office.pending')); ?>" class="group flex items-center justify-between rounded-2xl border border-amber-200 bg-white p-5 shadow-sm transition hover:border-amber-400 hover:shadow">
             <div>
                 <p class="text-sm font-semibold text-slate-800">Review requests</p>
-                <p class="mt-1 text-xs text-slate-500">{{ $pendingCount }} awaiting review{{ $conflictCount ? ' · ' . $conflictCount . ' with conflicts' : '' }}</p>
+                <p class="mt-1 text-xs text-slate-500"><?php echo e($pendingCount); ?> awaiting review<?php echo e($conflictCount ? ' · ' . $conflictCount . ' with conflicts' : ''); ?></p>
             </div>
-            <span class="rounded-full bg-amber-100 px-3 py-1 text-lg font-bold text-amber-800">{{ $pendingCount + $conflictCount }}</span>
+            <span class="rounded-full bg-amber-100 px-3 py-1 text-lg font-bold text-amber-800"><?php echo e($pendingCount + $conflictCount); ?></span>
         </a>
-        <a href="{{ route('planning_office.venues') }}" class="group flex items-center justify-between rounded-2xl border border-indigo-200 bg-white p-5 shadow-sm transition hover:border-indigo-400 hover:shadow">
+        <a href="<?php echo e(route('planning_office.venues')); ?>" class="group flex items-center justify-between rounded-2xl border border-indigo-200 bg-white p-5 shadow-sm transition hover:border-indigo-400 hover:shadow">
             <div>
                 <p class="text-sm font-semibold text-slate-800">Venue management</p>
                 <p class="mt-1 text-xs text-slate-500">Add, rename, or remove venues</p>
             </div>
-            <span class="rounded-full bg-indigo-100 px-3 py-1 text-lg font-bold text-indigo-800">{{ $venueCount }}</span>
+            <span class="rounded-full bg-indigo-100 px-3 py-1 text-lg font-bold text-indigo-800"><?php echo e($venueCount); ?></span>
         </a>
         <div class="flex items-center justify-between rounded-2xl border border-emerald-200 bg-white p-5 shadow-sm">
             <div>
                 <p class="text-sm font-semibold text-slate-800">Registered offices</p>
                 <p class="mt-1 text-xs text-slate-500">Browse them by campus in the sidebar</p>
             </div>
-            <span class="rounded-full bg-emerald-100 px-3 py-1 text-lg font-bold text-emerald-800">{{ $officeCount }}</span>
+            <span class="rounded-full bg-emerald-100 px-3 py-1 text-lg font-bold text-emerald-800"><?php echo e($officeCount); ?></span>
         </div>
     </div>
 
-    {{-- Campus stats --}}
+    
     <div class="mb-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
         <div class="rounded-2xl border border-emerald-200 bg-emerald-50 p-4 shadow-sm">
             <p class="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-700">Alaminos Campus</p>
-            <p class="mt-3 text-3xl font-bold text-emerald-900">{{ $campusEventCounts['Alaminos Campus'] ?? 0 }}</p>
+            <p class="mt-3 text-3xl font-bold text-emerald-900"><?php echo e($campusEventCounts['Alaminos Campus'] ?? 0); ?></p>
         </div>
         <div class="rounded-2xl border border-indigo-200 bg-indigo-50 p-4 shadow-sm">
             <p class="text-xs font-semibold uppercase tracking-[0.2em] text-indigo-700">Lingayen Campus</p>
-            <p class="mt-3 text-3xl font-bold text-indigo-900">{{ $campusEventCounts['Lingayen Campus'] ?? 0 }}</p>
+            <p class="mt-3 text-3xl font-bold text-indigo-900"><?php echo e($campusEventCounts['Lingayen Campus'] ?? 0); ?></p>
         </div>
         <div class="rounded-2xl border border-amber-200 bg-amber-50 p-4 shadow-sm">
             <p class="text-xs font-semibold uppercase tracking-[0.2em] text-amber-700">Binmaley Campus</p>
-            <p class="mt-3 text-3xl font-bold text-amber-900">{{ $campusEventCounts['Binmaley Campus'] ?? 0 }}</p>
+            <p class="mt-3 text-3xl font-bold text-amber-900"><?php echo e($campusEventCounts['Binmaley Campus'] ?? 0); ?></p>
         </div>
         <div class="rounded-2xl border border-slate-200 bg-slate-100 p-4 shadow-sm">
             <p class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-700">University-wide events</p>
-            <p class="mt-3 text-3xl font-bold text-slate-900">{{ $universityWideEvents ?? 0 }}</p>
+            <p class="mt-3 text-3xl font-bold text-slate-900"><?php echo e($universityWideEvents ?? 0); ?></p>
         </div>
         <div class="rounded-2xl border border-rose-200 bg-rose-50 p-4 shadow-sm">
             <p class="text-xs font-semibold uppercase tracking-[0.2em] text-rose-700">Upcoming events</p>
-            <p class="mt-3 text-3xl font-bold text-rose-900">{{ $upcomingEvents ?? 0 }}</p>
+            <p class="mt-3 text-3xl font-bold text-rose-900"><?php echo e($upcomingEvents ?? 0); ?></p>
         </div>
     </div>
 
@@ -105,9 +103,9 @@
         </div>
     </div>
 
-@endsection
+<?php $__env->stopSection(); ?>
 
-@push('scripts')
+<?php $__env->startPush('scripts'); ?>
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
@@ -117,7 +115,7 @@
             const selectedDateLabelEl = document.getElementById('selected-date-label');
             if (!calendarEl || !eventListEl || !selectedDateLabelEl) return;
 
-            const allEvents = {!! $events->toJson() !!};
+            const allEvents = <?php echo $events->toJson(); ?>;
             const campusFilter = document.getElementById('campus-filter');
             let selectedCampus = 'All Campus';
             let selectedDate = new Date();
@@ -400,4 +398,6 @@
             });
         });
     </script>
-@endpush
+<?php $__env->stopPush(); ?>
+
+<?php echo $__env->make('layouts.planning-office', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH C:\PSUniCalendarWeb\resources\views/superadmin/dashboard.blade.php ENDPATH**/ ?>
