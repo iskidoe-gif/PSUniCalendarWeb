@@ -38,4 +38,4 @@
         </form>
     </div>
 </body>
-</html><?php /**PATH C:\PSUniCalendarWeb\resources\views/auth/planning-office-login.blade.php ENDPATH**/ ?>
+</html><?php /**PATH C:\capstone system\PSUniCalendarWeb\resources\views\auth\planning-office-login.blade.php ENDPATH**/ ?>

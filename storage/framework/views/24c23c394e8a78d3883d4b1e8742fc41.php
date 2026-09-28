@@ -54,4 +54,4 @@
     </div>
 <?php $__env->stopSection(); ?>
 
-<?php echo $__env->make('layouts.planning-office', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH C:\PSUniCalendarWeb\resources\views/superadmin/settings.blade.php ENDPATH**/ ?>
+<?php echo $__env->make('layouts.planning-office', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH C:\capstone system\PSUniCalendarWeb\resources\views\superadmin\settings.blade.php ENDPATH**/ ?>

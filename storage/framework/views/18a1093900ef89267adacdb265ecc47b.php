@@ -7,23 +7,23 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Archivo+Black&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-    <link href="{{ asset('css/office-login.css') }}" rel="stylesheet">
+    <link href="<?php echo e(asset('css/office-login.css')); ?>" rel="stylesheet">
 </head>
 <body class="min-h-screen flex flex-col bg-slate-50 text-slate-800">
     <!-- Banner (PSU portal style) -->
     <header class="psu-banner relative overflow-hidden">
         <svg class="pointer-events-none absolute inset-0 h-full w-full opacity-40" viewBox="0 0 1200 200" preserveAspectRatio="none" aria-hidden="true">
             <g fill="none" stroke="#8d98d4" stroke-width="0.8">
-                @for($i = 0; $i < 18; $i++)
-                    <path d="M0 {{ 150 - $i * 4 }} C 250 {{ 40 + $i * 6 }}, 450 {{ 220 - $i * 5 }}, 700 {{ 90 + $i * 3 }} S 1050 {{ 10 + $i * 7 }}, 1200 {{ 120 - $i * 2 }}" />
-                @endfor
+                <?php for($i = 0; $i < 18; $i++): ?>
+                    <path d="M0 <?php echo e(150 - $i * 4); ?> C 250 <?php echo e(40 + $i * 6); ?>, 450 <?php echo e(220 - $i * 5); ?>, 700 <?php echo e(90 + $i * 3); ?> S 1050 <?php echo e(10 + $i * 7); ?>, 1200 <?php echo e(120 - $i * 2); ?>" />
+                <?php endfor; ?>
             </g>
         </svg>
 
         <div class="relative mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-4 sm:px-8">
             <div class="flex items-center gap-3 sm:gap-4">
                 <div class="h-14 w-14 flex-none sm:h-20 sm:w-20">
-                    <img src="{{ asset('images/psu-logo.png') }}" alt="Pangasinan State University seal" class="h-full w-full object-contain drop-shadow-lg"
+                    <img src="<?php echo e(asset('images/psu-logo.png')); ?>" alt="Pangasinan State University seal" class="h-full w-full object-contain drop-shadow-lg"
                          onerror="this.replaceWith(document.getElementById('psu-seal-fallback').content.cloneNode(true))" />
                     <template id="psu-seal-fallback">
                         <div class="flex h-full w-full items-center justify-center rounded-full border-2 border-white bg-[#2f3a78] shadow-lg ring-2 ring-[#f2c318]">
@@ -52,16 +52,17 @@
                     Sign in to request campus venues, track the status of your event requests, and view the university calendar of approved events.
                 </p>
                 <ul class="mt-6 space-y-3 text-sm text-slate-700">
-                    @foreach([
+                    <?php $__currentLoopData = [
                         'Request a venue on any PSU campus',
                         'Get notified when the Planning Office reviews your request',
                         'See every approved event on one calendar',
-                    ] as $point)
+                    ]; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $point): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                         <li class="flex items-start gap-3">
                             <span class="mt-0.5 flex h-5 w-5 flex-none items-center justify-center rounded-full bg-[#4a5690] text-[11px] font-bold text-[#f7d54a]">✓</span>
-                            {{ $point }}
+                            <?php echo e($point); ?>
+
                         </li>
-                    @endforeach
+                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                 </ul>
             </section>
 
@@ -73,16 +74,16 @@
                         <h2 class="text-xl font-bold text-[#2f3a78]">Login to UniCalendar</h2>
                         <p class="mt-1 text-sm text-slate-500">Enter your email and password to use the system.</p>
 
-                        @if ($errors->any())
-                            <p class="mt-5 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">{{ $errors->first() }}</p>
-                        @endif
+                        <?php if($errors->any()): ?>
+                            <p class="mt-5 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700"><?php echo e($errors->first()); ?></p>
+                        <?php endif; ?>
 
-                        <form method="POST" action="{{ route('office.login.submit') }}" class="mt-6 space-y-4">
-                            @csrf
+                        <form method="POST" action="<?php echo e(route('office.login.submit')); ?>" class="mt-6 space-y-4">
+                            <?php echo csrf_field(); ?>
 
                             <div>
                                 <label for="email" class="mb-1.5 block text-sm font-semibold text-slate-700">Email</label>
-                                <input id="email" name="email" type="email" value="{{ old('email') }}" required autofocus autocomplete="username"
+                                <input id="email" name="email" type="email" value="<?php echo e(old('email')); ?>" required autofocus autocomplete="username"
                                        class="psu-input w-full rounded-lg border border-slate-300 px-3.5 py-2.5 text-sm transition" />
                             </div>
 
@@ -110,7 +111,8 @@
 
     <footer class="psu-banner">
         <div class="psu-stripe h-1"></div>
-        <p class="px-4 py-3 text-center text-xs text-slate-200">© {{ date('Y') }} Pangasinan State University · UniCalendar</p>
+        <p class="px-4 py-3 text-center text-xs text-slate-200">© <?php echo e(date('Y')); ?> Pangasinan State University · UniCalendar</p>
     </footer>
 </body>
 </html>
+<?php /**PATH C:\capstone system\PSUniCalendarWeb\resources\views/auth/office-login.blade.php ENDPATH**/ ?>

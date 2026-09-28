@@ -1,4 +1,4 @@
-@php
+<?php
     $user = auth()->user();
     $hour = now()->hour;
     $greeting = $hour < 12 ? 'Good morning' : ($hour < 18 ? 'Good afternoon' : 'Good evening');
@@ -12,7 +12,7 @@
     $profileFields = ['name', 'email', 'contact_person', 'contact_number', 'profile_password'];
     $profileFormOpen = $errors->hasAny($profileFields) || session('open_profile_form');
     $settingsOpen = $profileFormOpen || $errors->hasAny(['current_password', 'new_password']) || session('open_password_form');
-@endphp
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -22,32 +22,32 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Archivo+Black&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.css" rel="stylesheet">
-    <link href="{{ asset('css/office-dashboard.css') }}" rel="stylesheet">
+    <link href="<?php echo e(asset('css/office-dashboard.css')); ?>" rel="stylesheet">
 </head>
 <body class="od-body">
-    {{-- Reusable wave pattern (same as the login banner) --}}
-    @php
+    
+    <?php
         $waves = '';
         for ($i = 0; $i < 18; $i++) {
             $waves .= '<path d="M0 ' . (150 - $i * 4) . ' C 250 ' . (40 + $i * 6) . ', 450 ' . (220 - $i * 5) . ', 700 ' . (90 + $i * 3) . ' S 1050 ' . (10 + $i * 7) . ', 1200 ' . (120 - $i * 2) . '" />';
         }
         $wavesSvg = '<svg class="psu-waves" viewBox="0 0 1200 200" preserveAspectRatio="none" aria-hidden="true"><g fill="none" stroke="#8d98d4" stroke-width="0.8">' . $waves . '</g></svg>';
-    @endphp
+    ?>
 
     <!-- ================= Sidebar ================= -->
     <aside id="sidebar" class="od-sidebar" aria-label="Main navigation">
         <svg class="psu-waves" viewBox="0 0 200 1200" preserveAspectRatio="none" aria-hidden="true">
             <g fill="none" stroke="#8d98d4" stroke-width="0.8">
-                @for($i = 0; $i < 14; $i++)
-                    <path d="M{{ 150 - $i * 6 }} 0 C {{ 40 + $i * 8 }} 250, {{ 200 - $i * 7 }} 500, {{ 90 + $i * 4 }} 750 S {{ 10 + $i * 9 }} 1050, {{ 120 - $i * 3 }} 1200" />
-                @endfor
+                <?php for($i = 0; $i < 14; $i++): ?>
+                    <path d="M<?php echo e(150 - $i * 6); ?> 0 C <?php echo e(40 + $i * 8); ?> 250, <?php echo e(200 - $i * 7); ?> 500, <?php echo e(90 + $i * 4); ?> 750 S <?php echo e(10 + $i * 9); ?> 1050, <?php echo e(120 - $i * 3); ?> 1200" />
+                <?php endfor; ?>
             </g>
         </svg>
 
         <div class="od-sidebar__inner">
             <a href="#calendar" class="od-brand">
                 <span class="od-brand__seal">
-                    <img src="{{ asset('images/psu-logo.png') }}" alt="Pangasinan State University seal"
+                    <img src="<?php echo e(asset('images/psu-logo.png')); ?>" alt="Pangasinan State University seal"
                          onerror="this.outerHTML='<span class=&quot;od-seal-fallback&quot;>PSU</span>'" />
                 </span>
                 <span class="od-brand__text">
@@ -85,14 +85,14 @@
 
             <div class="od-sidebar__footer">
                 <div class="od-account">
-                    <span class="od-avatar" aria-hidden="true">{{ $initials }}</span>
+                    <span class="od-avatar" aria-hidden="true"><?php echo e($initials); ?></span>
                     <div class="od-account__text">
-                        <p class="od-account__name">{{ $user->name }}</p>
+                        <p class="od-account__name"><?php echo e($user->name); ?></p>
                         <p class="od-account__role">Office account</p>
                     </div>
                 </div>
-                <form method="POST" action="{{ route('office.logout') }}">
-                    @csrf
+                <form method="POST" action="<?php echo e(route('office.logout')); ?>">
+                    <?php echo csrf_field(); ?>
                     <button type="submit" class="od-logout">
                         <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9" /></svg>
                         <span class="od-nav-text">Logout</span>
@@ -113,7 +113,7 @@
                     </button>
                     <div>
                         <h1 class="od-topbar__title">Office Dashboard</h1>
-                        <p class="od-topbar__sub">{{ now()->format('l, F j, Y') }}</p>
+                        <p class="od-topbar__sub"><?php echo e(now()->format('l, F j, Y')); ?></p>
                     </div>
                 </div>
 
@@ -124,32 +124,32 @@
                             <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.4-1.4A2 2 0 0118 14.2V11a6 6 0 10-12 0v3.2a2 2 0 01-.6 1.4L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
                             </svg>
-                            @if($unreadNotifications->count() > 0)
-                                <span class="od-icon-btn__badge">{{ $unreadNotifications->count() }}</span>
-                            @endif
+                            <?php if($unreadNotifications->count() > 0): ?>
+                                <span class="od-icon-btn__badge"><?php echo e($unreadNotifications->count()); ?></span>
+                            <?php endif; ?>
                         </button>
                         <div id="notif-dropdown" class="od-dropdown hidden">
                             <div class="od-dropdown__head">
                                 <p class="od-dropdown__title">Notifications</p>
-                                @if($unreadNotifications->count() > 0)
-                                    <form method="POST" action="{{ route('office.notifications.read') }}">
-                                        @csrf
+                                <?php if($unreadNotifications->count() > 0): ?>
+                                    <form method="POST" action="<?php echo e(route('office.notifications.read')); ?>">
+                                        <?php echo csrf_field(); ?>
                                         <button type="submit" class="od-link">Mark all read</button>
                                     </form>
-                                @endif
+                                <?php endif; ?>
                             </div>
                             <div class="od-dropdown__list">
-                                @forelse($unreadNotifications as $n)
+                                <?php $__empty_1 = true; $__currentLoopData = $unreadNotifications; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $n): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
                                     <div class="od-dropdown__item">
-                                        <p class="od-dropdown__item-title">{{ $n->title }}</p>
+                                        <p class="od-dropdown__item-title"><?php echo e($n->title); ?></p>
                                         <p class="od-dropdown__item-meta">
                                             Status changed to
-                                            <span class="od-text-{{ $n->status }}">{{ $n->status === 'conflict' ? 'conflict review' : $n->status }}</span>
+                                            <span class="od-text-<?php echo e($n->status); ?>"><?php echo e($n->status === 'conflict' ? 'conflict review' : $n->status); ?></span>
                                         </p>
                                     </div>
-                                @empty
+                                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
                                     <p class="od-dropdown__empty">You're all caught up.</p>
-                                @endforelse
+                                <?php endif; ?>
                             </div>
                         </div>
                     </div>
@@ -157,63 +157,65 @@
             </header>
 
             <!-- Alerts -->
-            @if($reminder)
+            <?php if($reminder): ?>
                 <div id="reminder-banner" class="od-alert od-alert--gold">
                     <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m0 3.75h.008v.008H12v-.008zM21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                     <p>
-                        Upcoming: <strong>{{ $reminder->title }}</strong> at {{ $reminder->venue_name }} on {{ $reminder->start_datetime->format('M j, Y g:i A') }}
-                        ({{ $reminder->start_datetime->diffForHumans() }})
+                        Upcoming: <strong><?php echo e($reminder->title); ?></strong> at <?php echo e($reminder->venue_name); ?> on <?php echo e($reminder->start_datetime->format('M j, Y g:i A')); ?>
+
+                        (<?php echo e($reminder->start_datetime->diffForHumans()); ?>)
                     </p>
                 </div>
-            @endif
-            @if(session('success'))
-                <div class="od-alert od-alert--success">{{ session('success') }}</div>
-            @endif
-            @if(session('info'))
-                <div class="od-alert od-alert--info">{{ session('info') }}</div>
-            @endif
-            @if(session('error'))
-                <div class="od-alert od-alert--error">{{ session('error') }}</div>
-            @endif
-            @if($errors->any())
+            <?php endif; ?>
+            <?php if(session('success')): ?>
+                <div class="od-alert od-alert--success"><?php echo e(session('success')); ?></div>
+            <?php endif; ?>
+            <?php if(session('info')): ?>
+                <div class="od-alert od-alert--info"><?php echo e(session('info')); ?></div>
+            <?php endif; ?>
+            <?php if(session('error')): ?>
+                <div class="od-alert od-alert--error"><?php echo e(session('error')); ?></div>
+            <?php endif; ?>
+            <?php if($errors->any()): ?>
                 <div class="od-alert od-alert--error">
                     <ul>
-                        @foreach($errors->all() as $error)
-                            <li>{{ $error }}</li>
-                        @endforeach
+                        <?php $__currentLoopData = $errors->all(); $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $error): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                            <li><?php echo e($error); ?></li>
+                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                     </ul>
                 </div>
-            @endif
+            <?php endif; ?>
 
             <!-- Welcome hero -->
             <section class="od-hero psu-banner">
-                {!! $wavesSvg !!}
+                <?php echo $wavesSvg; ?>
+
                 <div class="od-hero__text">
-                    <p class="od-hero__eyebrow">{{ $greeting }}</p>
-                    <h2 class="od-hero__title">{{ $user->name }}</h2>
+                    <p class="od-hero__eyebrow"><?php echo e($greeting); ?></p>
+                    <h2 class="od-hero__title"><?php echo e($user->name); ?></h2>
                     <p class="od-hero__sub">
-                        You submitted <strong>{{ $monthSubmitted }}</strong> request(s) this month,
-                        <strong>{{ $monthApproved }}</strong> of which were approved.
+                        You submitted <strong><?php echo e($monthSubmitted); ?></strong> request(s) this month,
+                        <strong><?php echo e($monthApproved); ?></strong> of which were approved.
                     </p>
                 </div>
             </section>
 
             <!-- Stats -->
             <section class="od-stats" aria-label="Summary">
-                @foreach([
+                <?php $__currentLoopData = [
                     ['Total events', $totalEvents ?? 0, ''],
                     ['Upcoming events', $upcomingEvents ?? 0, ''],
                     ['Pending requests', $pendingCount ?? 0, 'pending'],
                     ['Approved requests', $approvedCount ?? 0, 'approved'],
                     ['Rejected requests', $rejectedCount ?? 0, 'rejected'],
                     ['Cancelled requests', $cancelledCount ?? 0, 'cancelled'],
-                ] as [$label, $value, $modifier])
-                    <div class="od-stat {{ $modifier ? 'od-stat--' . $modifier : '' }}">
-                        <p class="od-stat__label">{{ $label }}</p>
-                        <p class="od-stat__value">{{ $value }}</p>
+                ]; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as [$label, $value, $modifier]): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                    <div class="od-stat <?php echo e($modifier ? 'od-stat--' . $modifier : ''); ?>">
+                        <p class="od-stat__label"><?php echo e($label); ?></p>
+                        <p class="od-stat__value"><?php echo e($value); ?></p>
                         <div class="od-stat__bar"></div>
                     </div>
-                @endforeach
+                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
             </section>
 
             <!-- ===== Tab: Calendar ===== -->
@@ -249,48 +251,48 @@
             <section id="request-form" class="od-card">
                 <div class="od-card__head">
                     <div>
-                        <h2 class="od-card__title">{{ old('edit_id') ? 'Edit request' : 'Request a venue' }}</h2>
+                        <h2 class="od-card__title"><?php echo e(old('edit_id') ? 'Edit request' : 'Request a venue'); ?></h2>
                         <p class="od-card__sub">The Planning Office reviews every request and checks for schedule conflicts.</p>
                     </div>
                 </div>
 
-                @if(old('edit_id'))
+                <?php if(old('edit_id')): ?>
                     <div class="od-alert od-alert--info" style="justify-content:space-between">
-                        <span>Editing request #{{ old('edit_id') }}.</span>
-                        <a href="{{ route('office.dashboard') }}#request-form" class="od-link">Cancel edit</a>
+                        <span>Editing request #<?php echo e(old('edit_id')); ?>.</span>
+                        <a href="<?php echo e(route('office.dashboard')); ?>#request-form" class="od-link">Cancel edit</a>
                     </div>
-                @endif
+                <?php endif; ?>
 
-                @if($favoriteVenues->count())
+                <?php if($favoriteVenues->count()): ?>
                     <div style="margin-bottom:18px">
                         <p class="od-section-label">Favorite venues</p>
                         <div class="od-chips">
-                            @foreach($favoriteVenues as $fav)
-                                <button type="button" class="od-chip favorite-venue-chip" data-venue="{{ $fav->venue_name }}" data-campus="{{ $fav->campus }}">★ {{ $fav->venue_name }}</button>
-                            @endforeach
+                            <?php $__currentLoopData = $favoriteVenues; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $fav): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                <button type="button" class="od-chip favorite-venue-chip" data-venue="<?php echo e($fav->venue_name); ?>" data-campus="<?php echo e($fav->campus); ?>">★ <?php echo e($fav->venue_name); ?></button>
+                            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                         </div>
                     </div>
-                @endif
+                <?php endif; ?>
 
-                <form id="venue-request-form" action="{{ route('office.request') }}" method="POST" enctype="multipart/form-data" class="od-form" data-availability-url="{{ route('office.availability') }}">
-                    @csrf
-                    <input type="hidden" name="edit_id" value="{{ old('edit_id') }}">
+                <form id="venue-request-form" action="<?php echo e(route('office.request')); ?>" method="POST" enctype="multipart/form-data" class="od-form" data-availability-url="<?php echo e(route('office.availability')); ?>">
+                    <?php echo csrf_field(); ?>
+                    <input type="hidden" name="edit_id" value="<?php echo e(old('edit_id')); ?>">
 
                     <div class="od-form-grid">
                         <label class="od-field">
                             <span class="od-label">Event Title</span>
-                            <input type="text" name="title" value="{{ old('title') }}" required class="od-input" />
+                            <input type="text" name="title" value="<?php echo e(old('title')); ?>" required class="od-input" />
                         </label>
                         <label class="od-field">
                             <span class="od-label">
                                 Venue Name
                                 <button type="button" id="favorite-toggle-btn" class="od-link">☆ Save as favorite</button>
                             </span>
-                            <input type="text" id="venue_name_input" name="venue_name" value="{{ old('venue_name') }}" required autocomplete="off" list="venue-options" class="od-input" />
+                            <input type="text" id="venue_name_input" name="venue_name" value="<?php echo e(old('venue_name')); ?>" required autocomplete="off" list="venue-options" class="od-input" />
                             <datalist id="venue-options">
-                                @foreach($venueOptions ?? [] as $venueOption)
-                                    <option value="{{ $venueOption }}"></option>
-                                @endforeach
+                                <?php $__currentLoopData = $venueOptions ?? []; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $venueOption): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                    <option value="<?php echo e($venueOption); ?>"></option>
+                                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                             </datalist>
                         </label>
                     </div>
@@ -300,18 +302,18 @@
                             <span class="od-label">Campus</span>
                             <select name="campus" id="campus_select" required class="od-input">
                                 <option value="">Select campus</option>
-                                @foreach(['Alaminos Campus', 'Lingayen Campus', 'Binmaley Campus'] as $campus)
-                                    <option value="{{ $campus }}" {{ old('campus') === $campus ? 'selected' : '' }}>{{ $campus }}</option>
-                                @endforeach
+                                <?php $__currentLoopData = ['Alaminos Campus', 'Lingayen Campus', 'Binmaley Campus']; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $campus): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                    <option value="<?php echo e($campus); ?>" <?php echo e(old('campus') === $campus ? 'selected' : ''); ?>><?php echo e($campus); ?></option>
+                                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                             </select>
                         </label>
                         <label class="od-field">
                             <span class="od-label">SDG alignment (optional)</span>
                             <select name="sdg_number" class="od-input">
                                 <option value="">Not aligned to an SDG</option>
-                                @foreach(['No Poverty', 'Zero Hunger', 'Good Health and Well-being', 'Quality Education', 'Gender Equality', 'Clean Water and Sanitation', 'Affordable and Clean Energy', 'Decent Work and Economic Growth', 'Industry, Innovation and Infrastructure', 'Reduced Inequalities', 'Sustainable Cities and Communities', 'Responsible Consumption and Production', 'Climate Action', 'Life Below Water', 'Life on Land', 'Peace, Justice and Strong Institutions', 'Partnerships for the Goals'] as $index => $sdg)
-                                    <option value="{{ $index + 1 }}" {{ (string) old('sdg_number') === (string) ($index + 1) ? 'selected' : '' }}>SDG {{ $index + 1 }}: {{ $sdg }}</option>
-                                @endforeach
+                                <?php $__currentLoopData = ['No Poverty', 'Zero Hunger', 'Good Health and Well-being', 'Quality Education', 'Gender Equality', 'Clean Water and Sanitation', 'Affordable and Clean Energy', 'Decent Work and Economic Growth', 'Industry, Innovation and Infrastructure', 'Reduced Inequalities', 'Sustainable Cities and Communities', 'Responsible Consumption and Production', 'Climate Action', 'Life Below Water', 'Life on Land', 'Peace, Justice and Strong Institutions', 'Partnerships for the Goals']; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $index => $sdg): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                    <option value="<?php echo e($index + 1); ?>" <?php echo e((string) old('sdg_number') === (string) ($index + 1) ? 'selected' : ''); ?>>SDG <?php echo e($index + 1); ?>: <?php echo e($sdg); ?></option>
+                                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                             </select>
                         </label>
                     </div>
@@ -319,11 +321,11 @@
                     <div class="od-form-grid">
                         <label class="od-field">
                             <span class="od-label">Start Date</span>
-                            <input type="datetime-local" id="start_datetime_input" name="start_datetime" value="{{ old('start_datetime') }}" required class="od-input" />
+                            <input type="datetime-local" id="start_datetime_input" name="start_datetime" value="<?php echo e(old('start_datetime')); ?>" required class="od-input" />
                         </label>
                         <label class="od-field">
                             <span class="od-label">End Date</span>
-                            <input type="datetime-local" id="end_datetime_input" name="end_datetime" value="{{ old('end_datetime') }}" required class="od-input" />
+                            <input type="datetime-local" id="end_datetime_input" name="end_datetime" value="<?php echo e(old('end_datetime')); ?>" required class="od-input" />
                         </label>
                     </div>
 
@@ -341,17 +343,17 @@
 
                     <label class="od-field">
                         <span class="od-label">Description</span>
-                        <textarea name="description" rows="4" class="od-input">{{ old('description') }}</textarea>
+                        <textarea name="description" rows="4" class="od-input"><?php echo e(old('description')); ?></textarea>
                     </label>
 
                     <label class="od-field">
                         <span class="od-label">Supporting Documents</span>
-                        <p class="od-hint">Optional files for the request. Allowed: pdf, jpg, jpeg, png, doc, docx. @if(old('edit_id'))Leave empty to keep the previously uploaded files.@endif</p>
+                        <p class="od-hint">Optional files for the request. Allowed: pdf, jpg, jpeg, png, doc, docx. <?php if(old('edit_id')): ?>Leave empty to keep the previously uploaded files.<?php endif; ?></p>
                         <input type="file" name="digital_documents[]" multiple class="od-file" />
                     </label>
 
                     <div class="od-submit-row">
-                        <button type="submit" id="venue-request-submit" class="od-btn od-btn--primary">{{ old('edit_id') ? 'Update Request' : 'Request Venue' }}</button>
+                        <button type="submit" id="venue-request-submit" class="od-btn od-btn--primary"><?php echo e(old('edit_id') ? 'Update Request' : 'Request Venue'); ?></button>
                         <p id="submit-conflict-note" class="od-submit-note hidden">This time conflicts with another booking. You can still submit — it will be flagged for the Planning Office to resolve.</p>
                     </div>
                 </form>
@@ -364,16 +366,16 @@
                     <button type="button" onclick="window.print()" class="od-btn od-btn--ghost od-btn--sm no-print">Print / Save as PDF</button>
                 </div>
 
-                <form id="request-filter-form" method="GET" action="{{ route('office.dashboard') }}#request-status" class="no-print">
+                <form id="request-filter-form" method="GET" action="<?php echo e(route('office.dashboard')); ?>#request-status" class="no-print">
                     <div class="od-filters">
-                        <input type="search" name="q" value="{{ $filterQuery ?? '' }}" placeholder="Search title or venue..." autocomplete="off" class="od-input od-input--sm" aria-label="Search title or venue" />
+                        <input type="search" name="q" value="<?php echo e($filterQuery ?? ''); ?>" placeholder="Search title or venue..." autocomplete="off" class="od-input od-input--sm" aria-label="Search title or venue" />
                         <select name="status" class="od-input od-input--sm" aria-label="Status">
-                            @foreach(['all' => 'All status', 'pending' => 'Pending', 'conflict' => 'Conflict review', 'approved' => 'Approved', 'rejected' => 'Rejected', 'cancelled' => 'Cancelled'] as $value => $label)
-                                <option value="{{ $value }}" {{ ($filterStatus ?? 'all') === $value ? 'selected' : '' }}>{{ $label }}</option>
-                            @endforeach
+                            <?php $__currentLoopData = ['all' => 'All status', 'pending' => 'Pending', 'conflict' => 'Conflict review', 'approved' => 'Approved', 'rejected' => 'Rejected', 'cancelled' => 'Cancelled']; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $value => $label): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                <option value="<?php echo e($value); ?>" <?php echo e(($filterStatus ?? 'all') === $value ? 'selected' : ''); ?>><?php echo e($label); ?></option>
+                            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                         </select>
-                        <input type="date" name="from" value="{{ $filterFrom ?? '' }}" class="od-input od-input--sm" aria-label="From date" />
-                        <input type="date" name="to" value="{{ $filterTo ?? '' }}" class="od-input od-input--sm" aria-label="To date" />
+                        <input type="date" name="from" value="<?php echo e($filterFrom ?? ''); ?>" class="od-input od-input--sm" aria-label="From date" />
+                        <input type="date" name="to" value="<?php echo e($filterTo ?? ''); ?>" class="od-input od-input--sm" aria-label="To date" />
                     </div>
                     <div class="od-filters__foot">
                         <button type="reset" class="od-btn od-btn--ghost od-btn--sm">Reset</button>
@@ -393,31 +395,31 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach($officeRequests ?? [] as $r)
+                            <?php $__currentLoopData = $officeRequests ?? []; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $r): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                                 <tr class="request-row"
-                                    data-search="{{ mb_strtolower($r->title . ' ' . $r->venue_name) }}"
-                                    data-status="{{ $r->status }}"
-                                    data-date="{{ $r->start_datetime?->toDateString() }}">
-                                    <td class="od-table__title">{{ $r->title }}</td>
-                                    <td>{{ $r->venue_name }}</td>
-                                    <td>{{ $r->start_datetime?->format('M d, Y') }}</td>
-                                    <td><span class="od-badge od-badge--{{ $r->status }}">{{ $statusLabel($r->status) }}</span></td>
+                                    data-search="<?php echo e(mb_strtolower($r->title . ' ' . $r->venue_name)); ?>"
+                                    data-status="<?php echo e($r->status); ?>"
+                                    data-date="<?php echo e($r->start_datetime?->toDateString()); ?>">
+                                    <td class="od-table__title"><?php echo e($r->title); ?></td>
+                                    <td><?php echo e($r->venue_name); ?></td>
+                                    <td><?php echo e($r->start_datetime?->format('M d, Y')); ?></td>
+                                    <td><span class="od-badge od-badge--<?php echo e($r->status); ?>"><?php echo e($statusLabel($r->status)); ?></span></td>
                                     <td class="no-print">
                                         <div class="od-table__actions">
-                                            <a href="{{ route('office.requests.duplicate', $r->id) }}" class="od-link">Duplicate</a>
-                                            @if(in_array($r->status, ['pending', 'conflict']))
+                                            <a href="<?php echo e(route('office.requests.duplicate', $r->id)); ?>" class="od-link">Duplicate</a>
+                                            <?php if(in_array($r->status, ['pending', 'conflict'])): ?>
                                                 <span class="od-table__sep">·</span>
-                                                <a href="{{ route('office.requests.edit', $r->id) }}" class="od-link">Edit</a>
+                                                <a href="<?php echo e(route('office.requests.edit', $r->id)); ?>" class="od-link">Edit</a>
                                                 <span class="od-table__sep">·</span>
-                                                <form method="POST" action="{{ route('office.requests.cancel', $r->id) }}" onsubmit="return confirm('Cancel this request?');">
-                                                    @csrf
+                                                <form method="POST" action="<?php echo e(route('office.requests.cancel', $r->id)); ?>" onsubmit="return confirm('Cancel this request?');">
+                                                    <?php echo csrf_field(); ?>
                                                     <button type="submit" class="od-link od-link--danger">Cancel</button>
                                                 </form>
-                                            @endif
+                                            <?php endif; ?>
                                         </div>
                                     </td>
                                 </tr>
-                            @endforeach
+                            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                             <tr id="request-filter-empty" class="hidden">
                                 <td colspan="5" class="od-table__empty">No requests match your filters.</td>
                             </tr>
@@ -432,67 +434,70 @@
                     <div class="od-card__head">
                         <h2 class="od-card__title">Your request status</h2>
                     </div>
-                    @if(($officeRequests ?? collect())->isEmpty())
+                    <?php if(($officeRequests ?? collect())->isEmpty()): ?>
                         <p class="od-empty">No requests submitted from this account.</p>
-                    @else
+                    <?php else: ?>
                         <ul class="od-timeline">
-                            @foreach($officeRequests as $request)
-                                <li class="od-timeline__item" data-status="{{ $request->status }}">
+                            <?php $__currentLoopData = $officeRequests; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $request): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                <li class="od-timeline__item" data-status="<?php echo e($request->status); ?>">
                                     <div>
-                                        <p class="od-timeline__title">{{ $request->title }}</p>
+                                        <p class="od-timeline__title"><?php echo e($request->title); ?></p>
                                         <p class="od-timeline__meta">
-                                            {{ $request->venue_name }} · {{ $request->start_datetime->format('M j, Y g:i A') }}
-                                            @if($request->end_datetime)
-                                                – {{ $request->end_datetime->isSameDay($request->start_datetime) ? $request->end_datetime->format('g:i A') : $request->end_datetime->format('M j, Y g:i A') }}
-                                            @endif
+                                            <?php echo e($request->venue_name); ?> · <?php echo e($request->start_datetime->format('M j, Y g:i A')); ?>
+
+                                            <?php if($request->end_datetime): ?>
+                                                – <?php echo e($request->end_datetime->isSameDay($request->start_datetime) ? $request->end_datetime->format('g:i A') : $request->end_datetime->format('M j, Y g:i A')); ?>
+
+                                            <?php endif; ?>
                                         </p>
-                                        @if($request->planning_note)
-                                            <p class="od-timeline__note">Planning Office: {{ $request->planning_note }}</p>
-                                        @endif
+                                        <?php if($request->planning_note): ?>
+                                            <p class="od-timeline__note">Planning Office: <?php echo e($request->planning_note); ?></p>
+                                        <?php endif; ?>
                                     </div>
                                     <div class="od-timeline__side">
-                                        <span class="od-badge od-badge--{{ $request->status }}">{{ $statusLabel($request->status) }}</span>
-                                        <a href="{{ route('office.requests.duplicate', $request->id) }}" title="Duplicate" aria-label="Duplicate" class="od-action">⧉</a>
-                                        @if(in_array($request->status, ['pending', 'conflict']))
-                                            <a href="{{ route('office.requests.edit', $request->id) }}" title="Edit" aria-label="Edit" class="od-action">✎</a>
-                                            <form method="POST" action="{{ route('office.requests.cancel', $request->id) }}" onsubmit="return confirm('Cancel this request?');">
-                                                @csrf
+                                        <span class="od-badge od-badge--<?php echo e($request->status); ?>"><?php echo e($statusLabel($request->status)); ?></span>
+                                        <a href="<?php echo e(route('office.requests.duplicate', $request->id)); ?>" title="Duplicate" aria-label="Duplicate" class="od-action">⧉</a>
+                                        <?php if(in_array($request->status, ['pending', 'conflict'])): ?>
+                                            <a href="<?php echo e(route('office.requests.edit', $request->id)); ?>" title="Edit" aria-label="Edit" class="od-action">✎</a>
+                                            <form method="POST" action="<?php echo e(route('office.requests.cancel', $request->id)); ?>" onsubmit="return confirm('Cancel this request?');">
+                                                <?php echo csrf_field(); ?>
                                                 <button type="submit" title="Cancel" aria-label="Cancel" class="od-action od-action--danger">✕</button>
                                             </form>
-                                        @endif
+                                        <?php endif; ?>
                                     </div>
                                 </li>
-                            @endforeach
+                            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                         </ul>
-                    @endif
+                    <?php endif; ?>
                 </section>
 
                 <section id="activity-log" class="od-card no-print">
                     <div class="od-card__head">
                         <h2 class="od-card__title">Recent activity</h2>
                     </div>
-                    @if(($recentActivity ?? collect())->isEmpty())
+                    <?php if(($recentActivity ?? collect())->isEmpty()): ?>
                         <p class="od-empty">No activity yet.</p>
-                    @else
+                    <?php else: ?>
                         <ul class="od-activity">
-                            @foreach($recentActivity as $log)
+                            <?php $__currentLoopData = $recentActivity; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $log): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                                 <li>
-                                    <span>{{ $log->description }}</span>
-                                    <time datetime="{{ $log->created_at->toIso8601String() }}">{{ $log->created_at->diffForHumans() }}</time>
+                                    <span><?php echo e($log->description); ?></span>
+                                    <time datetime="<?php echo e($log->created_at->toIso8601String()); ?>"><?php echo e($log->created_at->diffForHumans()); ?></time>
                                 </li>
-                            @endforeach
+                            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                         </ul>
-                    @endif
+                    <?php endif; ?>
                 </section>
             </div>
         </div>
     </main>
 
     <!-- ================= Settings modal ================= -->
-    <div id="settings-modal" class="od-modal {{ $settingsOpen ? '' : 'hidden' }}" role="dialog" aria-modal="true" aria-labelledby="settings-title">
+    <div id="settings-modal" class="od-modal <?php echo e($settingsOpen ? '' : 'hidden'); ?>" role="dialog" aria-modal="true" aria-labelledby="settings-title">
         <div class="od-modal__panel">
             <div class="od-modal__head psu-banner">
-                {!! $wavesSvg !!}
+                <?php echo $wavesSvg; ?>
+
                 <h2 id="settings-title" class="od-modal__title">Settings</h2>
                 <button type="button" data-settings-close class="od-modal__close" aria-label="Close settings">✕</button>
             </div>
@@ -502,35 +507,49 @@
                 <div id="office-profile" class="od-modal__section">
                     <div class="od-modal__section-head">
                         <h3 class="od-modal__section-title">Office profile</h3>
-                        <div id="profile-view-actions" class="od-modal__links {{ $profileFormOpen ? 'hidden' : '' }}">
+                        <div id="profile-view-actions" class="od-modal__links <?php echo e($profileFormOpen ? 'hidden' : ''); ?>">
                             <button type="button" id="confidential-toggle" class="od-link">Show confidential info</button>
                             <button type="button" id="profile-edit-btn" class="od-link">Edit</button>
                         </div>
                     </div>
 
-                    <form id="profile-form" class="od-form {{ $profileFormOpen ? '' : 'hidden' }}" style="gap:12px" method="POST" action="{{ route('office.profile.update') }}">
-                        @csrf
-                        @method('PATCH')
-                        @foreach([
+                    <form id="profile-form" class="od-form <?php echo e($profileFormOpen ? '' : 'hidden'); ?>" style="gap:12px" method="POST" action="<?php echo e(route('office.profile.update')); ?>">
+                        <?php echo csrf_field(); ?>
+                        <?php echo method_field('PATCH'); ?>
+                        <?php $__currentLoopData = [
                             ['name', 'Office Name', 'text', $user->name, true],
                             ['contact_person', 'Contact Person', 'text', $user->contact_person, false],
                             ['contact_number', 'Contact Number', 'tel', $user->contact_number, false],
                             ['email', 'Email', 'email', $user->email, true],
-                        ] as [$field, $label, $type, $value, $required])
+                        ]; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as [$field, $label, $type, $value, $required]): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                             <label class="od-field">
-                                <span class="od-label">{{ $label }}</span>
-                                <input type="{{ $type }}" name="{{ $field }}" value="{{ old($field, $value) }}" {{ $required ? 'required' : '' }} class="od-input od-input--sm" />
-                                @error($field)
-                                    <span class="od-error">{{ $message }}</span>
-                                @enderror
+                                <span class="od-label"><?php echo e($label); ?></span>
+                                <input type="<?php echo e($type); ?>" name="<?php echo e($field); ?>" value="<?php echo e(old($field, $value)); ?>" <?php echo e($required ? 'required' : ''); ?> class="od-input od-input--sm" />
+                                <?php $__errorArgs = [$field];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?>
+                                    <span class="od-error"><?php echo e($message); ?></span>
+                                <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>
                             </label>
-                        @endforeach
+                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                         <label class="od-field">
                             <span class="od-label">Current Password <span class="od-muted" style="font-weight:400">(required to save changes)</span></span>
                             <input type="password" name="profile_password" required autocomplete="current-password" class="od-input od-input--sm" />
-                            @error('profile_password')
-                                <span class="od-error">{{ $message }}</span>
-                            @enderror
+                            <?php $__errorArgs = ['profile_password'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?>
+                                <span class="od-error"><?php echo e($message); ?></span>
+                            <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>
                         </label>
                         <div class="od-modal__actions">
                             <button type="button" id="profile-cancel-btn" class="od-btn od-btn--ghost od-btn--sm">Cancel</button>
@@ -538,22 +557,22 @@
                         </div>
                     </form>
 
-                    <dl id="profile-view" class="od-profile-grid {{ $profileFormOpen ? 'hidden' : '' }}" style="margin:0">
+                    <dl id="profile-view" class="od-profile-grid <?php echo e($profileFormOpen ? 'hidden' : ''); ?>" style="margin:0">
                         <div>
                             <dt>Office Name</dt>
-                            <dd>{{ $user->name }}</dd>
+                            <dd><?php echo e($user->name); ?></dd>
                         </div>
                         <div>
                             <dt>Contact Person</dt>
-                            <dd class="confidential-value" data-value="{{ $user->contact_person ?: '—' }}">••••••••</dd>
+                            <dd class="confidential-value" data-value="<?php echo e($user->contact_person ?: '—'); ?>">••••••••</dd>
                         </div>
                         <div>
                             <dt>Contact Number</dt>
-                            <dd class="confidential-value" data-value="{{ $user->contact_number ?: '—' }}">••••••••</dd>
+                            <dd class="confidential-value" data-value="<?php echo e($user->contact_number ?: '—'); ?>">••••••••</dd>
                         </div>
                         <div>
                             <dt>Email</dt>
-                            <dd class="confidential-value" data-value="{{ $user->email }}">••••••••</dd>
+                            <dd class="confidential-value" data-value="<?php echo e($user->email); ?>">••••••••</dd>
                         </div>
                     </dl>
                 </div>
@@ -563,22 +582,36 @@
                     <div class="od-modal__section-head">
                         <h3 class="od-modal__section-title">Change password</h3>
                     </div>
-                    <form id="password-form" class="od-form" style="gap:12px" method="POST" action="{{ route('office.password.update') }}">
-                        @csrf
-                        @method('PATCH')
+                    <form id="password-form" class="od-form" style="gap:12px" method="POST" action="<?php echo e(route('office.password.update')); ?>">
+                        <?php echo csrf_field(); ?>
+                        <?php echo method_field('PATCH'); ?>
                         <label class="od-field">
                             <span class="od-label">Current Password</span>
                             <input type="password" name="current_password" required autocomplete="current-password" class="od-input od-input--sm" />
-                            @error('current_password')
-                                <span class="od-error">{{ $message }}</span>
-                            @enderror
+                            <?php $__errorArgs = ['current_password'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?>
+                                <span class="od-error"><?php echo e($message); ?></span>
+                            <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>
                         </label>
                         <label class="od-field">
                             <span class="od-label">New Password</span>
                             <input type="password" name="new_password" required minlength="8" autocomplete="new-password" class="od-input od-input--sm" />
-                            @error('new_password')
-                                <span class="od-error">{{ $message }}</span>
-                            @enderror
+                            <?php $__errorArgs = ['new_password'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?>
+                                <span class="od-error"><?php echo e($message); ?></span>
+                            <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>
                         </label>
                         <label class="od-field">
                             <span class="od-label">Confirm New Password</span>
@@ -605,7 +638,7 @@
             var calendar;
             var eventListEl = document.getElementById('event-list');
             var selectedDateLabelEl = document.getElementById('selected-date-label');
-            var allEvents = {!! isset($events) ? $events->toJson() : '[]' !!};
+            var allEvents = <?php echo isset($events) ? $events->toJson() : '[]'; ?>;
             var campusFilter = document.getElementById('campus-filter');
             var selectedCampus = 'All Campus';
             var selectedDate = new Date();
@@ -1090,8 +1123,8 @@
 
                     var form = document.createElement('form');
                     form.method = 'POST';
-                    form.action = "{{ route('office.favorite-venues.toggle') }}";
-                    form.innerHTML = '@csrf' +
+                    form.action = "<?php echo e(route('office.favorite-venues.toggle')); ?>";
+                    form.innerHTML = '<?php echo csrf_field(); ?>' +
                         '<input type="hidden" name="venue_name" value="' + venue.replace(/"/g, '&quot;') + '">' +
                         '<input type="hidden" name="campus" value="' + campus.replace(/"/g, '&quot;') + '">';
                     document.body.appendChild(form);
@@ -1102,3 +1135,4 @@
     </script>
 </body>
 </html>
+<?php /**PATH C:\capstone system\PSUniCalendarWeb\resources\views\office\dashboard.blade.php ENDPATH**/ ?>

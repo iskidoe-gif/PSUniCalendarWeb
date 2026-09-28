@@ -37,6 +37,7 @@ Route::middleware(['auth', 'role:office'])->prefix('office')->group(function () 
     Route::get('/', [OfficeController::class, 'dashboard'])->name('office.dashboard');
     Route::get('/calendar', [OfficeController::class, 'calendar'])->name('office.calendar');
     Route::post('/request-venue', [OfficeController::class, 'requestVenue'])->name('office.request');
+    Route::get('/check-availability', [OfficeController::class, 'checkAvailability'])->name('office.availability');
 
     // Quick actions / shortcuts
     Route::get('/requests/{id}/duplicate', [OfficeController::class, 'duplicateRequest'])->name('office.requests.duplicate');

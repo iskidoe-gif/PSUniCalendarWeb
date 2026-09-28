@@ -11,6 +11,8 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
+use Illuminate\Support\Carbon;
+use App\Models\Venue;
 
 class OfficeController extends Controller
 {
@@ -85,6 +87,14 @@ class OfficeController extends Controller
         // ---- Favorite venues ----
         $favoriteVenues = FavoriteVenue::where('email', $email)->orderBy('venue_name')->get();
 
+        // ---- Venue names for the request form's autocomplete (exact names matter for conflict checks) ----
+        $venueOptions = Venue::orderBy('name')->pluck('name')
+            ->merge(EventRequest::distinct()->pluck('venue_name'))
+            ->filter()
+            ->unique(fn ($name) => mb_strtolower(trim($name)))
+            ->sort(SORT_NATURAL | SORT_FLAG_CASE)
+            ->values();
+
         // ---- Recent activity log ----
         $recentActivity = ActivityLog::where('email', $email)->latest()->limit(8)->get();
 
@@ -106,13 +116,94 @@ class OfficeController extends Controller
             'unreadNotifications',
             'reminder',
             'favoriteVenues',
-            'recentActivity'
+            'recentActivity',
+            'venueOptions'
         ));
     }
 
     public function calendar(Request $request)
     {
         return $this->dashboard($request);
+    }
+
+    /**
+     * Live availability check for the request form (called while the office is typing).
+     * Uses the same EventConflictChecker as requestVenue(), so the result always
+     * matches what happens on submit.
+     */
+    public function checkAvailability(Request $request, EventConflictChecker $conflictChecker)
+    {
+        $validated = $request->validate([
+            'venue_name' => 'required|string|max:255',
+            'campus' => 'nullable|string|max:255',
+            'start_datetime' => 'required|date',
+            'end_datetime' => 'required|date|after:start_datetime',
+            'edit_id' => 'nullable|integer',
+        ]);
+
+        $user = Auth::user();
+        $venue = trim($validated['venue_name']);
+        $campus = $validated['campus'] ?? null;
+        $start = Carbon::parse($validated['start_datetime']);
+        $end = Carbon::parse($validated['end_datetime']);
+
+        // Only exclude a request this office actually owns
+        $excludeId = null;
+        if (! empty($validated['edit_id'])) {
+            $excludeId = EventRequest::where('id', $validated['edit_id'])->where('email', $user->email)->value('id');
+        }
+
+        $present = function (EventRequest $event) use ($user) {
+            $isOwn = $event->email === $user->email;
+
+            return [
+                // Other offices' unapproved requests stay private: show who, not what
+                'title' => ($isOwn || $event->status === 'approved') ? $event->title : 'Reserved — awaiting review',
+                'office' => $isOwn ? 'Your office' : $event->name,
+                'status' => $event->status,
+                'is_own' => $isOwn,
+                'time' => $this->formatRange($event->start_datetime, $event->end_datetime),
+            ];
+        };
+
+        $conflicts = $conflictChecker->find($venue, $campus, $start, $end, $excludeId);
+
+        $suggestion = null;
+        if ($conflicts->isNotEmpty()) {
+            $slot = $conflictChecker->nextAvailableSlot($venue, $campus, $start, $end, $excludeId);
+            if ($slot) {
+                $suggestion = [
+                    'start' => $slot[0]->format('Y-m-d\TH:i'),
+                    'end' => $slot[1]->format('Y-m-d\TH:i'),
+                    'label' => $this->formatRange($slot[0], $slot[1]),
+                ];
+            }
+        }
+
+        $daySchedule = $conflictChecker
+            ->find($venue, $campus, $start->copy()->startOfDay(), $start->copy()->endOfDay(), $excludeId)
+            ->sortBy('start_datetime')
+            ->values();
+
+        return response()->json([
+            'state' => $conflicts->isEmpty() ? 'available' : 'conflict',
+            'venue' => $venue,
+            'requested' => $this->formatRange($start, $end),
+            'in_past' => $start->isPast(),
+            'conflicts' => $conflicts->map($present)->values(),
+            'suggestion' => $suggestion,
+            'day' => [
+                'label' => $start->format('l, M j, Y'),
+                'events' => $daySchedule->map($present)->values(),
+            ],
+        ]);
+    }
+
+    private function formatRange(Carbon $start, Carbon $end): string
+    {
+        return $start->isSameDay($end)
+            ? $start->format('M j, Y g:i A') . ' – ' . $end->format('g:i A')
+            : $start->format('M j, Y g:i A') . ' – ' . $end->format('M j, Y g:i A');
     }
 
     public function requestVenue(Request $request, EventConflictChecker $conflictChecker)
@@ -137,11 +228,13 @@ class OfficeController extends Controller
             $files[] = $file->store('event-documents', 'public');
         }
 
+        // When editing, the request must not count as conflicting with itself
         $conflicts = $conflictChecker->find(
             $request->input('venue_name'),
             $request->input('campus'),
             $request->input('start_datetime'),
-            $request->input('end_datetime')
+            $request->input('end_datetime'),
+            $editId ? (int) $editId : null
         );
 
         // ---- Editing an existing pending request ----

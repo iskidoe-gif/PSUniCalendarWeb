@@ -1,0 +1,37 @@
+/* Office Login page — PSU portal styling */
+
+body {
+    font-family: 'Inter', system-ui, sans-serif;
+}
+
+/* Blue banner (header + footer) */
+.psu-banner {
+    background: linear-gradient(180deg, #4a5690 0%, #56639f 55%, #4b5892 100%);
+}
+
+/* Serif university name / headings */
+.psu-serif {
+    font-family: 'Cinzel', 'Times New Roman', serif;
+    letter-spacing: .02em;
+}
+
+/* Gold "OFFICE LOGIN" / "OFFICE PORTAL" title */
+.psu-portal {
+    font-family: 'Archivo Black', Impact, sans-serif;
+    color: #f2c318;
+    -webkit-text-stroke: 1px #b58a00;
+    text-shadow: 0 3px 4px rgba(0, 0, 0, .35);
+}
+
+/* Gold stripe under the banner and on top of the card */
+.psu-stripe {
+    background: linear-gradient(180deg, #f7d54a 0%, #e0a800 60%, #b88600 100%);
+}
+
+/* Yellow-tinted focus state on the inputs */
+.psu-input:focus {
+    background: #fffbe6;
+    border-color: #4a5690;
+    box-shadow: 0 0 0 3px rgba(242, 195, 24, .45);
+    outline: none;
+}

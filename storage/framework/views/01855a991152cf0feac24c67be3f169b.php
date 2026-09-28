@@ -143,4 +143,4 @@
     <?php echo $__env->yieldPushContent('scripts'); ?>
 </body>
 </html>
-<?php /**PATH C:\PSUniCalendarWeb\resources\views/layouts/planning-office.blade.php ENDPATH**/ ?>
+<?php /**PATH C:\capstone system\PSUniCalendarWeb\resources\views\layouts\planning-office.blade.php ENDPATH**/ ?>
