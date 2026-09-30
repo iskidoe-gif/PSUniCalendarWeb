@@ -22,6 +22,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Archivo+Black&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.css" rel="stylesheet">
+    <link href="{{ asset('css/event-calendar.css') }}" rel="stylesheet">
     <link href="{{ asset('css/office-dashboard.css') }}" rel="stylesheet">
 </head>
 <body class="od-body">
@@ -235,13 +236,6 @@
                         </label>
                     </div>
                     <div id="admin-calendar" class="od-calendar"></div>
-                </section>
-
-                <section id="selected-date-events" class="od-card">
-                    <div class="od-card__head">
-                        <h2 id="selected-date-label" class="od-card__title">Events for selected date</h2>
-                    </div>
-                    <div id="event-list" class="od-events"></div>
                 </section>
             </div>
 
@@ -595,80 +589,19 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
+    <script src="{{ asset('js/event-calendar.js') }}"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            var calendarEl = document.getElementById('admin-calendar');
             var calendarPanel = document.getElementById('calendar-panel');
             var requestForm = document.getElementById('request-form');
             var requestStatus = document.getElementById('request-status');
             var navLinks = document.querySelectorAll('[data-nav-section]');
             var calendar;
-            var eventListEl = document.getElementById('event-list');
-            var selectedDateLabelEl = document.getElementById('selected-date-label');
-            var allEvents = {!! isset($events) ? $events->toJson() : '[]' !!};
-            var campusFilter = document.getElementById('campus-filter');
-            var selectedCampus = 'All Campus';
-            var selectedDate = new Date();
 
             function escapeHtml(value) {
                 return String(value == null ? '' : value).replace(/[&<>"']/g, function (c) {
                     return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
                 });
-            }
-
-            function getFilteredEvents() {
-                if (selectedCampus === 'All Campus') {
-                    return allEvents;
-                }
-
-                return allEvents.filter(function (event) {
-                    return event.campus === selectedCampus;
-                });
-            }
-
-            function formatDateLabel(dateString) {
-                var date = new Date(dateString);
-                return date.toLocaleDateString('en-US', {
-                    month: 'long',
-                    day: 'numeric',
-                    year: 'numeric'
-                });
-            }
-
-            function isSameDate(dateA, dateB) {
-                return dateA.getFullYear() === dateB.getFullYear() &&
-                    dateA.getMonth() === dateB.getMonth() &&
-                    dateA.getDate() === dateB.getDate();
-            }
-
-            function renderEventsForDate(date) {
-                selectedDate = new Date(date);
-                var matches = getFilteredEvents().filter(function (event) {
-                    if (!event.start) return false;
-                    var eventDate = new Date(event.start);
-                    return isSameDate(eventDate, selectedDate);
-                });
-
-                selectedDateLabelEl.textContent = 'Events for ' + formatDateLabel(date);
-
-                if (!matches.length) {
-                    eventListEl.innerHTML = '<div class="od-empty">No events scheduled for this date.</div>';
-                    return;
-                }
-
-                eventListEl.innerHTML = matches.map(function (event) {
-                    var start = event.start ? new Date(event.start) : null;
-                    var end = event.end ? new Date(event.end) : null;
-                    var startText = start ? start.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }) : 'All day';
-                    var endText = end ? end.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }) : '';
-
-                    return '<div class="od-event">' +
-                        '<div class="od-event__title">' + escapeHtml(event.title || 'Untitled Event') + '</div>' +
-                        '<span class="od-event__venue">' + escapeHtml(event.venue || 'Venue TBD') + '</span>' +
-                        '<div class="od-event__time">' + startText + (endText ? ' – ' + endText : '') + '</div>' +
-                        '<div class="od-event__desc">' + escapeHtml(event.description || 'No description provided.') + '</div>' +
-                        '</div>';
-                }).join('');
             }
 
             function setActiveSection(section) {
@@ -798,55 +731,11 @@
                 link.addEventListener('click', function () { setSidebarOpen(false); });
             });
 
-            calendar = new FullCalendar.Calendar(calendarEl, {
-                initialView: 'dayGridMonth',
-                headerToolbar: {
-                    left: 'prev,next today',
-                    center: 'title',
-                    right: 'dayGridMonth,timeGridWeek,timeGridDay'
-                },
-                events: getFilteredEvents(),
-                dateClick: function(info) {
-                    renderEventsForDate(new Date(info.date));
-                },
-                eventDidMount: function(info) {
-                    info.el.classList.add('od-fc-chip');
-
-                    var tooltip = [info.event.extendedProps.venue, info.event.extendedProps.description].filter(Boolean).join('\n');
-                    if (tooltip) {
-                        info.el.setAttribute('title', tooltip);
-                    }
-                },
-                eventContent: function() {
-                    return { html: '<span class="fc-event-title">+1 event</span>' };
-                },
-                height: 'auto',
-                contentHeight: 620,
-                windowResize: function() {
-                    if (calendar) {
-                        calendar.updateSize();
-                    }
-                }
-            });
-
-            if (campusFilter) {
-                campusFilter.addEventListener('change', function () {
-                    selectedCampus = this.value;
-                    calendar.removeAllEvents();
-                    calendar.addEventSource(getFilteredEvents());
-                    renderEventsForDate(selectedDate);
-                });
-            }
-
-            calendar.render();
-            renderEventsForDate(selectedDate);
-
-            window.addEventListener('resize', function () {
-                if (calendar) {
-                    requestAnimationFrame(function () {
-                        calendar.updateSize();
-                    });
-                }
+            // Shared calendar: titles on the calendar, multi-day spans, click for details
+            calendar = UniEventCalendar.init({
+                calendarEl: document.getElementById('admin-calendar'),
+                events: {!! isset($events) ? $events->toJson() : '[]' !!},
+                campusFilterEl: document.getElementById('campus-filter')
             });
 
             // ---- Notification bell dropdown ----

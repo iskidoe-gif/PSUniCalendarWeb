@@ -29,6 +29,7 @@ class PlanningOfficeController extends Controller
                 'venue' => $event->venue_name,
                 'campus' => $this->resolveCampus($event),
                 'sdg_number' => $event->sdg_number,
+                'office' => $event->name,
             ];
         });
 

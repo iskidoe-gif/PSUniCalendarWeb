@@ -4,6 +4,7 @@
 
 @push('head')
     <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.css" rel="stylesheet">
+    <link href="{{ asset('css/event-calendar.css') }}" rel="stylesheet">
 @endpush
 
 @section('content')
@@ -88,7 +89,7 @@
         <div class="flex items-center justify-between mb-4">
             <h2 id="selected-date-label" class="text-lg font-bold text-gray-800">Events for selected date</h2>
         </div>
-        <div id="event-list" class="space-y-3"></div>
+        <div id="event-list"></div>
     </div>
 
     <div class="bg-white rounded-xl shadow-sm border border-gray-200 mb-8 p-6">
@@ -110,127 +111,21 @@
 @push('scripts')
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="{{ asset('js/event-calendar.js') }}"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             const calendarEl = document.getElementById('planning-office-calendar');
-            const eventListEl = document.getElementById('event-list');
-            const selectedDateLabelEl = document.getElementById('selected-date-label');
-            if (!calendarEl || !eventListEl || !selectedDateLabelEl) return;
+            if (!calendarEl) return;
 
-            const allEvents = {!! $events->toJson() !!};
-            const campusFilter = document.getElementById('campus-filter');
-            let selectedCampus = 'All Campus';
-            let selectedDate = new Date();
+            const allEvents = {!! $events->toJson() !!};   // also used by the monthly chart below
 
-            function getFilteredEvents() {
-                if (selectedCampus === 'All Campus') {
-                    return allEvents;
-                }
-
-                return allEvents.filter(function (event) {
-                    return event.campus === selectedCampus;
-                });
-            }
-
-            function formatDateLabel(dateString) {
-                const date = new Date(dateString);
-                return date.toLocaleDateString('en-US', {
-                    month: 'long',
-                    day: 'numeric',
-                    year: 'numeric'
-                });
-            }
-
-            function isSameDate(dateA, dateB) {
-                return dateA.getFullYear() === dateB.getFullYear() &&
-                    dateA.getMonth() === dateB.getMonth() &&
-                    dateA.getDate() === dateB.getDate();
-            }
-
-            function renderEventsForDate(date) {
-                selectedDate = new Date(date);
-                const matches = getFilteredEvents().filter(function (event) {
-                    if (!event.start) return false;
-                    const eventDate = new Date(event.start);
-                    return isSameDate(eventDate, selectedDate);
-                });
-
-                selectedDateLabelEl.textContent = 'Events for ' + formatDateLabel(date);
-
-                if (!matches.length) {
-                    eventListEl.innerHTML = '<div class="rounded-xl border border-dashed border-slate-300 bg-slate-50 px-4 py-5 text-sm text-slate-500">No events scheduled for this date.</div>';
-                    return;
-                }
-
-                eventListEl.innerHTML = matches.map(function (event) {
-                    const start = event.start ? new Date(event.start) : null;
-                    const end = event.end ? new Date(event.end) : null;
-                    const startText = start ? start.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }) : 'All day';
-                    const endText = end ? end.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }) : '';
-
-                    return '<div class="rounded-xl border border-slate-200 bg-slate-50 p-4">' +
-                        '<div class="flex items-center justify-between gap-4">' +
-                        '<div class="font-semibold text-slate-800">' + (event.title || 'Untitled Event') + '</div>' +
-                        '<span class="text-xs font-medium rounded-full bg-indigo-100 text-indigo-700 px-2 py-1">' + (event.venue || 'Venue TBD') + '</span>' +
-                        '</div>' +
-                        '<div class="mt-2 text-sm text-slate-600">' + startText + (endText ? ' - ' + endText : '') + '</div>' +
-                        '<div class="mt-1 text-sm text-slate-500">' + (event.description || 'No description provided.') + '</div>' +
-                        '</div>';
-                }).join('');
-            }
-
-            let calendar = null;
-
-            calendar = new FullCalendar.Calendar(calendarEl, {
-                initialView: 'dayGridMonth',
-                headerToolbar: {
-                    left: 'prev,next today',
-                    center: 'title',
-                    right: 'dayGridMonth,timeGridWeek,timeGridDay'
-                },
-                events: getFilteredEvents(),
-                dateClick: function(info) {
-                    renderEventsForDate(new Date(info.date));
-                },
-                eventDidMount: function(info) {
-                    const count = 1;
-                    info.el.textContent = '+' + count + ' event';
-                    info.el.classList.add('!text-[10px]', '!px-1', '!py-0', '!leading-none', '!truncate', '!overflow-hidden', '!rounded-sm', '!m-0', '!w-auto', '!inline-block');
-
-                    const tooltip = [info.event.extendedProps.venue, info.event.extendedProps.description]
-                        .filter(Boolean)
-                        .join('\n');
-
-                    if (tooltip) {
-                        info.el.setAttribute('title', tooltip);
-                    }
-                },
-                eventContent: function(arg) {
-                    const count = 1;
-                    return {
-                        html: '<div class="fc-event-title !text-[10px] !leading-none !px-1 !py-0 !m-0 !truncate !overflow-hidden !w-auto !inline-block">+' + count + ' event</div>'
-                    };
-                },
-                height: 'auto',
-                contentHeight: 620,
-                windowResize: function() {
-                    if (calendar) {
-                        calendar.updateSize();
-                    }
-                }
+            const calendar = UniEventCalendar.init({
+                calendarEl: calendarEl,
+                events: allEvents,
+                campusFilterEl: document.getElementById('campus-filter'),
+                listEl: document.getElementById('event-list'),
+                listLabelEl: document.getElementById('selected-date-label')
             });
-
-            if (campusFilter) {
-                campusFilter.addEventListener('change', function () {
-                    selectedCampus = this.value;
-                    calendar.removeAllEvents();
-                    calendar.addEventSource(getFilteredEvents());
-                    renderEventsForDate(selectedDate);
-                });
-            }
-
-            calendar.render();
-            renderEventsForDate(selectedDate);
 
             const campusChartCanvas = document.getElementById('campus-monthly-chart');
             const campusTrendMonthSelect = document.getElementById('campus-trend-month-select');

@@ -24,6 +24,8 @@ class AdminController extends Controller
                     'description' => $event->description,
                     'venue' => $event->venue_name,
                     'campus' => $this->resolveCampus($event),
+                    'office' => $event->name,
+                    'sdg_number' => $event->sdg_number,
                 ];
             });
 

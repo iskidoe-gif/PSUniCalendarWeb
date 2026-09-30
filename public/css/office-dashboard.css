@@ -421,7 +421,7 @@ button { font: inherit; cursor: pointer; }
 
 .od-calendar-layout {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) 300px;
+    grid-template-columns: minmax(0, 1fr);
     gap: 24px;
     margin-bottom: 24px;
 }
@@ -646,26 +646,6 @@ textarea.od-input { resize: vertical; }
 .od-activity li:first-child { border-top: 0; padding-top: 0; }
 .od-activity time { flex: none; font-size: 11.5px; color: var(--faint); }
 
-.od-events { display: flex; flex-direction: column; gap: 10px; }
-.od-event {
-    padding: 12px 14px;
-    border: 1px solid var(--border);
-    border-left: 4px solid var(--gold-500);
-    border-radius: 12px;
-    background: var(--navy-50);
-}
-.od-event__title { font-weight: 600; color: var(--navy-800); }
-.od-event__venue {
-    display: inline-block;
-    margin-top: 4px;
-    padding: 2px 8px;
-    border-radius: 999px;
-    background: var(--navy-100);
-    color: var(--navy-700);
-    font-size: 11.5px; font-weight: 600;
-}
-.od-event__time { margin-top: 6px; font-size: 12.5px; color: var(--muted); }
-.od-event__desc { margin-top: 2px; font-size: 12.5px; color: var(--muted); }
 .od-empty {
     padding: 18px 14px;
     border: 1px dashed #cfd3e3;
@@ -713,19 +693,6 @@ textarea.od-input { resize: vertical; }
 }
 .od-calendar .fc .fc-daygrid-day:hover { background: #fafbff; cursor: pointer; }
 
-/* Compact "+1 event" chip */
-.od-fc-chip {
-    display: inline-block !important;
-    width: auto !important;
-    margin: 0 !important;
-    padding: 1px 6px !important;
-    overflow: hidden;
-    border-radius: 6px !important;
-    font-size: 10.5px !important;
-    line-height: 1.3 !important;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-}
 
 /* ==========================================================================
    Settings modal

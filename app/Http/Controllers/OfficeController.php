@@ -34,6 +34,8 @@ class OfficeController extends Controller
                     'description' => $event->description,
                     'venue' => $event->venue_name,
                     'campus' => $event->campus ?? 'All Campus',
+                    'office' => $event->name,
+                    'sdg_number' => $event->sdg_number,
                 ];
             });
 

@@ -28,6 +28,7 @@ class UserController extends Controller
                     'venue' => $event->venue_name,
                     'campus' => $campus,
                     'sdg_number' => $event->sdg_number,
+                    'office' => $event->name,
                 ];
             });
 

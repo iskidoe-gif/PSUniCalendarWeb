@@ -5,7 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
-        <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.css" rel="stylesheet">
+    <link href="{{ asset('css/event-calendar.css') }}" rel="stylesheet">
 </head>
 <body class="bg-slate-100 min-h-screen">
     <div class="mx-auto max-w-6xl p-6">
@@ -187,9 +188,9 @@
         </div>
 
         <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
+        <script src="{{ asset('js/event-calendar.js') }}"></script>
         <script>
             document.addEventListener('DOMContentLoaded', function() {
-                var calendarEl = document.getElementById('admin-calendar');
                 var calendarPanel = document.getElementById('calendar-panel');
                 var requestForm = document.getElementById('request-form');
                 var requestStatus = document.getElementById('request-status');
@@ -197,69 +198,6 @@
                 var activeNavClass = ['bg-indigo-600', 'text-white'];
                 var inactiveNavClass = ['bg-slate-100', 'text-slate-800'];
                 var calendar;
-                var eventListEl = document.getElementById('event-list');
-                var selectedDateLabelEl = document.getElementById('selected-date-label');
-                var allEvents = {!! isset($events) ? $events->toJson() : '[]' !!};
-                var campusFilter = document.getElementById('campus-filter');
-                var selectedCampus = 'All Campus';
-                var selectedDate = new Date();
-
-                function getFilteredEvents() {
-                    if (selectedCampus === 'All Campus') {
-                        return allEvents;
-                    }
-
-                    return allEvents.filter(function (event) {
-                        return event.campus === selectedCampus;
-                    });
-                }
-
-                function formatDateLabel(dateString) {
-                    var date = new Date(dateString);
-                    return date.toLocaleDateString('en-US', {
-                        month: 'long',
-                        day: 'numeric',
-                        year: 'numeric'
-                    });
-                }
-
-                function isSameDate(dateA, dateB) {
-                    return dateA.getFullYear() === dateB.getFullYear() &&
-                        dateA.getMonth() === dateB.getMonth() &&
-                        dateA.getDate() === dateB.getDate();
-                }
-
-                function renderEventsForDate(date) {
-                    selectedDate = new Date(date);
-                    var matches = getFilteredEvents().filter(function (event) {
-                        if (!event.start) return false;
-                        var eventDate = new Date(event.start);
-                        return isSameDate(eventDate, selectedDate);
-                    });
-
-                    selectedDateLabelEl.textContent = 'Events for ' + formatDateLabel(date);
-
-                    if (!matches.length) {
-                        eventListEl.innerHTML = '<div class="rounded-xl border border-dashed border-slate-300 bg-slate-50 px-4 py-5 text-sm text-slate-500">No events scheduled for this date.</div>';
-                        return;
-                    }
-
-                    eventListEl.innerHTML = matches.map(function (event) {
-                        var start = event.start ? new Date(event.start) : null;
-                        var end = event.end ? new Date(event.end) : null;
-                        var startText = start ? start.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }) : 'All day';
-                        var endText = end ? end.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }) : '';
-
-                        return '<div class="rounded-xl border border-slate-200 bg-slate-50 p-4">' +
-                            '<div class="flex items-center justify-between gap-4">' +
-                            '<div class="font-semibold text-slate-800">' + (event.title || 'Untitled Event') + '</div>' +
-                            '<span class="text-xs font-medium rounded-full bg-indigo-100 text-indigo-700 px-2 py-1">' + (event.venue || 'Venue TBD') + '</span>' +
-                            '</div>' +
-                            '<div class="mt-2 text-sm text-slate-600">' + startText + (endText ? ' - ' + endText : '') + '</div>' +
-                            '<div class="mt-1 text-sm text-slate-500">' + (event.description || 'No description provided.') + '</div>' +
-                            '</div>';
-                    }).join('');
-                }
 
                 function setActiveSection(section) {
                     navLinks.forEach(function(link) {
@@ -306,59 +244,12 @@
                     setActiveSection(sectionFromHash());
                 });
 
-                calendar = new FullCalendar.Calendar(calendarEl, {
-                    initialView: 'dayGridMonth',
-                    headerToolbar: {
-                        left: 'prev,next today',
-                        center: 'title',
-                        right: 'dayGridMonth,timeGridWeek,timeGridDay'
-                    },
-                    events: getFilteredEvents(),
-                    dateClick: function(info) {
-                        renderEventsForDate(new Date(info.date));
-                    },
-                    eventDidMount: function(info) {
-                        var count = 1;
-                        info.el.textContent = '+' + count + ' event';
-                        info.el.classList.add('!text-[10px]', '!px-1', '!py-0', '!leading-none', '!truncate', '!overflow-hidden', '!rounded-sm', '!m-0', '!w-auto', '!inline-block');
-
-                        var tooltip = [info.event.extendedProps.venue, info.event.extendedProps.description].filter(Boolean).join('\n');
-                        if (tooltip) {
-                            info.el.setAttribute('title', tooltip);
-                        }
-                    },
-                    eventContent: function() {
-                        return {
-                            html: '<div class="fc-event-title !text-[10px] !leading-none !px-1 !py-0 !m-0 !truncate !overflow-hidden !w-auto !inline-block">+1 event</div>'
-                        };
-                    },
-                    height: 'auto',
-                    contentHeight: 620,
-                    windowResize: function() {
-                        if (calendar) {
-                            calendar.updateSize();
-                        }
-                    }
-                });
-
-                if (campusFilter) {
-                    campusFilter.addEventListener('change', function () {
-                        selectedCampus = this.value;
-                        calendar.removeAllEvents();
-                        calendar.addEventSource(getFilteredEvents());
-                        renderEventsForDate(selectedDate);
-                    });
-                }
-
-                calendar.render();
-                renderEventsForDate(selectedDate);
-
-                window.addEventListener('resize', function () {
-                    if (calendar) {
-                        requestAnimationFrame(function () {
-                            calendar.updateSize();
-                        });
-                    }
+                calendar = UniEventCalendar.init({
+                    calendarEl: document.getElementById('admin-calendar'),
+                    events: {!! isset($events) ? $events->toJson() : '[]' !!},
+                    campusFilterEl: document.getElementById('campus-filter'),
+                    listEl: document.getElementById('event-list'),
+                    listLabelEl: document.getElementById('selected-date-label')
                 });
             });
         </script>

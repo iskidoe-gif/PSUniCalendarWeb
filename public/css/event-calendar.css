@@ -1,0 +1,199 @@
+/* ==========================================================================
+   UniCalendar — shared event calendar styles (used with public/js/event-calendar.js)
+   ========================================================================== */
+
+:root {
+    --ec-navy-900: #1f2757;
+    --ec-navy-800: #2f3a78;
+    --ec-navy-600: #4a5690;
+    --ec-navy-100: #e6e9f5;
+    --ec-navy-50: #f3f4fa;
+    --ec-gold-500: #f2c318;
+    --ec-gold-600: #e0a800;
+    --ec-gold-50: #fffbe6;
+    --ec-border: #e3e6f0;
+    --ec-text: #1e2340;
+    --ec-muted: #64698a;
+}
+
+/* ---------- Event bars in month view ---------- */
+
+.fc .ec-event {
+    margin: 2px 4px 0 !important;
+    border: 0;
+    border-left: 3px solid var(--ec-gold-500);
+    border-radius: 6px;
+    box-shadow: 0 1px 3px rgba(31, 39, 87, .2);
+    cursor: pointer;
+    transition: filter .15s, transform .15s;
+}
+.fc .ec-event:hover { filter: brightness(1.12); transform: translateY(-1px); }
+.fc .ec-event:focus-visible { outline: 2px solid var(--ec-gold-500); outline-offset: 1px; }
+
+/* Event card inside a date cell */
+.ec-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    padding: 4px 7px 5px;
+    color: #fff;
+    line-height: 1.3;
+    overflow: hidden;
+}
+.ec-card__title { font-size: 12px; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.fc .fc-daygrid-more-link { font-size: 11.5px; font-weight: 600; color: var(--ec-navy-600); }
+.fc .fc-daygrid-day { cursor: pointer; }
+.fc .fc-daygrid-day.fc-day-disabled { cursor: default; background: #fafbfd; }   /* hidden days of other months */
+.fc .fc-daygrid-day.ec-day--selected { background: var(--ec-gold-50); box-shadow: inset 0 0 0 2px var(--ec-gold-500); }
+
+/* ---------- "Events for selected date" list ---------- */
+
+.ec-item {
+    display: block;
+    width: 100%;
+    margin: 0 0 10px;
+    padding: 12px 14px;
+    border: 1px solid var(--ec-border);
+    border-left: 4px solid var(--ec-gold-500);
+    border-radius: 12px;
+    background: var(--ec-navy-50);
+    color: var(--ec-text);
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+    transition: background .15s, border-color .15s;
+}
+.ec-item:last-child { margin-bottom: 0; }
+.ec-item:hover { background: #eceefa; border-color: #cfd3e3; border-left-color: var(--ec-gold-600); }
+.ec-item:focus-visible { outline: 2px solid var(--ec-gold-500); outline-offset: 2px; }
+.ec-item__top { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 6px 10px; }
+.ec-item__title { font-weight: 600; color: var(--ec-navy-800); }
+.ec-item__venue {
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: var(--ec-navy-100);
+    color: var(--ec-navy-600);
+    font-size: 11.5px;
+    font-weight: 600;
+}
+.ec-item__when { display: block; margin-top: 6px; font-size: 12.5px; color: var(--ec-muted); }
+.ec-item__more { display: block; margin-top: 4px; font-size: 12px; font-weight: 600; color: var(--ec-navy-600); }
+
+.ec-empty {
+    padding: 18px 14px;
+    border: 1px dashed #cfd3e3;
+    border-radius: 12px;
+    background: var(--ec-navy-50);
+    text-align: center;
+    font-size: 13px;
+    color: var(--ec-muted);
+}
+
+/* Shown before any date has been clicked */
+.ec-prompt { display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 28px 16px; }
+.ec-prompt__icon { font-size: 26px; line-height: 1; }
+
+/* ---------- Details window ---------- */
+
+.ec-no-scroll { overflow: hidden; }
+
+.ec-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 60;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    background: rgba(15, 20, 50, .55);
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}
+.ec-modal[hidden] { display: none; }
+
+.ec-modal__panel {
+    width: 100%;
+    max-width: 460px;
+    max-height: 90vh;
+    overflow-y: auto;
+    border-radius: 20px;
+    background: #fff;
+    color: var(--ec-text);
+    box-shadow: 0 24px 60px rgba(15, 20, 50, .35);
+    animation: ec-pop .16s ease-out;
+}
+@keyframes ec-pop { from { transform: translateY(8px) scale(.98); opacity: 0; } }
+
+.ec-modal__head {
+    position: relative;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 18px 22px 20px;
+    background: linear-gradient(180deg, #4a5690 0%, #56639f 55%, #4b5892 100%);
+    color: #fff;
+}
+.ec-modal__head::after {           /* gold stripe, as on the login banner */
+    content: "";
+    position: absolute;
+    left: 0; right: 0; bottom: 0;
+    height: 4px;
+    background: linear-gradient(180deg, #f7d54a, var(--ec-gold-600));
+}
+.ec-modal__eyebrow { margin: 0; font-size: 10.5px; font-weight: 600; letter-spacing: .2em; text-transform: uppercase; color: #f7d54a; }
+.ec-modal__title { margin: 4px 0 0; font-family: 'Cinzel', 'Times New Roman', serif; font-size: 20px; font-weight: 700; line-height: 1.25; word-break: break-word; }
+.ec-modal__close {
+    flex: none;
+    width: 32px; height: 32px;
+    border: 0;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, .14);
+    color: #fff;
+    font-size: 14px;
+    cursor: pointer;
+}
+.ec-modal__close:hover { background: rgba(255, 255, 255, .25); }
+
+.ec-modal__body { padding: 18px 22px 6px; }
+.ec-modal__foot { display: flex; justify-content: flex-end; padding: 12px 22px 20px; }
+
+.ec-duration {
+    display: inline-block;
+    margin: 0 0 14px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: var(--ec-gold-50);
+    border: 1px solid #f6e19a;
+    color: #7a5c00;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.ec-details { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px 18px; margin: 0; }
+.ec-detail dt { font-size: 10.5px; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; color: #9a9fbb; }
+.ec-detail dd { margin: 3px 0 0; font-size: 14px; font-weight: 500; word-break: break-word; }
+.ec-time { display: block; font-weight: 700; color: var(--ec-navy-800); }
+
+.ec-description { margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--ec-navy-50); }
+.ec-description p { margin: 0; font-size: 14px; white-space: pre-line; }
+.ec-description__label { margin-bottom: 4px !important; font-size: 10.5px !important; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; color: #9a9fbb; }
+.ec-muted { color: var(--ec-muted); }
+
+.ec-btn {
+    padding: 8px 16px;
+    border: 0;
+    border-radius: 10px;
+    background: var(--ec-navy-600);
+    color: #fff;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+}
+.ec-btn:hover { background: #3b4679; }
+.ec-btn:focus-visible { outline: none; box-shadow: 0 0 0 4px rgba(242, 195, 24, .5); }
+
+@media (max-width: 480px) {
+    .ec-details { grid-template-columns: minmax(0, 1fr); }}
