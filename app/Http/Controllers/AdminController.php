@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\EventRequest;
+use App\Models\User;
 use App\Services\EventConflictChecker;
 use Illuminate\Support\Facades\Auth;
 
@@ -24,10 +25,12 @@ class AdminController extends Controller
                     'description' => $event->description,
                     'venue' => $event->venue_name,
                     'campus' => $this->resolveCampus($event),
+                    'university_wide' => (bool) $event->is_university_wide,
                     'office' => $event->name,
                     'sdg_number' => $event->sdg_number,
                 ];
-            });
+            })
+            ->values();   // re-index after sortBy so it becomes a JSON list, not an object
 
         $adminRequests = [];
         if (Auth::check()) {
@@ -67,21 +70,7 @@ class AdminController extends Controller
             return $event->campus;
         }
 
-        $venue = strtolower($event->venue_name ?? '');
-
-        if (str_contains($venue, 'alaminos')) {
-            return 'Alaminos Campus';
-        }
-
-        if (str_contains($venue, 'lingayen')) {
-            return 'Lingayen Campus';
-        }
-
-        if (str_contains($venue, 'binmaley')) {
-            return 'Binmaley Campus';
-        }
-
-        return 'All Campus';
+        return User::campusFromText($event->venue_name) ?? 'All Campus';
     }
 
     private function getAccountBadge($user): array
@@ -106,6 +95,10 @@ class AdminController extends Controller
                 $label = 'BINMALEY';
                 $style = 'bg-amber-100 text-amber-700';
                 $subtitle = 'Binmaley Campus admin';
+            } elseif ($campus = User::campusFromText($lowerEmail)) {
+                $label = strtoupper(str_replace(' Campus', '', $campus));
+                $style = 'bg-emerald-100 text-emerald-700';
+                $subtitle = $campus . ' admin';
             } elseif (str_contains($lowerEmail, 'ccs') || str_contains($lowerName, 'ccs')) {
                 $label = 'CCS';
                 $style = 'bg-cyan-100 text-cyan-700';
@@ -126,22 +119,7 @@ class AdminController extends Controller
             return null;
         }
 
-        $lowerEmail = strtolower($user->email ?? '');
-        $lowerName = strtolower($user->name ?? '');
-
-        if (str_contains($lowerEmail, 'alaminos') || str_contains($lowerName, 'alaminos')) {
-            return 'Alaminos Campus';
-        }
-
-        if (str_contains($lowerEmail, 'lingayen') || str_contains($lowerName, 'lingayen')) {
-            return 'Lingayen Campus';
-        }
-
-        if (str_contains($lowerEmail, 'binmaley') || str_contains($lowerName, 'binmaley')) {
-            return 'Binmaley Campus';
-        }
-
-        return null;
+        return User::campusFromText($user->email) ?? User::campusFromText($user->name);
     }
 
     private function getAdminScopedApprovedEvents(?string $adminCampus)
@@ -155,7 +133,8 @@ class AdminController extends Controller
         return $approvedEvents->filter(function ($event) use ($adminCampus) {
             $eventCampus = $this->resolveCampus($event);
 
-            return $eventCampus === $adminCampus || $eventCampus === 'All Campus';
+            // Own campus, "All Campus", or an event open to all campuses (wherever it's held)
+            return $eventCampus === $adminCampus || $eventCampus === 'All Campus' || $event->is_university_wide;
         });
     }
 
@@ -166,6 +145,7 @@ class AdminController extends Controller
             'venue_name' => 'required|string|max:255',
             'campus' => 'required|string|max:255',
             'sdg_number' => ['nullable', 'integer', 'between:1,17'],
+            'is_university_wide' => ['nullable', 'boolean'],
             'start_datetime' => 'required|date',
             'end_datetime' => 'required|date|after_or_equal:start_datetime',
             'description' => 'nullable|string',
@@ -192,6 +172,7 @@ class AdminController extends Controller
             'title' => $request->input('title'),
             'venue_name' => $request->input('venue_name'),
             'campus' => $request->input('campus'),
+            'is_university_wide' => $request->boolean('is_university_wide'),
             'sdg_number' => $request->input('sdg_number'),
             'description' => $request->input('description', ''),
             'start_datetime' => $request->input('start_datetime'),

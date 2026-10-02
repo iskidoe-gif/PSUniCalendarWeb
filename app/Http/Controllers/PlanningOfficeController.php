@@ -28,12 +28,13 @@ class PlanningOfficeController extends Controller
                 'description' => $event->description,
                 'venue' => $event->venue_name,
                 'campus' => $this->resolveCampus($event),
+                'university_wide' => (bool) $event->is_university_wide,
                 'sdg_number' => $event->sdg_number,
                 'office' => $event->name,
             ];
         });
 
-        $campusEventCounts = collect(['Alaminos Campus', 'Lingayen Campus', 'Binmaley Campus'])
+        $campusEventCounts = collect(User::MAIN_CAMPUSES)
             ->mapWithKeys(function ($campus) use ($approvedEvents) {
                 return [$campus => $approvedEvents->filter(fn ($event) => $this->resolveCampus($event) === $campus)->count()];
             });
@@ -83,7 +84,7 @@ class PlanningOfficeController extends Controller
         abort_unless($office->role === 'office', 404);
 
         $validated = $request->validate([
-            'campus' => ['required', Rule::in(User::CAMPUSES)],
+            'campus' => ['required', Rule::in(User::OFFICE_GROUPS)],
         ]);
 
         $office->update(['campus' => $validated['campus']]);
@@ -158,15 +159,7 @@ class PlanningOfficeController extends Controller
             return $event->campus;
         }
 
-        $venue = strtolower($event->venue_name ?? '');
-
-        foreach (['Alaminos', 'Lingayen', 'Binmaley'] as $campus) {
-            if (str_contains($venue, strtolower($campus))) {
-                return $campus . ' Campus';
-            }
-        }
-
-        return 'All Campus';
+        return User::campusFromText($event->venue_name) ?? 'All Campus';
     }
 
     public function pendingApprovals(EventConflictChecker $conflictChecker)

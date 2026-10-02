@@ -16,6 +16,7 @@ class EventRequest extends Model
         'title',
         'venue_name',
         'campus',
+        'is_university_wide',
         'sdg_number',
         'description',
         'start_datetime',
@@ -30,6 +31,7 @@ class EventRequest extends Model
     protected $casts = [
         'digital_documents' => 'array',
         'sdg_number' => 'integer',
+        'is_university_wide' => 'boolean',
         'start_datetime' => 'datetime',
         'end_datetime' => 'datetime',
         'read_at' => 'datetime',
@@ -44,4 +46,24 @@ class EventRequest extends Model
      * Statuses that represent a Planning Office decision the office hasn't seen yet.
      */
     public const NOTIFIABLE_STATUSES = ['approved', 'rejected', 'conflict'];
+
+    /**
+     * Campus where the event is held (guessed from the venue name for older requests).
+     */
+    public function venueCampus(): string
+    {
+        return $this->campus ?: (User::campusFromText($this->venue_name) ?? 'All Campus');
+    }
+
+    /**
+     * Should this event appear on the given office's calendar?
+     * Yes if it's the office's own request, if it's for all campuses, or if the
+     * office can see events at the venue's campus.
+     */
+    public function isVisibleTo(User $user): bool
+    {
+        return $this->email === $user->email
+            || $this->is_university_wide
+            || $user->canSeeCampusEvent($this->venueCampus());
+    }
 }

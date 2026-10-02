@@ -32,7 +32,7 @@
                     @unless($office->campus)
                         <option value="" selected disabled>Select campus</option>
                     @endunless
-                    @foreach(\App\Models\User::CAMPUSES as $campus)
+                    @foreach(\App\Models\User::OFFICE_GROUPS as $campus)
                         <option value="{{ $campus }}" {{ $office->campus === $campus ? 'selected' : '' }}>{{ $campus }}</option>
                     @endforeach
                 </select>

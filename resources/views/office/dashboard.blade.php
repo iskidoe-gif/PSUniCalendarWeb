@@ -2,8 +2,13 @@
     $user = auth()->user();
     $hour = now()->hour;
     $greeting = $hour < 12 ? 'Good morning' : ($hour < 18 ? 'Good afternoon' : 'Good evening');
-    $nameWords = preg_split('/\s+/', trim($user->name)) ?: ['O'];
-    $initials = strtoupper(mb_substr($nameWords[0], 0, 1) . (count($nameWords) > 1 ? mb_substr(end($nameWords), 0, 1) : ''));
+    // Avatar initials: a short abbreviation in brackets wins ("... (OP)" → "OP"); otherwise the
+    // first and last words, letters only (so "(OVPQA)" never turns into "O(").
+    $nameWords = array_values(array_filter(preg_split('/\s+/', trim(preg_replace('/[^\p{L}\s]/u', ' ', preg_replace('/\([^)]*\)/', '', $user->name)))))) ?: ['O'];
+    $nameAbbreviation = preg_match('/\(([\p{L}]{2,4})\)/u', $user->name, $abbr) ? $abbr[1] : null;
+    $initials = $nameAbbreviation
+        ? mb_strtoupper($nameAbbreviation)
+        : mb_strtoupper(mb_substr($nameWords[0], 0, 1) . (count($nameWords) > 1 ? mb_substr(end($nameWords), 0, 1) : ''));
 
     $monthSubmitted = $submittedThisMonth ?? 0;
     $monthApproved = $approvedThisMonth ?? 0;
@@ -139,19 +144,28 @@
                                     </form>
                                 @endif
                             </div>
+                            {{-- All notifications: unread (gold dot) first, then earlier ones.
+                                 Clicking one opens the "All notifications" window at that item. --}}
                             <div class="od-dropdown__list">
-                                @forelse($unreadNotifications as $n)
-                                    <div class="od-dropdown__item">
+                                @forelse($allNotifications as $n)
+                                    <button type="button" class="od-dropdown__item {{ $n->read_at ? '' : 'od-dropdown__item--unread' }}" data-open-notifications="{{ $n->id }}">
                                         <p class="od-dropdown__item-title">{{ $n->title }}</p>
                                         <p class="od-dropdown__item-meta">
                                             Status changed to
                                             <span class="od-text-{{ $n->status }}">{{ $n->status === 'conflict' ? 'conflict review' : $n->status }}</span>
+                                            · {{ $n->updated_at?->diffForHumans() }}
                                         </p>
-                                    </div>
+                                        @if($n->planning_note)
+                                            <p class="od-dropdown__item-note">{{ \Illuminate\Support\Str::limit($n->planning_note, 90) }}</p>
+                                        @endif
+                                    </button>
                                 @empty
-                                    <p class="od-dropdown__empty">You're all caught up.</p>
+                                    <p class="od-dropdown__empty">No notifications yet.</p>
                                 @endforelse
                             </div>
+                            @if($allNotifications->isNotEmpty())
+                                <button type="button" class="od-dropdown__footer" data-open-notifications>View all notifications</button>
+                            @endif
                         </div>
                     </div>
                 </div>
@@ -229,9 +243,9 @@
                             <span>Campus:</span>
                             <select id="campus-filter" class="od-input od-input--sm" style="width:auto">
                                 <option value="All Campus">All Campus</option>
-                                <option value="Alaminos Campus">Alaminos Campus</option>
-                                <option value="Lingayen Campus">Lingayen Campus</option>
-                                <option value="Binmaley Campus">Binmaley Campus</option>
+                                @foreach($calendarCampuses as $campusOption)
+                                    <option value="{{ $campusOption }}">{{ $campusOption }}</option>
+                                @endforeach
                             </select>
                         </label>
                     </div>
@@ -294,7 +308,7 @@
                             <span class="od-label">Campus</span>
                             <select name="campus" id="campus_select" required class="od-input">
                                 <option value="">Select campus</option>
-                                @foreach(['Alaminos Campus', 'Lingayen Campus', 'Binmaley Campus'] as $campus)
+                                @foreach(\App\Models\User::CAMPUSES as $campus)
                                     <option value="{{ $campus }}" {{ old('campus') === $campus ? 'selected' : '' }}>{{ $campus }}</option>
                                 @endforeach
                             </select>
@@ -309,6 +323,27 @@
                             </select>
                         </label>
                     </div>
+
+                    {{-- Who can see the event: venue campus only, or every campus --}}
+                    <fieldset class="od-audience">
+                        <legend class="od-label">Who is this event for?</legend>
+                        <div class="od-audience__options">
+                            <label class="od-audience__option">
+                                <input type="radio" name="is_university_wide" value="0" {{ old('is_university_wide', '0') !== '1' ? 'checked' : '' }} />
+                                <span>
+                                    <strong>This campus only</strong>
+                                    <small>Only offices of the selected campus will see it (e.g. Intrams).</small>
+                                </span>
+                            </label>
+                            <label class="od-audience__option">
+                                <input type="radio" name="is_university_wide" value="1" {{ old('is_university_wide') === '1' ? 'checked' : '' }} />
+                                <span>
+                                    <strong>All campuses</strong>
+                                    <small>Every campus sees it, even if it's held at one campus (e.g. a University Meet).</small>
+                                </span>
+                            </label>
+                        </div>
+                    </fieldset>
 
                     <div class="od-form-grid">
                         <label class="od-field">
@@ -481,6 +516,58 @@
             </div>
         </div>
     </main>
+
+    <!-- ================= All notifications modal ================= -->
+    <div id="notifications-modal" class="od-modal hidden" role="dialog" aria-modal="true" aria-labelledby="notifications-title">
+        <div class="od-modal__panel od-modal__panel--wide">
+            <div class="od-modal__head psu-banner">
+                {!! $wavesSvg !!}
+                <h2 id="notifications-title" class="od-modal__title">All notifications</h2>
+                <button type="button" data-notifications-close class="od-modal__close" aria-label="Close notifications">✕</button>
+            </div>
+
+            <div class="od-modal__body">
+                <div class="od-notif-summary">
+                    <p class="od-muted">
+                        {{ $allNotifications->count() }} notification(s)@if($unreadNotifications->count()) · <strong>{{ $unreadNotifications->count() }} unread</strong>@endif
+                    </p>
+                    @if($unreadNotifications->count() > 0)
+                        <form method="POST" action="{{ route('office.notifications.read') }}">
+                            @csrf
+                            <button type="submit" class="od-link">Mark all read</button>
+                        </form>
+                    @endif
+                </div>
+
+                <ul class="od-notif-list">
+                    @forelse($allNotifications as $n)
+                        <li id="notification-{{ $n->id }}" class="od-notif {{ $n->read_at ? '' : 'od-notif--unread' }}">
+                            <div class="od-notif__top">
+                                <p class="od-notif__title">{{ $n->title }}</p>
+                                <span class="od-badge od-badge--{{ $n->status }}">{{ $statusLabel($n->status) }}</span>
+                            </div>
+                            <p class="od-notif__meta">
+                                The Planning Office {{ $n->status === 'conflict' ? 'flagged a schedule conflict on' : $n->status }} this request
+                                · <time datetime="{{ $n->updated_at?->toIso8601String() }}" title="{{ $n->updated_at?->format('M j, Y g:i A') }}">{{ $n->updated_at?->diffForHumans() }}</time>
+                            </p>
+                            <p class="od-notif__event">
+                                {{ $n->venue_name }}@if($n->campus) · {{ $n->campus }}@endif
+                                · {{ $n->start_datetime?->format('M j, Y g:i A') }}
+                                @if($n->end_datetime)
+                                    – {{ $n->end_datetime->isSameDay($n->start_datetime) ? $n->end_datetime->format('g:i A') : $n->end_datetime->format('M j, Y g:i A') }}
+                                @endif
+                            </p>
+                            @if($n->planning_note)
+                                <p class="od-timeline__note">Planning Office: {{ $n->planning_note }}</p>
+                            @endif
+                        </li>
+                    @empty
+                        <li class="od-empty">No notifications yet. You'll be notified here when the Planning Office approves or rejects a request.</li>
+                    @endforelse
+                </ul>
+            </div>
+        </div>
+    </div>
 
     <!-- ================= Settings modal ================= -->
     <div id="settings-modal" class="od-modal {{ $settingsOpen ? '' : 'hidden' }}" role="dialog" aria-modal="true" aria-labelledby="settings-title">
@@ -751,6 +838,37 @@
                         notifDropdown.classList.add('hidden');
                     }
                 });
+                // ---- "All notifications" window (opened from a notification or "View all") ----
+                var notifModal = document.getElementById('notifications-modal');
+                if (notifModal) {
+                    var closeNotifModal = function () { notifModal.classList.add('hidden'); };
+
+                    notifDropdown.querySelectorAll('[data-open-notifications]').forEach(function (trigger) {
+                        trigger.addEventListener('click', function () {
+                            notifDropdown.classList.add('hidden');
+                            notifModal.classList.remove('hidden');
+                            notifModal.querySelectorAll('.od-notif--focused').forEach(function (el) { el.classList.remove('od-notif--focused'); });
+
+                            // Highlight and scroll to the notification that was clicked
+                            var target = trigger.dataset.openNotifications && document.getElementById('notification-' + trigger.dataset.openNotifications);
+                            if (target) {
+                                target.classList.add('od-notif--focused');
+                                target.scrollIntoView({ block: 'nearest' });
+                            }
+                            notifModal.querySelector('.od-modal__close').focus();
+                        });
+                    });
+
+                    notifModal.querySelectorAll('[data-notifications-close]').forEach(function (btn) {
+                        btn.addEventListener('click', closeNotifModal);
+                    });
+                    notifModal.addEventListener('click', function (e) {
+                        if (e.target === notifModal) closeNotifModal();
+                    });
+                    document.addEventListener('keydown', function (e) {
+                        if (e.key === 'Escape') closeNotifModal();
+                    });
+                }
             }
 
             // ---- Office profile: show/hide confidential info ----

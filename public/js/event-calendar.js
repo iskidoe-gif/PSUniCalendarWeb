@@ -132,6 +132,9 @@
         html += row('Ends', esc(fmtDay(s.end)) + '<span class="ec-time">' + esc(fmtTime(s.end)) + '</span>');
         html += row('Venue', esc(ev.venue || 'Venue TBD'));
         if (ev.campus) html += row('Campus', esc(ev.campus));
+        if (ev.university_wide !== undefined) {
+            html += row('Open to', ev.university_wide ? 'All campuses' : 'This campus only');
+        }
         if (ev.office) html += row('Organizer', esc(ev.office));
         if (ev.sdg_number) html += row('SDG', 'SDG ' + esc(ev.sdg_number));
         html += '</dl>';
@@ -186,7 +189,8 @@
     // ---------- calendar ----------
 
     function init(opts) {
-        var allEvents = opts.events || [];
+        // Accept a list or a keyed object (a sorted Laravel collection serialises as {"1": …, "0": …})
+        var allEvents = Array.isArray(opts.events) ? opts.events : Object.values(opts.events || {});
         var campus = 'All Campus';
         var selectedKey = null;                  // nothing selected until a date is clicked
         var selectedCell = null;
@@ -194,7 +198,8 @@
 
         function filtered() {
             if (campus === 'All Campus') return allEvents;
-            return allEvents.filter(function (ev) { return ev.campus === campus; });
+            // Events open to all campuses show under every campus filter
+            return allEvents.filter(function (ev) { return ev.campus === campus || ev.university_wide; });
         }
 
         // Events are drawn on their start date only: the bar is cut off at the end of

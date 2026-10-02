@@ -68,7 +68,6 @@
             <!-- Login card -->
             <section class="w-full max-w-md md:justify-self-end">
                 <div class="overflow-hidden rounded-2xl bg-white shadow-xl ring-1 ring-slate-200">
-                    <div class="psu-stripe h-1.5"></div>
                     <div class="p-6 sm:p-8">
                         <h2 class="text-xl font-bold text-[#2f3a78]">Login to UniCalendar</h2>
                         <p class="mt-1 text-sm text-slate-500">Enter your email and password to use the system.</p>

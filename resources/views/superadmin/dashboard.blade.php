@@ -42,20 +42,18 @@
         </div>
     </div>
 
-    {{-- Campus stats --}}
+    {{-- Campus stats: one card per campus with an account (User::MAIN_CAMPUSES) --}}
+    @php
+        $campusCardColors = ['emerald', 'indigo', 'amber', 'sky', 'violet', 'teal', 'orange', 'cyan', 'lime'];
+    @endphp
     <div class="mb-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
-        <div class="rounded-2xl border border-emerald-200 bg-emerald-50 p-4 shadow-sm">
-            <p class="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-700">Alaminos Campus</p>
-            <p class="mt-3 text-3xl font-bold text-emerald-900">{{ $campusEventCounts['Alaminos Campus'] ?? 0 }}</p>
-        </div>
-        <div class="rounded-2xl border border-indigo-200 bg-indigo-50 p-4 shadow-sm">
-            <p class="text-xs font-semibold uppercase tracking-[0.2em] text-indigo-700">Lingayen Campus</p>
-            <p class="mt-3 text-3xl font-bold text-indigo-900">{{ $campusEventCounts['Lingayen Campus'] ?? 0 }}</p>
-        </div>
-        <div class="rounded-2xl border border-amber-200 bg-amber-50 p-4 shadow-sm">
-            <p class="text-xs font-semibold uppercase tracking-[0.2em] text-amber-700">Binmaley Campus</p>
-            <p class="mt-3 text-3xl font-bold text-amber-900">{{ $campusEventCounts['Binmaley Campus'] ?? 0 }}</p>
-        </div>
+        @foreach(\App\Models\User::MAIN_CAMPUSES as $i => $campus)
+            @php $color = $campusCardColors[$i % count($campusCardColors)]; @endphp
+            <div class="rounded-2xl border border-{{ $color }}-200 bg-{{ $color }}-50 p-4 shadow-sm">
+                <p class="text-xs font-semibold uppercase tracking-[0.2em] text-{{ $color }}-700">{{ $campus }}</p>
+                <p class="mt-3 text-3xl font-bold text-{{ $color }}-900">{{ $campusEventCounts[$campus] ?? 0 }}</p>
+            </div>
+        @endforeach
         <div class="rounded-2xl border border-slate-200 bg-slate-100 p-4 shadow-sm">
             <p class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-700">University-wide events</p>
             <p class="mt-3 text-3xl font-bold text-slate-900">{{ $universityWideEvents ?? 0 }}</p>
@@ -76,9 +74,9 @@
                 <span>Filter:</span>
                 <select id="campus-filter" class="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
                     <option value="All Campus">All Campus</option>
-                    <option value="Alaminos Campus">Alaminos Campus</option>
-                    <option value="Lingayen Campus">Lingayen Campus</option>
-                    <option value="Binmaley Campus">Binmaley Campus</option>
+                    @foreach(\App\Models\User::MAIN_CAMPUSES as $campusOption)
+                        <option value="{{ $campusOption }}">{{ $campusOption }}</option>
+                    @endforeach
                 </select>
             </label>
         </div>
@@ -131,11 +129,11 @@
             const campusTrendMonthSelect = document.getElementById('campus-trend-month-select');
 
             if (campusChartCanvas && typeof Chart !== 'undefined') {
-                const campusColors = {
-                    'Alaminos Campus': '#10b981',
-                    'Lingayen Campus': '#4f46e5',
-                    'Binmaley Campus': '#f59e0b'
-                };
+                // One color per campus, in the same order as the campus cards above
+                const campusNames = @json(\App\Models\User::MAIN_CAMPUSES);
+                const palette = ['#10b981', '#4f46e5', '#f59e0b', '#0ea5e9', '#8b5cf6', '#14b8a6', '#f97316', '#06b6d4', '#84cc16'];
+                const campusColors = {};
+                campusNames.forEach(function (name, i) { campusColors[name] = palette[i % palette.length]; });
 
                 let campusTrendMonth = new Date();
                 campusTrendMonth.setDate(1);
@@ -173,11 +171,8 @@
                 }
 
                 function buildTrendDataForMonth(date) {
-                    const monthData = {
-                        'Alaminos Campus': 0,
-                        'Lingayen Campus': 0,
-                        'Binmaley Campus': 0
-                    };
+                    const monthData = {};
+                    campusNames.forEach(function (name) { monthData[name] = 0; });
 
                     const year = date.getFullYear();
                     const month = date.getMonth();
@@ -192,7 +187,7 @@
                             return;
                         }
 
-                        if (!monthData[event.campus]) {
+                        if (!(event.campus in monthData)) {
                             return;
                         }
 
@@ -200,8 +195,8 @@
                     });
 
                     return {
-                        labels: ['Alaminos Campus', 'Lingayen Campus', 'Binmaley Campus'],
-                        values: [monthData['Alaminos Campus'], monthData['Lingayen Campus'], monthData['Binmaley Campus']]
+                        labels: campusNames,
+                        values: campusNames.map(function (name) { return monthData[name]; })
                     };
                 }
 
@@ -225,11 +220,7 @@
                             datasets: [{
                                 label: 'Events',
                                 data: values,
-                                backgroundColor: [
-                                    campusColors['Alaminos Campus'],
-                                    campusColors['Lingayen Campus'],
-                                    campusColors['Binmaley Campus']
-                                ],
+                                backgroundColor: labels.map(function (name) { return campusColors[name]; }),
                                 borderRadius: 8
                             }]
                         },

@@ -18,9 +18,89 @@ class User extends Authenticatable
     use HasFactory, Notifiable;
 
     /**
-     * Campuses an office account can belong to, in sidebar order.
+     * PSU campuses, in display order (alphabetical). Single source for every campus
+     * dropdown, filter, sidebar group and chart.
      */
-    public const CAMPUSES = ['Alaminos Campus', 'Lingayen Campus', 'Binmaley Campus'];
+    public const CAMPUSES = [
+        'Alaminos Campus',
+        'Asingan Campus',
+        'Bayambang Campus',
+        'Binmaley Campus',
+        'Infanta Campus',
+        'Lingayen Campus',
+        'San Carlos Campus',
+        'Santa Maria Campus',
+        'Urdaneta Campus',
+    ];
+
+    /**
+     * Campuses with their own office account; the Planning Office pages (sidebar,
+     * campus cards, chart, filters) show only these.
+     */
+    public const MAIN_CAMPUSES = ['Alaminos Campus', 'Binmaley Campus', 'Lingayen Campus'];
+
+    /**
+     * Group for university-level offices (OP, the VP offices, SAS, OUS) that aren't tied to one campus.
+     */
+    public const UNIVERSITY_OFFICES = 'University Offices';
+
+    /**
+     * Groups an office account can be listed under in the Planning Office sidebar.
+     */
+    public const OFFICE_GROUPS = [self::UNIVERSITY_OFFICES, ...self::MAIN_CAMPUSES];
+
+    /**
+     * Is this account tied to one campus? University Offices (and offices with no campus set)
+     * are university-wide.
+     */
+    public function isCampusOffice(): bool
+    {
+        return in_array($this->campus, self::CAMPUSES, true);
+    }
+
+    /**
+     * Can this account see an event held at the given campus?
+     * University-wide offices see everything; a campus office sees its own campus
+     * and university-wide ("All Campus") events only.
+     */
+    public function canSeeCampusEvent(?string $eventCampus): bool
+    {
+        if (! $this->isCampusOffice()) {
+            return true;
+        }
+
+        return $eventCampus === null
+            || $eventCampus === 'All Campus'
+            || $eventCampus === $this->campus;
+    }
+
+    /**
+     * Guess a campus from free text such as a venue name ("Lingayen Gym" → "Lingayen Campus").
+     */
+    public static function campusFromText(?string $text): ?string
+    {
+        $text = strtolower($text ?? '');
+        if ($text === '') {
+            return null;
+        }
+
+        foreach (self::CAMPUSES as $campus) {
+            $short = strtolower(str_replace(' Campus', '', $campus));
+            $aliases = [$short, str_replace(' ', '', $short)];
+            if ($short === 'santa maria') {
+                $aliases[] = 'sta. maria';
+                $aliases[] = 'sta maria';
+            }
+
+            foreach ($aliases as $alias) {
+                if (str_contains($text, $alias)) {
+                    return $campus;
+                }
+            }
+        }
+
+        return null;
+    }
 
     /**
      * Get the attributes that should be cast.

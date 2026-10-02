@@ -65,9 +65,15 @@
                             </label>
                             <label class="text-sm font-medium">Campus
                                 <select name="campus" required class="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 font-normal">
-                                    @foreach(['Alaminos Campus', 'Lingayen Campus', 'Binmaley Campus', 'All Campus'] as $campus)
+                                    @foreach([...\App\Models\User::MAIN_CAMPUSES, 'All Campus'] as $campus)
                                         <option value="{{ $campus }}" {{ $request->campus === $campus ? 'selected' : '' }}>{{ $campus }}</option>
                                     @endforeach
+                                </select>
+                            </label>
+                            <label class="text-sm font-medium sm:col-span-2">Who is this event for?
+                                <select name="is_university_wide" class="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 font-normal">
+                                    <option value="0" {{ $request->is_university_wide ? '' : 'selected' }}>This campus only — only offices of the selected campus see it</option>
+                                    <option value="1" {{ $request->is_university_wide ? 'selected' : '' }}>All campuses — every campus sees it, wherever it's held</option>
                                 </select>
                             </label>
                             <label class="text-sm font-medium">Start

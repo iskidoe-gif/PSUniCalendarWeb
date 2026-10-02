@@ -12,13 +12,7 @@ class UserController extends Controller
             ->orderBy('start_datetime', 'asc')
             ->get()
             ->map(function ($event) {
-                $campus = $event->campus ?: (
-                    str_contains(strtolower($event->venue_name ?? ''), 'alaminos') ? 'Alaminos Campus' : (
-                        str_contains(strtolower($event->venue_name ?? ''), 'lingayen') ? 'Lingayen Campus' : (
-                            str_contains(strtolower($event->venue_name ?? ''), 'binmaley') ? 'Binmaley Campus' : 'All Campus'
-                        )
-                    )
-                );
+                $campus = $event->campus ?: (\App\Models\User::campusFromText($event->venue_name) ?? 'All Campus');
 
                 return [
                     'title' => $event->title,
@@ -27,6 +21,7 @@ class UserController extends Controller
                     'description' => $event->description,
                     'venue' => $event->venue_name,
                     'campus' => $campus,
+                    'university_wide' => (bool) $event->is_university_wide,
                     'sdg_number' => $event->sdg_number,
                     'office' => $event->name,
                 ];

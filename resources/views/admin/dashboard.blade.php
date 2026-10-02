@@ -93,12 +93,25 @@
                         <span class="text-sm font-medium text-slate-700">Campus</span>
                         <select name="campus" required class="mt-2 w-full rounded-2xl border border-slate-300 px-4 py-3 focus:ring-2 focus:ring-indigo-500">
                             <option value="">Select campus</option>
-                            <option value="Alaminos Campus" {{ old('campus') === 'Alaminos Campus' ? 'selected' : '' }}>Alaminos Campus</option>
-                            <option value="Lingayen Campus" {{ old('campus') === 'Lingayen Campus' ? 'selected' : '' }}>Lingayen Campus</option>
-                            <option value="Binmaley Campus" {{ old('campus') === 'Binmaley Campus' ? 'selected' : '' }}>Binmaley Campus</option>
+                            @foreach(\App\Models\User::CAMPUSES as $campusOption)
+                                <option value="{{ $campusOption }}" {{ old('campus') === $campusOption ? 'selected' : '' }}>{{ $campusOption }}</option>
+                            @endforeach
                         </select>
                     </label>
                 </div>
+                <fieldset>
+                    <legend class="text-sm font-medium text-slate-700">Who is this event for?</legend>
+                    <div class="mt-2 grid gap-3 md:grid-cols-2">
+                        <label class="flex cursor-pointer items-start gap-3 rounded-2xl border border-slate-300 px-4 py-3 has-[:checked]:border-indigo-500 has-[:checked]:bg-indigo-50">
+                            <input type="radio" name="is_university_wide" value="0" class="mt-1" {{ old('is_university_wide', '0') !== '1' ? 'checked' : '' }} />
+                            <span class="text-sm"><span class="block font-semibold text-slate-800">This campus only</span><span class="text-xs text-slate-500">Only the selected campus will see it (e.g. Intrams).</span></span>
+                        </label>
+                        <label class="flex cursor-pointer items-start gap-3 rounded-2xl border border-slate-300 px-4 py-3 has-[:checked]:border-indigo-500 has-[:checked]:bg-indigo-50">
+                            <input type="radio" name="is_university_wide" value="1" class="mt-1" {{ old('is_university_wide') === '1' ? 'checked' : '' }} />
+                            <span class="text-sm"><span class="block font-semibold text-slate-800">All campuses</span><span class="text-xs text-slate-500">Every campus sees it, even if held at one campus (e.g. a University Meet).</span></span>
+                        </label>
+                    </div>
+                </fieldset>
                 <div class="grid gap-4 md:grid-cols-2">
                     <label class="block">
                         <span class="text-sm font-medium text-slate-700">Start Date</span>
@@ -136,9 +149,9 @@
                     <span>Filter:</span>
                     <select id="campus-filter" class="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
                         <option value="All Campus">All Campus</option>
-                        <option value="Alaminos Campus">Alaminos Campus</option>
-                        <option value="Lingayen Campus">Lingayen Campus</option>
-                        <option value="Binmaley Campus">Binmaley Campus</option>
+                        @foreach(\App\Models\User::CAMPUSES as $campusOption)
+                            <option value="{{ $campusOption }}">{{ $campusOption }}</option>
+                        @endforeach
                     </select>
                 </label>
             </div>

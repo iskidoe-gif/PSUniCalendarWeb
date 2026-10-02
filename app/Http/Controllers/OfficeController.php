@@ -21,8 +21,16 @@ class OfficeController extends Controller
         $user = Auth::user();
         $email = $user->email;
 
-        // ---- Public calendar (approved events, all offices) ----
-        $approvedEvents = EventRequest::where('status', 'approved')->get();
+        // ---- Calendar: approved events this office may see ----
+        // University-wide offices see every campus; a campus office sees its own campus,
+        // events open to all campuses (wherever they're held), and always its own requests.
+        $approvedEvents = EventRequest::where('status', 'approved')
+            ->get()
+            ->filter(fn ($event) => $event->isVisibleTo($user))
+            ->values();
+
+        // Campus filter on the calendar: only the campuses this office can actually see
+        $calendarCampuses = $user->isCampusOffice() ? [$user->campus] : \App\Models\User::CAMPUSES;
 
         $events = $approvedEvents
             ->sortBy('start_datetime')
@@ -33,11 +41,13 @@ class OfficeController extends Controller
                     'end' => $event->end_datetime,
                     'description' => $event->description,
                     'venue' => $event->venue_name,
-                    'campus' => $event->campus ?? 'All Campus',
+                    'campus' => $event->venueCampus(),
+                    'university_wide' => (bool) $event->is_university_wide,
                     'office' => $event->name,
                     'sdg_number' => $event->sdg_number,
                 ];
-            });
+            })
+            ->values();   // re-index after sortBy so it becomes a JSON list, not an object
 
         // ---- This office's own requests (unfiltered) ----
         $ownRequests = EventRequest::where('email', $email)
@@ -73,6 +83,15 @@ class OfficeController extends Controller
             ->whereIn('status', EventRequest::NOTIFIABLE_STATUSES)
             ->whereNull('read_at')
             ->sortByDesc('updated_at')
+            ->values();
+
+        // Every notification (read and unread) for the bell dropdown: unread first, then newest
+        $allNotifications = $ownRequests
+            ->whereIn('status', EventRequest::NOTIFIABLE_STATUSES)
+            ->sortBy([
+                fn ($a, $b) => ($a->read_at === null ? 0 : 1) <=> ($b->read_at === null ? 0 : 1),
+                fn ($a, $b) => $b->updated_at <=> $a->updated_at,
+            ])
             ->values();
 
         // ---- Reminder banner: next approved event within 48 hours ----
@@ -116,6 +135,8 @@ class OfficeController extends Controller
             'submittedThisMonth',
             'approvedThisMonth',
             'unreadNotifications',
+            'allNotifications',
+            'calendarCampuses',
             'reminder',
             'favoriteVenues',
             'recentActivity',
@@ -215,6 +236,7 @@ class OfficeController extends Controller
             'venue_name' => 'required|string|max:255',
             'campus' => 'required|string|max:255',
             'sdg_number' => ['nullable', 'integer', 'between:1,17'],
+            'is_university_wide' => ['nullable', 'boolean'],
             'start_datetime' => 'required|date',
             'end_datetime' => 'required|date|after_or_equal:start_datetime',
             'description' => 'nullable|string',
@@ -255,6 +277,7 @@ class OfficeController extends Controller
                 'title' => $request->input('title'),
                 'venue_name' => $request->input('venue_name'),
                 'campus' => $request->input('campus'),
+                'is_university_wide' => $request->boolean('is_university_wide'),
                 'sdg_number' => $request->input('sdg_number'),
                 'description' => $request->input('description', ''),
                 'start_datetime' => $request->input('start_datetime'),
@@ -277,6 +300,7 @@ class OfficeController extends Controller
             'title' => $request->input('title'),
             'venue_name' => $request->input('venue_name'),
             'campus' => $request->input('campus'),
+            'is_university_wide' => $request->boolean('is_university_wide'),
             'sdg_number' => $request->input('sdg_number'),
             'description' => $request->input('description', ''),
             'start_datetime' => $request->input('start_datetime'),
@@ -303,6 +327,7 @@ class OfficeController extends Controller
             'title' => $original->title,
             'venue_name' => $original->venue_name,
             'campus' => $original->campus,
+            'is_university_wide' => $original->is_university_wide ? '1' : '0',
             'sdg_number' => $original->sdg_number,
             'description' => $original->description,
             'start_datetime' => optional($original->start_datetime)->format('Y-m-d\TH:i'),
@@ -327,6 +352,7 @@ class OfficeController extends Controller
             'title' => $original->title,
             'venue_name' => $original->venue_name,
             'campus' => $original->campus,
+            'is_university_wide' => $original->is_university_wide ? '1' : '0',
             'sdg_number' => $original->sdg_number,
             'description' => $original->description,
             'start_datetime' => optional($original->start_datetime)->format('Y-m-d\TH:i'),
