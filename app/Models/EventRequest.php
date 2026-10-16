@@ -39,13 +39,35 @@ class EventRequest extends Model
 
     /**
      * Statuses that mean "this office can still edit or cancel this request".
+     * "returned" = the Planning Office sent it back for revision.
      */
-    public const EDITABLE_STATUSES = ['pending', 'conflict'];
+    public const EDITABLE_STATUSES = ['pending', 'conflict', 'returned'];
 
     /**
      * Statuses that represent a Planning Office decision the office hasn't seen yet.
      */
-    public const NOTIFIABLE_STATUSES = ['approved', 'rejected', 'conflict'];
+    public const NOTIFIABLE_STATUSES = ['approved', 'rejected', 'conflict', 'returned'];
+
+    /**
+     * Statuses waiting for a Planning Office decision.
+     */
+    public const REVIEW_STATUSES = ['pending', 'conflict'];
+
+    /** Event scopes (stored as the is_university_wide flag). */
+    public const SCOPE_CAMPUS_SPECIFIC = 'CAMPUS_SPECIFIC';
+    public const SCOPE_UNIVERSITY_WIDE = 'UNIVERSITY_WIDE';
+
+    /**
+     * Readable status for badges and tables.
+     */
+    public static function statusLabel(string $status): string
+    {
+        return match ($status) {
+            'conflict' => 'Conflict review',
+            'returned' => 'Returned for revision',
+            default => ucfirst($status),
+        };
+    }
 
     /**
      * Campus where the event is held (guessed from the venue name for older requests).
@@ -53,6 +75,17 @@ class EventRequest extends Model
     public function venueCampus(): string
     {
         return $this->campus ?: (User::campusFromText($this->venue_name) ?? 'All Campus');
+    }
+
+    /**
+     * UNIVERSITY_WIDE when the event is open to every campus (or held for "All Campus"),
+     * otherwise CAMPUS_SPECIFIC.
+     */
+    public function scope(): string
+    {
+        return $this->is_university_wide || $this->venueCampus() === 'All Campus'
+            ? self::SCOPE_UNIVERSITY_WIDE
+            : self::SCOPE_CAMPUS_SPECIFIC;
     }
 
     /**

@@ -1,57 +1,68 @@
 @extends('layouts.planning-office')
 
 @section('title', 'Settings')
-
-@php($inputClass = 'mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm font-normal focus:outline-none focus:ring-2 focus:ring-emerald-600')
+@section('subheading', 'Manage the Planning Office account.')
 
 @section('content')
-    <div class="mb-6">
-        <p class="text-xs font-bold uppercase tracking-[0.2em] text-emerald-800">System</p>
-        <h1 class="mt-1 text-2xl font-bold text-gray-800">Settings</h1>
-        <p class="mt-1 text-sm text-gray-500">Manage the Planning Office account.</p>
-    </div>
+    <div class="od-two-col po-two-equal">
+        <section class="od-card">
+            <div class="od-card__head">
+                <h2 class="od-card__title">Account details</h2>
+            </div>
+            <form method="POST" action="{{ route('planning_office.settings.profile') }}" class="od-form" style="gap:12px">
+                @csrf
+                @method('PATCH')
 
-    <div class="grid max-w-5xl gap-6 lg:grid-cols-2">
-        <form method="POST" action="{{ route('planning_office.settings.profile') }}" class="space-y-4 rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
-            @csrf
-            @method('PATCH')
-            <h2 class="text-lg font-bold text-gray-800">Account details</h2>
+                @if($errors->profile->any())
+                    <div class="od-alert od-alert--error" style="margin:0">{{ $errors->profile->first() }}</div>
+                @endif
 
-            @if($errors->profile->any())
-                <div class="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">{{ $errors->profile->first() }}</div>
-            @endif
+                <label class="od-field">
+                    <span class="od-label">Display name</span>
+                    <input name="name" value="{{ old('name', $user->name) }}" required class="od-input od-input--sm">
+                </label>
+                <label class="od-field">
+                    <span class="od-label">Email</span>
+                    <input type="email" name="email" value="{{ old('email', $user->email) }}" required class="od-input od-input--sm">
+                </label>
+                <label class="od-field">
+                    <span class="od-label">Current password <span class="od-muted" style="font-weight:400">(to confirm changes)</span></span>
+                    <input type="password" name="current_password" required autocomplete="current-password" class="od-input od-input--sm">
+                </label>
+                <div class="od-modal__actions">
+                    <button type="submit" class="od-btn od-btn--primary od-btn--sm">Save details</button>
+                </div>
+            </form>
+        </section>
 
-            <label class="block text-sm font-medium text-slate-700">Display name
-                <input name="name" value="{{ old('name', $user->name) }}" required class="{{ $inputClass }}">
-            </label>
-            <label class="block text-sm font-medium text-slate-700">Email
-                <input type="email" name="email" value="{{ old('email', $user->email) }}" required class="{{ $inputClass }}">
-            </label>
-            <label class="block text-sm font-medium text-slate-700">Current password <span class="font-normal text-slate-400">(to confirm changes)</span>
-                <input type="password" name="current_password" required class="{{ $inputClass }}">
-            </label>
-            <button type="submit" class="rounded-lg bg-emerald-700 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-800">Save details</button>
-        </form>
+        <section class="od-card">
+            <div class="od-card__head">
+                <h2 class="od-card__title">Change password</h2>
+            </div>
+            <form method="POST" action="{{ route('planning_office.settings.password') }}" class="od-form" style="gap:12px">
+                @csrf
+                @method('PATCH')
 
-        <form method="POST" action="{{ route('planning_office.settings.password') }}" class="space-y-4 rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
-            @csrf
-            @method('PATCH')
-            <h2 class="text-lg font-bold text-gray-800">Change password</h2>
+                @if($errors->password->any())
+                    <div class="od-alert od-alert--error" style="margin:0">{{ $errors->password->first() }}</div>
+                @endif
 
-            @if($errors->password->any())
-                <div class="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">{{ $errors->password->first() }}</div>
-            @endif
-
-            <label class="block text-sm font-medium text-slate-700">Current password
-                <input type="password" name="current_password" required class="{{ $inputClass }}">
-            </label>
-            <label class="block text-sm font-medium text-slate-700">New password
-                <input type="password" name="new_password" required minlength="8" class="{{ $inputClass }}">
-            </label>
-            <label class="block text-sm font-medium text-slate-700">Confirm new password
-                <input type="password" name="new_password_confirmation" required minlength="8" class="{{ $inputClass }}">
-            </label>
-            <button type="submit" class="rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-700">Update password</button>
-        </form>
+                <label class="od-field">
+                    <span class="od-label">Current password</span>
+                    <input type="password" name="current_password" required autocomplete="current-password" class="od-input od-input--sm">
+                </label>
+                <label class="od-field">
+                    <span class="od-label">New password</span>
+                    <input type="password" name="new_password" required minlength="8" autocomplete="new-password" class="od-input od-input--sm">
+                </label>
+                <label class="od-field">
+                    <span class="od-label">Confirm new password</span>
+                    <input type="password" name="new_password_confirmation" required minlength="8" autocomplete="new-password" class="od-input od-input--sm">
+                </label>
+                <div class="od-modal__actions">
+                    <button type="submit" class="od-btn od-btn--primary od-btn--sm">Update password</button>
+                </div>
+            </form>
+        </section>
     </div>
 @endsection

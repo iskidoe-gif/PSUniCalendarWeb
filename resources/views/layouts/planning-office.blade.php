@@ -1,143 +1,192 @@
+@php
+    $user = auth()->user();
+    // Avatar initials: same rule as the Office dashboard
+    $nameWords = array_values(array_filter(preg_split('/\s+/', trim(preg_replace('/[^\p{L}\s]/u', ' ', preg_replace('/\([^)]*\)/', '', $user->name)))))) ?: ['P'];
+    $nameAbbreviation = preg_match('/\(([\p{L}]{2,4})\)/u', $user->name, $abbr) ? $abbr[1] : null;
+    $initials = $nameAbbreviation
+        ? mb_strtoupper($nameAbbreviation)
+        : mb_strtoupper(mb_substr($nameWords[0], 0, 1) . (count($nameWords) > 1 ? mb_substr(end($nameWords), 0, 1) : ''));
+
+    $campusShortName = fn ($campus) => str_replace(' Campus', '', $campus);
+    $currentOfficeId = (int) optional(request()->route('office'))->id;
+    $navClass = fn (bool $active) => 'od-nav-link' . ($active ? ' is-active' : '');
+@endphp
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@yield('title', 'Planning Office') - UniCalendar</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Archivo+Black&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="{{ asset('css/office-dashboard.css') }}" rel="stylesheet">
+    <link href="{{ asset('css/planning-office.css') }}" rel="stylesheet">
     @stack('head')
 </head>
-<body class="bg-slate-100 font-sans antialiased text-slate-900">
-    @php
-        $navBase = 'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition';
-        $navActive = 'bg-white/15 text-white';
-        $navInactive = 'text-emerald-100 hover:bg-white/10 hover:text-white';
-        $campusShortName = fn ($campus) => str_replace(' Campus', '', $campus);
-        $currentOfficeId = (int) optional(request()->route('office'))->id;
-        $logoPath = collect(['images/psu-logo.png', 'images/logo.png'])->first(fn ($path) => file_exists(public_path($path)));
-    @endphp
+<body class="od-body">
+    <!-- ================= Sidebar ================= -->
+    <aside id="sidebar" class="od-sidebar" aria-label="Main navigation">
+        <svg class="psu-waves" viewBox="0 0 200 1200" preserveAspectRatio="none" aria-hidden="true">
+            <g fill="none" stroke="#8d98d4" stroke-width="0.8">
+                @for($i = 0; $i < 14; $i++)
+                    <path d="M{{ 150 - $i * 6 }} 0 C {{ 40 + $i * 8 }} 250, {{ 200 - $i * 7 }} 500, {{ 90 + $i * 4 }} 750 S {{ 10 + $i * 9 }} 1050, {{ 120 - $i * 3 }} 1200" />
+                @endfor
+            </g>
+        </svg>
 
-    <div class="flex min-h-screen">
-        {{-- Backdrop behind the slide-in sidebar on small screens --}}
-        <div id="sidebar-backdrop" class="fixed inset-0 z-30 hidden bg-black/40 md:hidden"></div>
+        <div class="od-sidebar__inner">
+            <a href="{{ route('planning_office.dashboard') }}" class="od-brand">
+                <span class="od-brand__seal">
+                    <img src="{{ asset('images/psu-logo.png') }}" alt="Pangasinan State University seal"
+                         onerror="this.outerHTML='<span class=&quot;od-seal-fallback&quot;>PSU</span>'" />
+                </span>
+                <span class="od-brand__text">
+                    <span class="od-brand__name">UniCalendar</span>
+                    <span class="od-brand__tag">PLANNING OFFICE</span>
+                </span>
+            </a>
 
-        {{-- Sidebar (always on the left) --}}
-        <aside id="sidebar" class="fixed inset-y-0 left-0 z-40 flex w-72 shrink-0 -translate-x-full flex-col bg-emerald-900 text-white transition-transform duration-200 md:sticky md:top-0 md:h-screen md:translate-x-0">
-            {{-- Logo --}}
-            <div class="flex items-center gap-3 border-b border-white/10 px-6 py-5">
-                @if($logoPath)
-                    <img src="{{ asset($logoPath) }}" alt="PSU logo" class="h-11 w-11 rounded-full bg-white object-contain p-0.5">
-                @else
-                    <div class="flex h-11 w-11 items-center justify-center rounded-full bg-amber-400 text-sm font-extrabold text-emerald-950">PSU</div>
-                @endif
-                <div class="leading-tight">
-                    <p class="text-base font-bold">UniCalendar</p>
-                    <p class="text-xs text-emerald-200">Planning Office</p>
-                </div>
-            </div>
-
-            <nav class="flex-1 space-y-6 overflow-y-auto px-4 py-5">
-                {{-- Dashboard --}}
-                <div>
-                    <a href="{{ route('planning_office.dashboard') }}" class="{{ $navBase }} {{ request()->routeIs('planning_office.dashboard', 'planning_office.calendar', 'planning_office.pending', 'planning_office.venues*') ? $navActive : $navInactive }}">
-                        <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 12l9-8 9 8M5 10v10h5v-6h4v6h5V10"/></svg>
-                        Dashboard
-                    </a>
-                </div>
-
-                {{-- Offices, grouped by campus --}}
-                <div>
-                    <p class="mb-2 px-3 text-[11px] font-semibold uppercase tracking-[0.2em] text-emerald-300">Offices</p>
-                    <div class="space-y-1">
-                        @foreach($sidebarOfficesByCampus as $campus => $offices)
-                            @php($campusOpen = $offices->contains('id', $currentOfficeId))
-                            <details class="group" {{ $campusOpen ? 'open' : '' }}>
-                                <summary class="{{ $navBase }} {{ $navInactive }} cursor-pointer list-none select-none">
-                                    <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 21V8l8-5 8 5v13M9 21v-6h6v6"/></svg>
-                                    <span class="flex-1">{{ $campusShortName($campus) }}</span>
-                                    <span class="rounded-full bg-white/10 px-2 text-xs">{{ $offices->count() }}</span>
-                                    <svg class="h-4 w-4 transition group-open:rotate-90" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
-                                </summary>
-                                <div class="ml-5 mt-1 space-y-0.5 border-l border-white/15 pl-3">
-                                    @forelse($offices as $office)
-                                        <a href="{{ route('planning_office.offices.show', $office) }}" class="block truncate rounded-md px-3 py-1.5 text-sm {{ $currentOfficeId === $office->id ? 'bg-white/15 text-white' : 'text-emerald-100 hover:bg-white/10 hover:text-white' }}" title="{{ $office->name }}">{{ $office->name }}</a>
-                                    @empty
-                                        <p class="px-3 py-1.5 text-xs italic text-emerald-300">No offices yet</p>
-                                    @endforelse
-                                </div>
-                            </details>
-                        @endforeach
-                    </div>
-                </div>
-
-                {{-- System --}}
-                <div>
-                    <p class="mb-2 px-3 text-[11px] font-semibold uppercase tracking-[0.2em] text-emerald-300">System</p>
-                    <div class="space-y-1">
-                        <a href="{{ route('planning_office.settings') }}" class="{{ $navBase }} {{ request()->routeIs('planning_office.settings*') ? $navActive : $navInactive }}">
-                            <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10.3 4.3a1.7 1.7 0 013.4 0 1.7 1.7 0 002.6 1.1 1.7 1.7 0 012.4 2.4 1.7 1.7 0 001 2.5 1.7 1.7 0 010 3.4 1.7 1.7 0 00-1 2.6 1.7 1.7 0 01-2.4 2.4 1.7 1.7 0 00-2.6 1 1.7 1.7 0 01-3.4 0 1.7 1.7 0 00-2.5-1 1.7 1.7 0 01-2.4-2.4 1.7 1.7 0 00-1.1-2.6 1.7 1.7 0 010-3.4 1.7 1.7 0 001.1-2.5 1.7 1.7 0 012.4-2.4 1.7 1.7 0 002.5-1.1z"/><circle cx="12" cy="12" r="3"/></svg>
-                            Settings
-                        </a>
-                        <a href="{{ route('planning_office.notifications') }}" class="{{ $navBase }} {{ request()->routeIs('planning_office.notifications') ? $navActive : $navInactive }}">
-                            <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.4-1.4A2 2 0 0118 14.2V11a6 6 0 10-12 0v3.2a2 2 0 01-.6 1.4L4 17h5m6 0a3 3 0 11-6 0"/></svg>
-                            <span class="flex-1">Notifications</span>
-                            @if($sidebarNotificationCount > 0)
-                                <span class="rounded-full bg-amber-400 px-2 text-xs font-bold text-emerald-950">{{ $sidebarNotificationCount }}</span>
-                            @endif
-                        </a>
-                    </div>
-                </div>
+            <p class="od-nav-label">Menu</p>
+            <nav class="od-nav">
+                <a href="{{ route('planning_office.dashboard') }}" class="{{ $navClass(request()->routeIs('planning_office.dashboard', 'planning_office.calendar')) }}">
+                    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" /></svg>
+                    <span class="od-nav-text">Dashboard</span>
+                </a>
+                <a href="{{ route('planning_office.pending') }}" class="{{ $navClass(request()->routeIs('planning_office.pending')) }}">
+                    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                    <span class="od-nav-text">Review requests</span>
+                    @if($sidebarNotificationCount > 0)
+                        <span class="po-nav-count">{{ $sidebarNotificationCount }}</span>
+                    @endif
+                </a>
+                <a href="{{ route('planning_office.venues') }}" class="{{ $navClass(request()->routeIs('planning_office.venues*')) }}">
+                    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" /></svg>
+                    <span class="od-nav-text">Venues</span>
+                </a>
             </nav>
 
-            {{-- Logout --}}
-            <div class="border-t border-white/10 p-4">
-                <p class="mb-3 truncate px-1 text-xs text-emerald-200">Signed in as <span class="font-semibold text-white">{{ auth()->user()->name }}</span></p>
+            {{-- Offices, grouped by campus --}}
+            <p class="od-nav-label">Offices</p>
+            <nav class="od-nav">
+                @foreach($sidebarOfficesByCampus as $campus => $offices)
+                    @php($campusOpen = $offices->contains('id', $currentOfficeId))
+                    <details class="po-group" {{ $campusOpen ? 'open' : '' }}>
+                        <summary class="{{ $navClass($campusOpen) }}">
+                            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 21h16.5M4.5 3h15M5.25 3v18m13.5-18v18M9 6.75h1.5m-1.5 3h1.5m-1.5 3h1.5m3-6H15m-1.5 3H15m-1.5 3H15M9 21v-3.375c0-.621.504-1.125 1.125-1.125h3.75c.621 0 1.125.504 1.125 1.125V21" /></svg>
+                            <span class="od-nav-text po-group__name">{{ $campusShortName($campus) }}</span>
+                            <span class="po-nav-count po-nav-count--muted">{{ $offices->count() }}</span>
+                        </summary>
+                        <div class="po-subnav">
+                            @forelse($offices as $office)
+                                <a href="{{ route('planning_office.offices.show', $office) }}" class="po-subnav__link {{ $currentOfficeId === $office->id ? 'is-active' : '' }}" title="{{ $office->name }}">{{ $office->name }}</a>
+                            @empty
+                                <p class="po-subnav__empty">No offices yet</p>
+                            @endforelse
+                        </div>
+                    </details>
+                @endforeach
+            </nav>
+
+            <p class="od-nav-label">Account</p>
+            <nav class="od-nav">
+                <a href="{{ route('planning_office.notifications') }}" class="{{ $navClass(request()->routeIs('planning_office.notifications')) }}">
+                    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.4-1.4A2 2 0 0118 14.2V11a6 6 0 10-12 0v3.2a2 2 0 01-.6 1.4L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /></svg>
+                    <span class="od-nav-text">Notifications</span>
+                </a>
+                <a href="{{ route('planning_office.settings') }}" class="{{ $navClass(request()->routeIs('planning_office.settings*')) }}">
+                    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    <span class="od-nav-text">Settings</span>
+                </a>
+            </nav>
+
+            <div class="od-sidebar__footer">
+                <div class="od-account">
+                    <span class="od-avatar" aria-hidden="true">{{ $initials }}</span>
+                    <div class="od-account__text">
+                        <p class="od-account__name">{{ $user->name }}</p>
+                        <p class="od-account__role">Planning Office account</p>
+                    </div>
+                </div>
                 <form method="POST" action="{{ route('planning_office.logout') }}">
                     @csrf
-                    <button type="submit" class="flex w-full items-center justify-center gap-2 rounded-lg bg-rose-500 px-3 py-2 text-sm font-semibold text-white hover:bg-rose-600">
-                        <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4-4-4M21 12H9M13 20H5a2 2 0 01-2-2V6a2 2 0 012-2h8"/></svg>
-                        Logout
+                    <button type="submit" class="od-logout">
+                        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9" /></svg>
+                        <span class="od-nav-text">Logout</span>
                     </button>
                 </form>
             </div>
-        </aside>
+        </div>
+    </aside>
+    <div id="sidebar-overlay" class="od-sidebar-overlay hidden"></div>
 
-        {{-- Page content --}}
-        <main class="min-w-0 flex-1 p-4 sm:p-8">
-            {{-- Menu button to open the sidebar on small screens --}}
-            <div class="mb-4 flex items-center gap-3 md:hidden">
-                <button type="button" id="sidebar-toggle" class="rounded-lg bg-emerald-900 p-2 text-white" aria-label="Open navigation" aria-controls="sidebar" aria-expanded="false">
-                    <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" d="M4 6h16M4 12h16M4 18h16"/></svg>
-                </button>
-                <span class="font-semibold text-emerald-900">UniCalendar · Planning Office</span>
-            </div>
+    <!-- ================= Main ================= -->
+    <main class="od-main">
+        <div class="od-container">
+            <header class="od-topbar">
+                <div class="od-topbar__left">
+                    <button type="button" id="sidebar-toggle" class="od-icon-btn od-menu-btn" aria-label="Open menu" aria-controls="sidebar" aria-expanded="false">
+                        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" /></svg>
+                    </button>
+                    <div>
+                        <h1 class="od-topbar__title">
+                            @hasSection('heading')
+                                @yield('heading')
+                            @else
+                                @yield('title', 'Planning Office')
+                            @endif
+                        </h1>
+                        <p class="od-topbar__sub">@yield('subheading', now()->format('l, F j, Y'))</p>
+                    </div>
+                </div>
+
+                <div class="od-topbar__actions">
+                    @yield('topbar-actions')
+                    <a href="{{ route('planning_office.notifications') }}" class="od-icon-btn" aria-label="Notifications{{ $sidebarNotificationCount ? ' (' . $sidebarNotificationCount . ' awaiting review)' : '' }}">
+                        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.4-1.4A2 2 0 0118 14.2V11a6 6 0 10-12 0v3.2a2 2 0 01-.6 1.4L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                        </svg>
+                        @if($sidebarNotificationCount > 0)
+                            <span class="od-icon-btn__badge">{{ $sidebarNotificationCount }}</span>
+                        @endif
+                    </a>
+                </div>
+            </header>
 
             @if (session('success'))
-                <div class="mb-6 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">{{ session('success') }}</div>
+                <div class="od-alert od-alert--success">{{ session('success') }}</div>
+            @endif
+            @if (session('info'))
+                <div class="od-alert od-alert--info">{{ session('info') }}</div>
             @endif
             @if (session('error'))
-                <div class="mb-6 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">{{ session('error') }}</div>
+                <div class="od-alert od-alert--error">{{ session('error') }}</div>
             @endif
 
             @yield('content')
-        </main>
-    </div>
+        </div>
+    </main>
 
     <script>
         (function () {
-            const toggle = document.getElementById('sidebar-toggle');
-            const sidebar = document.getElementById('sidebar');
-            const backdrop = document.getElementById('sidebar-backdrop');
-            if (!toggle || !sidebar || !backdrop) return;
+            var sidebar = document.getElementById('sidebar');
+            var toggle = document.getElementById('sidebar-toggle');
+            var overlay = document.getElementById('sidebar-overlay');
+            if (!sidebar || !toggle || !overlay) return;
 
             function setOpen(open) {
-                sidebar.classList.toggle('-translate-x-full', !open);
-                backdrop.classList.toggle('hidden', !open);
-                toggle.setAttribute('aria-expanded', String(open));
+                sidebar.classList.toggle('is-open', open);
+                overlay.classList.toggle('hidden', !open);
+                toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
             }
 
             toggle.addEventListener('click', function () { setOpen(true); });
-            backdrop.addEventListener('click', function () { setOpen(false); });
+            overlay.addEventListener('click', function () { setOpen(false); });
+            document.addEventListener('keydown', function (e) {
+                if (e.key === 'Escape') setOpen(false);
+            });
         })();
     </script>
     @stack('scripts')

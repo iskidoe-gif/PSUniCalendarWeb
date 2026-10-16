@@ -13,7 +13,7 @@
     $monthSubmitted = $submittedThisMonth ?? 0;
     $monthApproved = $approvedThisMonth ?? 0;
 
-    $statusLabel = fn ($status) => $status === 'conflict' ? 'Conflict review' : ucfirst($status);
+    $statusLabel = fn ($status) => \App\Models\EventRequest::statusLabel($status);
     $profileFields = ['name', 'email', 'contact_person', 'contact_number', 'profile_password'];
     $profileFormOpen = $errors->hasAny($profileFields) || session('open_profile_form');
     $settingsOpen = $profileFormOpen || $errors->hasAny(['current_password', 'new_password']) || session('open_password_form');
@@ -152,7 +152,7 @@
                                         <p class="od-dropdown__item-title">{{ $n->title }}</p>
                                         <p class="od-dropdown__item-meta">
                                             Status changed to
-                                            <span class="od-text-{{ $n->status }}">{{ $n->status === 'conflict' ? 'conflict review' : $n->status }}</span>
+                                            <span class="od-text-{{ $n->status }}">{{ mb_strtolower($statusLabel($n->status)) }}</span>
                                             · {{ $n->updated_at?->diffForHumans() }}
                                         </p>
                                         @if($n->planning_note)
@@ -397,7 +397,7 @@
                     <div class="od-filters">
                         <input type="search" name="q" value="{{ $filterQuery ?? '' }}" placeholder="Search title or venue..." autocomplete="off" class="od-input od-input--sm" aria-label="Search title or venue" />
                         <select name="status" class="od-input od-input--sm" aria-label="Status">
-                            @foreach(['all' => 'All status', 'pending' => 'Pending', 'conflict' => 'Conflict review', 'approved' => 'Approved', 'rejected' => 'Rejected', 'cancelled' => 'Cancelled'] as $value => $label)
+                            @foreach(['all' => 'All status', 'pending' => 'Pending', 'conflict' => 'Conflict review', 'approved' => 'Approved', 'returned' => 'Returned for revision', 'rejected' => 'Rejected', 'cancelled' => 'Cancelled'] as $value => $label)
                                 <option value="{{ $value }}" {{ ($filterStatus ?? 'all') === $value ? 'selected' : '' }}>{{ $label }}</option>
                             @endforeach
                         </select>
@@ -434,7 +434,7 @@
                                     <td class="no-print">
                                         <div class="od-table__actions">
                                             <a href="{{ route('office.requests.duplicate', $r->id) }}" class="od-link">Duplicate</a>
-                                            @if(in_array($r->status, ['pending', 'conflict']))
+                                            @if(in_array($r->status, \App\Models\EventRequest::EDITABLE_STATUSES))
                                                 <span class="od-table__sep">·</span>
                                                 <a href="{{ route('office.requests.edit', $r->id) }}" class="od-link">Edit</a>
                                                 <span class="od-table__sep">·</span>
@@ -482,7 +482,7 @@
                                     <div class="od-timeline__side">
                                         <span class="od-badge od-badge--{{ $request->status }}">{{ $statusLabel($request->status) }}</span>
                                         <a href="{{ route('office.requests.duplicate', $request->id) }}" title="Duplicate" aria-label="Duplicate" class="od-action">⧉</a>
-                                        @if(in_array($request->status, ['pending', 'conflict']))
+                                        @if(in_array($request->status, \App\Models\EventRequest::EDITABLE_STATUSES))
                                             <a href="{{ route('office.requests.edit', $request->id) }}" title="Edit" aria-label="Edit" class="od-action">✎</a>
                                             <form method="POST" action="{{ route('office.requests.cancel', $request->id) }}" onsubmit="return confirm('Cancel this request?');">
                                                 @csrf
@@ -547,7 +547,7 @@
                                 <span class="od-badge od-badge--{{ $n->status }}">{{ $statusLabel($n->status) }}</span>
                             </div>
                             <p class="od-notif__meta">
-                                The Planning Office {{ $n->status === 'conflict' ? 'flagged a schedule conflict on' : $n->status }} this request
+                                The Planning Office {{ ['conflict' => 'flagged a schedule conflict on', 'returned' => 'returned for revision'][$n->status] ?? $n->status }} this request
                                 · <time datetime="{{ $n->updated_at?->toIso8601String() }}" title="{{ $n->updated_at?->format('M j, Y g:i A') }}">{{ $n->updated_at?->diffForHumans() }}</time>
                             </p>
                             <p class="od-notif__event">

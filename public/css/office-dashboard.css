@@ -30,6 +30,7 @@
     --approved: #047857;  --approved-bg: #d1fae5;
     --rejected: #be123c;  --rejected-bg: #ffe4e6;
     --cancelled: #64748b; --cancelled-bg: #e2e8f0;
+    --returned: #6d28d9;  --returned-bg: #ede9fe;
 
     --radius: 18px;
     --radius-sm: 10px;
@@ -625,11 +626,13 @@ textarea.od-input { resize: vertical; }
 .od-badge--approved  { background: var(--approved-bg);  color: var(--approved); }
 .od-badge--rejected  { background: var(--rejected-bg);  color: var(--rejected); }
 .od-badge--cancelled { background: var(--cancelled-bg); color: var(--cancelled); }
+.od-badge--returned  { background: var(--returned-bg);  color: var(--returned); }
 
 .od-text-pending  { color: var(--pending); font-weight: 600; }
 .od-text-conflict { color: var(--conflict); font-weight: 600; }
 .od-text-approved { color: var(--approved); font-weight: 600; }
 .od-text-rejected { color: var(--rejected); font-weight: 600; }
+.od-text-returned { color: var(--returned); font-weight: 600; }
 
 /* ==========================================================================
    Request timeline ("Your request status")
@@ -665,6 +668,7 @@ textarea.od-input { resize: vertical; }
 .od-timeline__item[data-status="approved"]::before  { background: #10b981; }
 .od-timeline__item[data-status="rejected"]::before  { background: #f43f5e; }
 .od-timeline__item[data-status="cancelled"]::before { background: var(--cancelled); }
+.od-timeline__item[data-status="returned"]::before  { background: var(--returned); }
 .od-timeline__title { font-weight: 600; }
 .od-timeline__meta { font-size: 13px; color: var(--muted); }
 .od-timeline__note {
@@ -730,35 +734,7 @@ textarea.od-input { resize: vertical; }
 .od-calendar-toolbar label { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: #3b3f5c; }
 .od-calendar { min-height: 500px; }
 
-.od-calendar .fc {
-    --fc-border-color: var(--border);
-    --fc-button-bg-color: var(--navy-600);
-    --fc-button-border-color: var(--navy-600);
-    --fc-button-hover-bg-color: var(--navy-700);
-    --fc-button-hover-border-color: var(--navy-700);
-    --fc-button-active-bg-color: var(--navy-800);
-    --fc-button-active-border-color: var(--navy-800);
-    --fc-today-bg-color: var(--gold-50);
-    --fc-event-bg-color: var(--navy-600);
-    --fc-event-border-color: var(--navy-600);
-    font-size: 13px;
-}
-.od-calendar .fc .fc-toolbar-title { font-family: var(--serif); font-size: 22px; color: var(--navy-800); }
-.od-calendar .fc .fc-button { border-radius: 10px; font-size: 13px; font-weight: 600; text-transform: capitalize; box-shadow: none; }
-.od-calendar .fc .fc-button:focus { box-shadow: 0 0 0 3px rgba(242, 195, 24, .5); }
-.od-calendar .fc .fc-col-header-cell { background: var(--navy-50); }
-.od-calendar .fc .fc-col-header-cell-cushion { padding: 8px 4px; color: var(--muted); font-size: 11.5px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; text-decoration: none; }
-.od-calendar .fc .fc-daygrid-day-number { color: var(--text); text-decoration: none; }
-.od-calendar .fc .fc-day-today .fc-daygrid-day-number {
-    margin: 4px;
-    min-width: 26px; height: 26px;
-    display: flex; align-items: center; justify-content: center;
-    border-radius: 50%;
-    background: var(--gold-500);
-    color: var(--navy-900);
-    font-weight: 700;
-}
-.od-calendar .fc .fc-daygrid-day:hover { background: #fafbff; cursor: pointer; }
+/* The calendar grid itself is themed in event-calendar.css (.ec-calendar), shared by every page. */
 
 
 /* ==========================================================================
@@ -974,7 +950,6 @@ textarea.od-input { resize: vertical; }
     .od-form-grid, .od-profile-grid { grid-template-columns: minmax(0, 1fr); }
     .od-card { padding: 18px 16px; }
     .od-dropdown { width: min(320px, calc(100vw - 32px)); }
-    .od-calendar .fc .fc-toolbar { flex-direction: column; gap: 10px; }
 }
 
 /* ==========================================================================

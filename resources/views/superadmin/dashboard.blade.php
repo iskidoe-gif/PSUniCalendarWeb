@@ -1,109 +1,337 @@
 @extends('layouts.planning-office')
 
 @section('title', 'Dashboard')
+@section('heading', 'Planning Office Dashboard')
+@section('subheading')
+    Welcome, {{ auth()->user()->name }} · {{ now()->format('l, F j, Y') }}
+@endsection
 
 @push('head')
     <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.css" rel="stylesheet">
     <link href="{{ asset('css/event-calendar.css') }}" rel="stylesheet">
 @endpush
 
+@php
+    $dash = \App\Services\PlanningOfficeDashboard::class;
+    $statusLabel = fn ($status) => \App\Models\EventRequest::statusLabel($status);
+    $selectedCampus = $filters['campus'] ?? '';
+    $activityLabels = [
+        'submitted' => 'Submitted', 'edited' => 'Edited', 'cancelled' => 'Cancelled', 'approved' => 'Approved',
+        'rejected' => 'Rejected', 'returned' => 'Returned', 'rescheduled' => 'Rescheduled', 'conflict_resolved' => 'Conflict resolved',
+    ];
+    $activityBadge = [
+        'submitted' => 'pending', 'edited' => 'pending', 'cancelled' => 'cancelled', 'approved' => 'approved',
+        'rejected' => 'rejected', 'returned' => 'returned', 'rescheduled' => 'approved', 'conflict_resolved' => 'approved',
+    ];
+    $cards = [
+        ['Total events', $summary['total'], '', 'M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5'],
+        ['Upcoming events', $summary['upcoming'], '', 'M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z'],
+        ['Ongoing events', $summary['ongoing'], 'approved', 'M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.348a1.125 1.125 0 010 1.971l-11.54 6.347a1.125 1.125 0 01-1.667-.985V5.653z'],
+        ['Pending approvals', $summary['pending'], 'pending', 'M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25z'],
+        ['Completed events', $summary['completed'], 'cancelled', 'M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z'],
+        ['Scheduling conflicts', $summary['conflicts'], 'rejected', 'M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z'],
+    ];
+@endphp
+
 @section('content')
-    <div class="mb-6 flex flex-wrap items-end justify-between gap-4">
-        <div>
-            <p class="text-xs font-bold uppercase tracking-[0.2em] text-emerald-800">Planning Office</p>
-            <h1 class="mt-1 text-2xl font-bold text-gray-800">Dashboard</h1>
-            <p class="mt-1 text-sm text-gray-500">University-wide event and venue administration</p>
-        </div>
-        <p class="text-sm text-gray-500">{{ now()->format('l, F j, Y') }}</p>
-    </div>
+    @if($errors->any())
+        <div class="od-alert od-alert--error">{{ $errors->first() }}</div>
+    @endif
 
-    {{-- Quick actions --}}
-    <div class="mb-6 grid gap-4 md:grid-cols-3">
-        <a href="{{ route('planning_office.pending') }}" class="group flex items-center justify-between rounded-2xl border border-amber-200 bg-white p-5 shadow-sm transition hover:border-amber-400 hover:shadow">
-            <div>
-                <p class="text-sm font-semibold text-slate-800">Review requests</p>
-                <p class="mt-1 text-xs text-slate-500">{{ $pendingCount }} awaiting review{{ $conflictCount ? ' · ' . $conflictCount . ' with conflicts' : '' }}</p>
-            </div>
-            <span class="rounded-full bg-amber-100 px-3 py-1 text-lg font-bold text-amber-800">{{ $pendingCount + $conflictCount }}</span>
-        </a>
-        <a href="{{ route('planning_office.venues') }}" class="group flex items-center justify-between rounded-2xl border border-indigo-200 bg-white p-5 shadow-sm transition hover:border-indigo-400 hover:shadow">
-            <div>
-                <p class="text-sm font-semibold text-slate-800">Venue management</p>
-                <p class="mt-1 text-xs text-slate-500">Add, rename, or remove venues</p>
-            </div>
-            <span class="rounded-full bg-indigo-100 px-3 py-1 text-lg font-bold text-indigo-800">{{ $venueCount }}</span>
-        </a>
-        <div class="flex items-center justify-between rounded-2xl border border-emerald-200 bg-white p-5 shadow-sm">
-            <div>
-                <p class="text-sm font-semibold text-slate-800">Registered offices</p>
-                <p class="mt-1 text-xs text-slate-500">Browse them by campus in the sidebar</p>
-            </div>
-            <span class="rounded-full bg-emerald-100 px-3 py-1 text-lg font-bold text-emerald-800">{{ $officeCount }}</span>
+    {{-- ===== Filters (apply to every section; the calendar uses the campus filter only) ===== --}}
+    <form method="GET" action="{{ route('planning_office.dashboard') }}" class="od-card po-filterbar" aria-label="Dashboard filters">
+        <label class="od-field">
+            <span class="od-label">Campus</span>
+            <select name="campus" class="od-input od-input--sm">
+                <option value="">All Campuses</option>
+                @foreach(\App\Models\User::MAIN_CAMPUSES as $campusOption)
+                    <option value="{{ $campusOption }}" {{ $selectedCampus === $campusOption ? 'selected' : '' }}>{{ $campusOption }}</option>
+                @endforeach
+            </select>
+        </label>
+        <label class="od-field">
+            <span class="od-label">From</span>
+            <input type="date" name="from" value="{{ $filters['from'] ?? '' }}" class="od-input od-input--sm">
+        </label>
+        <label class="od-field">
+            <span class="od-label">To</span>
+            <input type="date" name="to" value="{{ $filters['to'] ?? '' }}" class="od-input od-input--sm">
+        </label>
+        <div class="po-filterbar__actions">
+            <button type="submit" class="od-btn od-btn--primary od-btn--sm">Apply filters</button>
+            @if($filters)
+                <a href="{{ route('planning_office.dashboard') }}" class="od-btn od-btn--ghost od-btn--sm">Reset</a>
+            @endif
         </div>
-    </div>
+    </form>
 
-    {{-- Campus stats: one card per campus with an account (User::MAIN_CAMPUSES) --}}
-    @php
-        $campusCardColors = ['emerald', 'indigo', 'amber', 'sky', 'violet', 'teal', 'orange', 'cyan', 'lime'];
-    @endphp
-    <div class="mb-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
-        @foreach(\App\Models\User::MAIN_CAMPUSES as $i => $campus)
-            @php $color = $campusCardColors[$i % count($campusCardColors)]; @endphp
-            <div class="rounded-2xl border border-{{ $color }}-200 bg-{{ $color }}-50 p-4 shadow-sm">
-                <p class="text-xs font-semibold uppercase tracking-[0.2em] text-{{ $color }}-700">{{ $campus }}</p>
-                <p class="mt-3 text-3xl font-bold text-{{ $color }}-900">{{ $campusEventCounts[$campus] ?? 0 }}</p>
+    {{-- ===== Summary ===== --}}
+    <p class="od-section-label">Planning Office Overview{{ $selectedCampus ? ' · ' . $selectedCampus . ' + university-wide' : ' · All Campuses' }}</p>
+    <section class="od-stats po-summary" aria-label="Summary">
+        @foreach($cards as [$label, $value, $modifier, $icon])
+            <div class="od-stat po-stat {{ $modifier ? 'od-stat--' . $modifier : '' }}">
+                <span class="po-stat__icon" aria-hidden="true">
+                    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="{{ $icon }}" /></svg>
+                </span>
+                <div>
+                    <p class="od-stat__label">{{ $label }}</p>
+                    <p class="od-stat__value">{{ $value }}</p>
+                </div>
             </div>
         @endforeach
-        <div class="rounded-2xl border border-slate-200 bg-slate-100 p-4 shadow-sm">
-            <p class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-700">University-wide events</p>
-            <p class="mt-3 text-3xl font-bold text-slate-900">{{ $universityWideEvents ?? 0 }}</p>
-        </div>
-        <div class="rounded-2xl border border-rose-200 bg-rose-50 p-4 shadow-sm">
-            <p class="text-xs font-semibold uppercase tracking-[0.2em] text-rose-700">Upcoming events</p>
-            <p class="mt-3 text-3xl font-bold text-rose-900">{{ $upcomingEvents ?? 0 }}</p>
-        </div>
-    </div>
+    </section>
 
-    <div id="calendar" class="bg-white rounded-xl shadow-sm border border-gray-200 mb-8 p-6">
-        <div class="flex items-center justify-between mb-4">
-            <h2 class="text-lg font-bold text-gray-800">Master Live Calendar</h2>
-            <span class="rounded-full bg-indigo-100 px-3 py-1 text-xs font-semibold text-indigo-700">Approved events</span>
+    {{-- ===== Pending approvals ===== --}}
+    <section id="pending-approvals" class="od-card">
+        <div class="od-card__head">
+            <div>
+                <h2 class="od-card__title">Pending Approvals</h2>
+                <p class="od-card__sub">Campus-specific and university-wide submissions waiting for a decision.</p>
+            </div>
+            <a href="{{ route('planning_office.pending') }}" class="od-link">Open full review →</a>
         </div>
-        <div class="mb-4 flex justify-end">
-            <label class="flex items-center gap-2 text-sm font-medium text-slate-700">
-                <span>Filter:</span>
-                <select id="campus-filter" class="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                    <option value="All Campus">All Campus</option>
-                    @foreach(\App\Models\User::MAIN_CAMPUSES as $campusOption)
-                        <option value="{{ $campusOption }}">{{ $campusOption }}</option>
+
+        <div class="po-table-filters" id="pending-filters">
+            <input type="search" data-filter="q" placeholder="Search title, organizer or venue..." class="od-input od-input--sm" aria-label="Search pending approvals">
+            <select data-filter="status" class="od-input od-input--sm" aria-label="Status">
+                <option value="">All statuses</option>
+                <option value="pending">Pending</option>
+                <option value="conflict">Conflict review</option>
+            </select>
+            <select data-filter="scope" class="od-input od-input--sm" aria-label="Scope">
+                <option value="">All scopes</option>
+                <option value="{{ \App\Models\EventRequest::SCOPE_CAMPUS_SPECIFIC }}">Campus-specific</option>
+                <option value="{{ \App\Models\EventRequest::SCOPE_UNIVERSITY_WIDE }}">University-wide</option>
+            </select>
+        </div>
+
+        <div class="od-table-wrap">
+            <table class="od-table">
+                <thead>
+                    <tr>
+                        <th>Event</th>
+                        <th>Campus</th>
+                        <th>Scope</th>
+                        <th>Category</th>
+                        <th>Date</th>
+                        <th>Organizer</th>
+                        <th>Submitted</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($queue as $item)
+                        <tr data-row
+                            data-search="{{ mb_strtolower($item->title . ' ' . $item->name . ' ' . $item->venue_name) }}"
+                            data-status="{{ $item->status }}"
+                            data-scope="{{ $item->scope() }}">
+                            <td><span class="od-table__title">{{ $item->title }}</span><span class="po-sub">{{ $item->venue_name }}</span></td>
+                            <td>{{ $dash::campusLabel($item) }}</td>
+                            <td><span class="po-scope po-scope--{{ strtolower($item->scope()) }}">{{ $dash::scopeLabel($item->scope()) }}</span></td>
+                            <td>{{ $item->sdg_number ? 'SDG ' . $item->sdg_number : '—' }}</td>
+                            <td>{{ $item->start_datetime->format('M j, Y') }}<span class="po-sub">{{ $item->start_datetime->format('g:i A') }} – {{ $item->end_datetime->format('g:i A') }}</span></td>
+                            <td>{{ $item->name }}</td>
+                            <td>{{ $item->created_at?->format('M j, Y') }}</td>
+                            <td><span class="od-badge od-badge--{{ $item->status }}">{{ $statusLabel($item->status) }}</span></td>
+                            <td>
+                                <div class="od-table__actions po-actions">
+                                    <a href="{{ route('planning_office.pending') }}#request-{{ $item->id }}" class="od-link">View</a>
+                                    <form method="POST" action="{{ route('planning_office.approve', $item->id) }}" onsubmit="return confirm('Approve this request as submitted?');">
+                                        @csrf
+                                        @if($item->conflicts->isNotEmpty())
+                                            <button type="submit" class="od-link" disabled title="Resolve the schedule conflict first: open View to adjust the venue or time">Approve</button>
+                                        @else
+                                            <button type="submit" class="od-link">Approve</button>
+                                        @endif
+                                    </form>
+                                    <button type="button" class="od-link" data-decision="return" data-action="{{ route('planning_office.return', $item->id) }}" data-title="{{ $item->title }}">Return</button>
+                                    <button type="button" class="od-link od-link--danger" data-decision="reject" data-action="{{ route('planning_office.reject', $item->id) }}" data-title="{{ $item->title }}">Reject</button>
+                                </div>
+                            </td>
+                        </tr>
                     @endforeach
-                </select>
-            </label>
+                    <tr data-empty class="{{ $queue->isEmpty() ? '' : 'hidden' }}">
+                        <td colspan="9" class="od-table__empty">{{ $queue->isEmpty() ? 'No submissions are awaiting review.' : 'No submissions match your search.' }}</td>
+                    </tr>
+                </tbody>
+            </table>
         </div>
-        <div id="planning-office-calendar" class="min-h-[500px]"></div>
+    </section>
+
+    {{-- ===== Centralized calendar ===== --}}
+    <section id="calendar" class="od-card">
+        <div class="od-card__head">
+            <div>
+                <h2 class="od-card__title">Master Live Calendar</h2>
+                <p class="od-card__sub">Approved events{{ $selectedCampus ? ' for ' . $selectedCampus . ' (plus university-wide)' : ' across all campuses' }}.</p>
+            </div>
+            <ul class="po-legend" aria-label="Calendar legend">
+                <li><span class="po-legend__dot po-ev--campus"></span>Campus-specific</li>
+                <li><span class="po-legend__dot po-ev--university"></span>University-wide</li>
+            </ul>
+        </div>
+        <div id="planning-office-calendar" class="od-calendar"></div>
+    </section>
+
+    <div class="od-two-col">
+        {{-- ===== Upcoming events ===== --}}
+        <section class="od-card">
+            <div class="od-card__head">
+                <h2 class="od-card__title">Upcoming Events</h2>
+                <span class="od-pill">Next {{ $upcoming->count() }}</span>
+            </div>
+            @if($upcoming->isEmpty())
+                <p class="od-empty">No upcoming approved events{{ $filters ? ' for these filters' : '' }}.</p>
+            @else
+                <ul class="po-list">
+                    @foreach($upcoming as $event)
+                        <li class="po-list__item">
+                            <div>
+                                <p class="po-list__title">{{ $event->title }}</p>
+                                <p class="po-list__meta">{{ $event->venue_name }} · {{ $dash::campusLabel($event) }} · <span class="po-scope po-scope--{{ strtolower($event->scope()) }}">{{ $dash::scopeLabel($event->scope()) }}</span></p>
+                            </div>
+                            <div class="po-list__side">
+                                <p class="po-list__date">{{ $event->start_datetime->format('D, M j') }}</p>
+                                <p>{{ $event->start_datetime->format('g:i A') }} – {{ $event->end_datetime->format('g:i A') }}</p>
+                                <span class="od-badge od-badge--approved">Approved</span>
+                            </div>
+                        </li>
+                    @endforeach
+                </ul>
+            @endif
+        </section>
+
+        <section id="selected-date-events" class="od-card">
+            <div class="od-card__head">
+                <h2 id="selected-date-label" class="od-card__title">Events for selected date</h2>
+            </div>
+            <div id="event-list"></div>
+        </section>
     </div>
 
-    <div id="selected-date-events" class="bg-white rounded-xl shadow-sm border border-gray-200 mb-8 p-6">
-        <div class="flex items-center justify-between mb-4">
-            <h2 id="selected-date-label" class="text-lg font-bold text-gray-800">Events for selected date</h2>
-        </div>
-        <div id="event-list"></div>
-    </div>
-
-    <div class="bg-white rounded-xl shadow-sm border border-gray-200 mb-8 p-6">
-        <div class="mb-4 flex items-center justify-between gap-4">
-            <h2 class="text-lg font-bold text-gray-800">Summary of Events</h2>
-            <div class="flex items-center gap-2">
-                <label class="text-sm font-medium text-slate-700" for="campus-trend-month-select">Month</label>
-                <select id="campus-trend-month-select" class="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                </select>
+    {{-- ===== Analytics ===== --}}
+    <section class="od-card" aria-labelledby="analytics-title">
+        <div class="od-card__head">
+            <div>
+                <h2 id="analytics-title" class="od-card__title">Analytics</h2>
+                <p class="od-card__sub">Approved events{{ $selectedCampus ? ' for ' . $selectedCampus . ' and university-wide' : '' }}{{ ($filters['from'] ?? null) || ($filters['to'] ?? null) ? ' in the selected date range' : '' }}. University-wide events are counted once, in their own group.</p>
             </div>
         </div>
-        <div class="h-[320px]">
-            <canvas id="campus-monthly-chart"></canvas>
+        <div class="po-charts">
+            <figure class="po-chart-card">
+                <figcaption>Events by campus</figcaption>
+                <div class="po-chart"><canvas id="chart-by-campus" aria-label="Events by campus"></canvas></div>
+            </figure>
+            <figure class="po-chart-card">
+                <figcaption>Events by category (SDG)</figcaption>
+                <div class="po-chart"><canvas id="chart-by-category" aria-label="Events by category"></canvas></div>
+            </figure>
+            <figure class="po-chart-card">
+                <figcaption>Campus event trends <span>· monthly</span></figcaption>
+                <div class="po-chart"><canvas id="chart-trends" aria-label="Monthly campus event trends"></canvas></div>
+            </figure>
+            <figure class="po-chart-card">
+                <figcaption>Scheduling conflict overview <span>· {{ $summary['conflicts'] }} open · {{ $resolvedConflicts }} resolved{{ ($filters['from'] ?? null) || ($filters['to'] ?? null) ? ' in range' : '' }}</span></figcaption>
+                <div class="po-chart"><canvas id="chart-conflicts" aria-label="Open conflicts by campus"></canvas></div>
+            </figure>
+        </div>
+    </section>
+
+    {{-- ===== Scheduling conflicts ===== --}}
+    <section id="conflicts" class="od-card">
+        <div class="od-card__head">
+            <div>
+                <h2 class="od-card__title">Scheduling Conflicts</h2>
+                <p class="od-card__sub">Resolve by adjusting the venue or time and approving, or by rejecting — the planning note is kept as the resolution.</p>
+            </div>
+            <span class="od-badge od-badge--rejected">{{ $conflicts->count() }} open</span>
+        </div>
+        <div class="od-table-wrap">
+            <table class="od-table">
+                <thead>
+                    <tr>
+                        <th>Request</th>
+                        <th>Conflicts with</th>
+                        <th>Campus</th>
+                        <th>Venue</th>
+                        <th>Date &amp; time</th>
+                        <th>Conflict type</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse($conflicts as $row)
+                        @php($req = $row['request'])
+                        <tr>
+                            <td><span class="od-table__title">{{ $req->title }}</span><span class="po-sub">{{ $req->name }}</span></td>
+                            <td>
+                                @forelse($row['with'] as $other)
+                                    <span class="po-sub" style="color:inherit">{{ $other->title }} <span class="od-muted">({{ $statusLabel($other->status) }})</span></span>
+                                @empty
+                                    <span class="od-muted">—</span>
+                                @endforelse
+                            </td>
+                            <td>{{ $dash::campusLabel($req) }}</td>
+                            <td>{{ $req->venue_name }}</td>
+                            <td>{{ $req->start_datetime->format('M j, Y') }}<span class="po-sub">{{ $req->start_datetime->format('g:i A') }} – {{ $req->end_datetime->format('g:i A') }}</span></td>
+                            <td>{{ $row['type'] }}</td>
+                            <td><span class="od-badge od-badge--{{ $req->status }}">{{ $statusLabel($req->status) }}</span></td>
+                            <td><a href="{{ route('planning_office.pending') }}#request-{{ $req->id }}" class="od-link">Review &amp; resolve</a></td>
+                        </tr>
+                    @empty
+                        <tr><td colspan="8" class="od-table__empty">No scheduling conflicts{{ $filters ? ' for these filters' : '' }}.</td></tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    {{-- ===== Recent activity ===== --}}
+    <section class="od-card">
+        <div class="od-card__head">
+            <h2 class="od-card__title">Recent Activity</h2>
+            <a href="{{ route('planning_office.notifications') }}" class="od-link">All notifications →</a>
+        </div>
+        @if($activity->isEmpty())
+            <p class="od-empty">No activity recorded yet.</p>
+        @else
+            <ul class="od-activity">
+                @foreach($activity as $log)
+                    <li>
+                        <span>
+                            <span class="od-badge od-badge--{{ $activityBadge[$log->action] ?? 'pending' }}">{{ $activityLabels[$log->action] ?? ucfirst($log->action) }}</span>
+                            <strong>{{ $accountNames[$log->email] ?? $log->email }}</strong> — {{ $log->description }}
+                        </span>
+                        <time datetime="{{ $log->created_at?->toIso8601String() }}">{{ $log->created_at?->diffForHumans() }}</time>
+                    </li>
+                @endforeach
+            </ul>
+        @endif
+    </section>
+
+    {{-- ===== Reject / return dialog ===== --}}
+    <div id="decision-modal" class="od-modal hidden" role="dialog" aria-modal="true" aria-labelledby="decision-title">
+        <div class="od-modal__panel">
+            <div class="od-modal__head psu-banner">
+                <h2 id="decision-title" class="od-modal__title">Decision</h2>
+                <button type="button" data-decision-close class="od-modal__close" aria-label="Close">✕</button>
+            </div>
+            <form id="decision-form" method="POST" class="od-modal__body od-form" style="gap:12px; padding-top:18px">
+                @csrf
+                <p id="decision-event" class="od-muted" style="font-size:13.5px"></p>
+                <label class="od-field">
+                    <span class="od-label" id="decision-note-label">Planning note</span>
+                    <textarea name="planning_note" rows="3" maxlength="2000" class="od-input od-input--sm"></textarea>
+                </label>
+                <div class="od-modal__actions">
+                    <button type="button" data-decision-close class="od-btn od-btn--ghost od-btn--sm">Cancel</button>
+                    <button type="submit" id="decision-submit" class="od-btn od-btn--primary od-btn--sm">Confirm</button>
+                </div>
+            </form>
         </div>
     </div>
-
 @endsection
 
 @push('scripts')
@@ -112,177 +340,99 @@
     <script src="{{ asset('js/event-calendar.js') }}"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            const calendarEl = document.getElementById('planning-office-calendar');
-            if (!calendarEl) return;
-
-            const allEvents = {!! $events->toJson() !!};   // also used by the monthly chart below
-
-            const calendar = UniEventCalendar.init({
-                calendarEl: calendarEl,
-                events: allEvents,
-                campusFilterEl: document.getElementById('campus-filter'),
+            // ---- Calendar ----
+            UniEventCalendar.init({
+                calendarEl: document.getElementById('planning-office-calendar'),
+                events: @json($calendarEvents),
                 listEl: document.getElementById('event-list'),
                 listLabelEl: document.getElementById('selected-date-label')
             });
 
-            const campusChartCanvas = document.getElementById('campus-monthly-chart');
-            const campusTrendMonthSelect = document.getElementById('campus-trend-month-select');
-
-            if (campusChartCanvas && typeof Chart !== 'undefined') {
-                // One color per campus, in the same order as the campus cards above
-                const campusNames = @json(\App\Models\User::MAIN_CAMPUSES);
-                const palette = ['#10b981', '#4f46e5', '#f59e0b', '#0ea5e9', '#8b5cf6', '#14b8a6', '#f97316', '#06b6d4', '#84cc16'];
-                const campusColors = {};
-                campusNames.forEach(function (name, i) { campusColors[name] = palette[i % palette.length]; });
-
-                let campusTrendMonth = new Date();
-                campusTrendMonth.setDate(1);
-                campusTrendMonth.setHours(0, 0, 0, 0);
-
-                function buildMonthOptions() {
-                    const options = [];
-                    const start = new Date(2026, 7, 1);
-
-                    for (let i = 0; i < 60; i += 1) {
-                        const month = new Date(start);
-                        month.setMonth(start.getMonth() + i);
-                        options.push({
-                            value: month.getFullYear() + '-' + String(month.getMonth() + 1).padStart(2, '0'),
-                            label: month.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
-                        });
-                    }
-
-                    return options;
-                }
-
-                function populateMonthOptions() {
-                    if (!campusTrendMonthSelect) return;
-
-                    campusTrendMonthSelect.innerHTML = '';
-                    const monthOptions = buildMonthOptions();
-                    monthOptions.forEach(function (option) {
-                        const optionEl = document.createElement('option');
-                        optionEl.value = option.value;
-                        optionEl.textContent = option.label;
-                        campusTrendMonthSelect.appendChild(optionEl);
-                    });
-
-                    campusTrendMonthSelect.value = campusTrendMonth.getFullYear() + '-' + String(campusTrendMonth.getMonth() + 1).padStart(2, '0');
-                }
-
-                function buildTrendDataForMonth(date) {
-                    const monthData = {};
-                    campusNames.forEach(function (name) { monthData[name] = 0; });
-
-                    const year = date.getFullYear();
-                    const month = date.getMonth();
-
-                    allEvents.forEach(function (event) {
-                        if (!event.start || !event.campus) {
-                            return;
-                        }
-
-                        const eventDate = new Date(event.start);
-                        if (eventDate.getFullYear() !== year || eventDate.getMonth() !== month) {
-                            return;
-                        }
-
-                        if (!(event.campus in monthData)) {
-                            return;
-                        }
-
-                        monthData[event.campus] += 1;
-                    });
-
-                    return {
-                        labels: campusNames,
-                        values: campusNames.map(function (name) { return monthData[name]; })
-                    };
-                }
-
-                let campusTrendChart = null;
-
-                function renderCampusTrendChart() {
-                    const { labels, values } = buildTrendDataForMonth(campusTrendMonth);
-
-                    if (campusTrendMonthSelect) {
-                        campusTrendMonthSelect.value = campusTrendMonth.getFullYear() + '-' + String(campusTrendMonth.getMonth() + 1).padStart(2, '0');
-                    }
-
-                    if (campusTrendChart) {
-                        campusTrendChart.destroy();
-                    }
-
-                    campusTrendChart = new Chart(campusChartCanvas, {
-                        type: 'bar',
-                        data: {
-                            labels: labels,
-                            datasets: [{
-                                label: 'Events',
-                                data: values,
-                                backgroundColor: labels.map(function (name) { return campusColors[name]; }),
-                                borderRadius: 8
-                            }]
-                        },
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            plugins: {
-                                legend: {
-                                    display: false
-                                },
-                                tooltip: {
-                                    callbacks: {
-                                        label: function (context) {
-                                            return context.label + ': ' + context.parsed.y + ' event(s)';
-                                        }
-                                    }
-                                }
-                            },
-                            scales: {
-                                y: {
-                                    beginAtZero: true,
-                                    ticks: {
-                                        stepSize: 1,
-                                        precision: 0
-                                    },
-                                    title: {
-                                        display: true,
-                                        text: 'Events'
-                                    }
-                                },
-                                x: {
-                                    title: {
-                                        display: true,
-                                        text: 'Campus'
-                                    }
-                                }
-                            }
-                        }
-                    });
-                }
-
-                if (campusTrendMonthSelect) {
-                    campusTrendMonthSelect.addEventListener('change', function () {
-                        const value = this.value;
-                        if (!value) return;
-
-                        const [year, month] = value.split('-').map(Number);
-                        campusTrendMonth = new Date(year, month - 1, 1);
-                        renderCampusTrendChart();
-                    });
-                }
-
-                populateMonthOptions();
-                renderCampusTrendChart();
+            // ---- Pending approvals: search + filters (no reload) ----
+            var filterBox = document.getElementById('pending-filters');
+            var rows = document.querySelectorAll('#pending-approvals [data-row]');
+            var emptyRow = document.querySelector('#pending-approvals [data-empty]');
+            function applyFilters() {
+                var q = filterBox.querySelector('[data-filter="q"]').value.trim().toLowerCase();
+                var status = filterBox.querySelector('[data-filter="status"]').value;
+                var scope = filterBox.querySelector('[data-filter="scope"]').value;
+                var shown = 0;
+                rows.forEach(function (row) {
+                    var match = (!q || row.dataset.search.indexOf(q) !== -1)
+                        && (!status || row.dataset.status === status)
+                        && (!scope || row.dataset.scope === scope);
+                    row.classList.toggle('hidden', !match);
+                    if (match) shown++;
+                });
+                if (rows.length) emptyRow.classList.toggle('hidden', shown > 0);
             }
+            filterBox.addEventListener('input', applyFilters);
+            filterBox.addEventListener('change', applyFilters);
 
-            window.addEventListener('resize', function () {
-                if (calendar) {
-                    requestAnimationFrame(function () {
-                        calendar.updateSize();
-                    });
-                }
+            // ---- Reject / return dialog ----
+            var modal = document.getElementById('decision-modal');
+            var form = document.getElementById('decision-form');
+            var note = form.querySelector('textarea');
+            function closeModal() { modal.classList.add('hidden'); }
+            document.querySelectorAll('[data-decision]').forEach(function (btn) {
+                btn.addEventListener('click', function () {
+                    var isReturn = btn.dataset.decision === 'return';
+                    form.action = btn.dataset.action;
+                    note.value = '';
+                    note.required = isReturn;
+                    document.getElementById('decision-title').textContent = isReturn ? 'Return for revision' : 'Reject request';
+                    document.getElementById('decision-event').textContent = btn.dataset.title;
+                    document.getElementById('decision-note-label').textContent = isReturn
+                        ? 'What should the office revise? (required)'
+                        : 'Reason for rejecting (optional, shown to the office)';
+                    var submit = document.getElementById('decision-submit');
+                    submit.textContent = isReturn ? 'Return to office' : 'Reject request';
+                    submit.className = 'od-btn od-btn--sm ' + (isReturn ? 'od-btn--primary' : 'od-btn--danger');
+                    modal.classList.remove('hidden');
+                    note.focus();
+                });
+            });
+            modal.querySelectorAll('[data-decision-close]').forEach(function (b) { b.addEventListener('click', closeModal); });
+            modal.addEventListener('click', function (e) { if (e.target === modal) closeModal(); });
+            document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeModal(); });
+
+            // ---- Analytics ----
+            if (typeof Chart === 'undefined') return;
+            var charts = @json($charts);
+            var navy = '#4a5690', gold = '#f2c318';
+            var seriesColors = ['#4a5690', '#e0a800', '#14b8a6', '#047857', '#8d98d4'];
+            var countTicks = { beginAtZero: true, ticks: { precision: 0 } };
+            Chart.defaults.font.family = "'Inter', system-ui, sans-serif";
+            Chart.defaults.color = '#64698a';
+
+            new Chart(document.getElementById('chart-by-campus'), {
+                type: 'bar',
+                data: { labels: charts.byCampus.labels, datasets: [{ label: 'Events', data: charts.byCampus.values, backgroundColor: charts.byCampus.labels.map(function (l, i) { return seriesColors[i % seriesColors.length]; }), borderRadius: 8 }] },
+                options: { maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: countTicks } }
+            });
+
+            new Chart(document.getElementById('chart-by-category'), {
+                type: 'bar',
+                data: { labels: charts.byCategory.labels, datasets: [{ label: 'Events', data: charts.byCategory.values, backgroundColor: gold, borderRadius: 6 }] },
+                options: { indexAxis: 'y', maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: countTicks } }
+            });
+
+            new Chart(document.getElementById('chart-trends'), {
+                type: 'line',
+                data: {
+                    labels: charts.trends.labels,
+                    datasets: Object.keys(charts.trends.series).map(function (name, i) {
+                        var c = seriesColors[i % seriesColors.length];
+                        return { label: name, data: charts.trends.series[name], borderColor: c, backgroundColor: c, tension: .3, pointRadius: 3 };
+                    })
+                },
+                options: { maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { boxWidth: 10 } } }, scales: { y: countTicks } }
+            });
+
+            new Chart(document.getElementById('chart-conflicts'), {
+                type: 'bar',
+                data: { labels: charts.conflicts.labels, datasets: [{ label: 'Open conflicts', data: charts.conflicts.values, backgroundColor: '#be123c', borderRadius: 8 }] },
+                options: { maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: countTicks } }
             });
         });
     </script>

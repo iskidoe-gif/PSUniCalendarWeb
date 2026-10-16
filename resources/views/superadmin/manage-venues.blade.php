@@ -1,42 +1,43 @@
 @extends('layouts.planning-office')
 
 @section('title', 'Venue Management')
+@section('subheading', 'Review and manage the venues available for booking.')
 
 @section('content')
-        <div class="mb-6">
-            <h1 class="text-2xl font-bold text-gray-800">Venue Management</h1>
-            <p class="text-sm text-gray-500 mt-1">Review and manage the testing venues available for booking.</p>
-        </div>
+        @if($errors->any())
+            <div class="od-alert od-alert--error">{{ $errors->first() }}</div>
+        @endif
 
-
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
-            <h2 class="text-lg font-bold text-gray-800 mb-4">Add Venue</h2>
-            <form method="POST" action="{{ route('planning_office.venues.store') }}" class="flex gap-3 items-end">
+        <section class="od-card">
+            <div class="od-card__head">
+                <h2 class="od-card__title">Add Venue</h2>
+            </div>
+            <form method="POST" action="{{ route('planning_office.venues.store') }}" class="po-inline-form">
                 @csrf
-                <div class="flex-1">
-                    <label for="venue-name" class="block text-xs font-semibold uppercase tracking-wide text-slate-500 mb-2">Venue Name</label>
-                    <input id="venue-name" type="text" name="name" required class="w-full rounded-xl border border-slate-300 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Enter venue name">
-                </div>
-                <button type="submit" class="rounded-xl bg-indigo-600 px-4 py-3 text-sm font-semibold text-white hover:bg-indigo-700">Add Venue</button>
+                <label class="od-field" for="venue-name">
+                    <span class="od-label">Venue Name</span>
+                    <input id="venue-name" type="text" name="name" required class="od-input" placeholder="Enter venue name">
+                </label>
+                <button type="submit" class="od-btn od-btn--primary">Add Venue</button>
             </form>
-        </div>
+        </section>
 
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-            <div class="mb-4 flex items-center justify-between">
-                <h2 class="text-lg font-bold text-gray-800">Active Venues</h2>
-                <span class="rounded-full bg-indigo-100 px-3 py-1 text-xs font-semibold text-indigo-700">{{ $venues->count() }} venues</span>
+        <section class="od-card">
+            <div class="od-card__head">
+                <h2 class="od-card__title">Active Venues</h2>
+                <span class="od-pill">{{ $venues->count() }} venues</span>
             </div>
 
-            <div class="overflow-x-auto">
-                <table class="w-full text-left border-collapse">
+            <div class="od-table-wrap">
+                <table class="od-table">
                     <thead>
-                        <tr class="border-b border-gray-200 text-xs text-gray-400 uppercase">
-                            <th class="py-3 px-4">Venue Name</th>
-                            <th class="py-3 px-4">Approved Events</th>
-                            <th class="py-3 px-4">Action</th>
+                        <tr>
+                            <th>Venue Name</th>
+                            <th>Approved Events</th>
+                            <th>Action</th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-gray-100 text-sm">
+                    <tbody>
                         @forelse($venues as $venue)
                             @php
                                 $venueId = data_get($venue, 'id', $loop->index + 1);
@@ -45,33 +46,33 @@
                                 $eventCount = data_get($venue, 'events_count', 0);
                             @endphp
                             <tr>
-                                <td class="py-3 px-4 font-semibold text-gray-800">
-                                    <form method="POST" action="{{ route('planning_office.venues.update', $venueId) }}" class="flex gap-2 items-center">
+                                <td class="od-table__title">
+                                    <form method="POST" action="{{ route('planning_office.venues.update', $venueId) }}" class="po-inline-form" style="flex-wrap:nowrap">
                                         @csrf
                                         @method('PUT')
-                                        <input type="text" name="name" value="{{ $venueName }}" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                                        <button type="submit" class="rounded-lg bg-slate-900 px-3 py-2 text-xs font-semibold text-white hover:bg-slate-700">Save</button>
+                                        <input type="text" name="name" value="{{ $venueName }}" aria-label="Venue name" class="od-input od-input--sm">
+                                        <button type="submit" class="od-btn od-btn--ghost od-btn--sm">Save</button>
                                     </form>
                                 </td>
-                                <td class="py-3 px-4">{{ $eventCount }}</td>
-                                <td class="py-3 px-4">
-                                    <div class="flex gap-2">
-                                        <a href="{{ route('planning_office.venues.events', ['venue' => $venueDisplayName]) }}" class="px-3 py-1 bg-indigo-600 hover:bg-indigo-700 text-white rounded text-xs font-bold">View Events</a>
+                                <td>{{ $eventCount }}</td>
+                                <td>
+                                    <div class="od-table__actions">
+                                        <a href="{{ route('planning_office.venues.events', ['venue' => $venueDisplayName]) }}" class="od-btn od-btn--primary od-btn--sm">View Events</a>
                                         <form method="POST" action="{{ route('planning_office.venues.destroy', $venueId) }}" onsubmit="return confirm('Delete this venue?');">
                                             @csrf
                                             @method('DELETE')
-                                            <button type="submit" class="px-3 py-1 bg-red-600 hover:bg-red-700 text-white rounded text-xs font-bold">Delete</button>
+                                            <button type="submit" class="od-btn od-btn--danger od-btn--sm">Delete</button>
                                         </form>
                                     </div>
                                 </td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="3" class="py-6 px-4 text-center text-sm text-slate-500">No active venues yet.</td>
+                                <td colspan="3" class="od-table__empty">No active venues yet.</td>
                             </tr>
                         @endforelse
                     </tbody>
                 </table>
             </div>
-        </div>
+        </section>
 @endsection

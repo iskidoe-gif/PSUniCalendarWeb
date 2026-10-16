@@ -2,12 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\ActivityLog;
 use App\Models\EventRequest; // Adjust to match your model name
 use App\Services\EventConflictChecker;
 use Google\Client;
 use Google\Service\Calendar;
 use Google\Service\Calendar\Event;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class EventApprovalController extends Controller
 {
@@ -44,7 +46,9 @@ class EventApprovalController extends Controller
             return back()->withInput()->with('error', "This schedule conflicts with {$conflictTitles}. Adjust the venue or time before approving.");
         }
 
+        $originalStatus = $booking->status;
         $booking->fill($proposal);
+        $rescheduled = $booking->isDirty(['venue_name', 'campus', 'start_datetime', 'end_datetime']);
         if (array_key_exists('sdg_number', $validated)) {
             $booking->sdg_number = $validated['sdg_number'];
         }
@@ -54,6 +58,7 @@ class EventApprovalController extends Controller
         if (array_key_exists('planning_note', $validated)) {
             $booking->planning_note = $validated['planning_note'];
         }
+        $booking->read_at = null;   // the office gets notified of the decision
 
         try {
             if (config('services.google.service_account_json') && config('services.google.calendar_id')) {
@@ -82,17 +87,20 @@ class EventApprovalController extends Controller
                 $booking->status = 'approved';
                 $booking->google_event_id = $googleEvent->getId();
                 $booking->save();
+                $this->logApproval($booking, $originalStatus, $rescheduled);
 
                 return back()->with('success', 'Event approved and added to Google Calendar.');
             }
 
             $booking->status = 'approved';
             $booking->save();
+            $this->logApproval($booking, $originalStatus, $rescheduled);
 
             return back()->with('success', 'Event approved successfully.');
         } catch (\Throwable $e) {
             $booking->status = 'approved';
             $booking->save();
+            $this->logApproval($booking, $originalStatus, $rescheduled);
 
             return back()->with('error', 'Event approved locally, but Google Calendar sync could not be completed.');
         }
@@ -104,11 +112,62 @@ class EventApprovalController extends Controller
             'planning_note' => ['nullable', 'string', 'max:2000'],
         ]);
         $booking = EventRequest::findOrFail($id);
+        $originalStatus = $booking->status;
         $booking->update([
             'status' => 'rejected',
             'planning_note' => $validated['planning_note'] ?? $booking->planning_note,
+            'read_at' => null,
         ]);
 
+        if ($originalStatus === 'conflict') {
+            $this->log('conflict_resolved', "Resolved the conflict on \"{$booking->title}\" by rejecting it");
+        } else {
+            $this->log('rejected', "Rejected \"{$booking->title}\" from {$booking->name}");
+        }
+
         return back()->with('success', 'Event request rejected.');
+    }
+
+    /**
+     * Send a pending request back to the office for revision. The office can edit and
+     * resubmit it; the planning note tells them what to change.
+     */
+    public function returnForRevision(Request $request, $id)
+    {
+        $validated = $request->validate([
+            'planning_note' => ['required', 'string', 'max:2000'],
+        ], [
+            'planning_note.required' => 'Add a planning note so the office knows what to revise.',
+        ]);
+        $booking = EventRequest::findOrFail($id);
+
+        if (! in_array($booking->status, EventRequest::REVIEW_STATUSES, true)) {
+            return back()->with('error', 'Only requests awaiting review can be returned for revision.');
+        }
+
+        $booking->update([
+            'status' => 'returned',
+            'planning_note' => $validated['planning_note'],
+            'read_at' => null,
+        ]);
+        $this->log('returned', "Returned \"{$booking->title}\" to {$booking->name} for revision");
+
+        return back()->with('success', 'Request returned to the office for revision.');
+    }
+
+    private function logApproval(EventRequest $booking, string $originalStatus, bool $rescheduled): void
+    {
+        if ($originalStatus === 'conflict') {
+            $this->log('conflict_resolved', "Resolved the conflict on \"{$booking->title}\" and approved it" . ($rescheduled ? ' with a new schedule' : ''));
+        } elseif ($rescheduled) {
+            $this->log('rescheduled', "Rescheduled and approved \"{$booking->title}\" ({$booking->venue_name}, {$booking->start_datetime->format('M j, Y g:i A')})");
+        } else {
+            $this->log('approved', "Approved \"{$booking->title}\" from {$booking->name}");
+        }
+    }
+
+    private function log(string $action, string $description): void
+    {
+        ActivityLog::record(Auth::user()->email, $action, $description);
     }
 }

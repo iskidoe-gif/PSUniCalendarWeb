@@ -1,56 +1,53 @@
 @extends('layouts.planning-office')
 
 @section('title', 'Events for ' . $venue)
+@section('subheading', 'All approved events scheduled at this venue.')
+
+@section('topbar-actions')
+    <a href="{{ route('planning_office.venues') }}" class="od-btn od-btn--ghost od-btn--sm">Back to Venues</a>
+@endsection
 
 @section('content')
-        <div class="mb-6 flex items-center justify-between">
-            <div>
-                <h1 class="text-2xl font-bold text-gray-800">Events for {{ $venue }}</h1>
-                <p class="text-sm text-gray-500 mt-1">All approved events scheduled at this venue.</p>
+        <section class="od-card">
+            <div class="od-card__head">
+                <h2 class="od-card__title">Approved events</h2>
+                <span class="od-pill">{{ $events->count() }} events</span>
             </div>
-            <div>
-                <a href="{{ route('planning_office.venues') }}" class="px-4 py-2 bg-slate-200 rounded text-sm">Back to Venues</a>
-            </div>
-        </div>
-
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-            <div class="overflow-x-auto">
-                <table class="w-full text-left border-collapse">
+            <div class="od-table-wrap">
+                <table class="od-table">
                     <thead>
-                        <tr class="border-b border-gray-200 text-xs text-gray-400 uppercase">
-                            <th class="py-3 px-4">Event Title</th>
-                            <th class="py-3 px-4">Requested By</th>
-                            <th class="py-3 px-4">Date & Time</th>
-                            <th class="py-3 px-4">Status</th>
-                            <th class="py-3 px-4">Documents</th>
+                        <tr>
+                            <th>Event Title</th>
+                            <th>Requested By</th>
+                            <th>Date &amp; Time</th>
+                            <th>Status</th>
+                            <th>Documents</th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-gray-100 text-sm">
+                    <tbody>
                         @forelse($events as $event)
                             <tr>
-                                <td class="py-3 px-4 font-semibold text-gray-800">{{ $event->title }}</td>
-                                <td class="py-3 px-4">{{ $event->name }}<br><span class="text-xs text-slate-500">{{ $event->email }}</span></td>
-                                <td class="py-3 px-4">{{ date('M d, Y', strtotime($event->start_datetime)) }}<br><span class="text-xs text-slate-500">{{ date('g:i A', strtotime($event->start_datetime)) }} - {{ date('g:i A', strtotime($event->end_datetime)) }}</span></td>
-                                <td class="py-3 px-4 capitalize">{{ $event->status }}</td>
-                                <td class="py-3 px-4">
+                                <td class="od-table__title">{{ $event->title }}</td>
+                                <td>{{ $event->name }}<span class="po-sub">{{ $event->email }}</span></td>
+                                <td>{{ date('M d, Y', strtotime($event->start_datetime)) }}<span class="po-sub">{{ date('g:i A', strtotime($event->start_datetime)) }} - {{ date('g:i A', strtotime($event->end_datetime)) }}</span></td>
+                                <td><span class="od-badge od-badge--{{ $event->status }}">{{ ucfirst($event->status) }}</span></td>
+                                <td>
                                     @if(!empty($event->digital_documents))
-                                        <div class="space-y-2">
-                                            @foreach($event->digital_documents as $doc)
-                                                <a href="{{ asset('storage/' . $doc) }}" target="_blank" class="block text-xs text-indigo-600 hover:underline">Document {{ $loop->iteration }}</a>
-                                            @endforeach
-                                        </div>
+                                        @foreach($event->digital_documents as $doc)
+                                            <a href="{{ asset('storage/' . $doc) }}" target="_blank" rel="noopener" class="od-link" style="display:block">Document {{ $loop->iteration }}</a>
+                                        @endforeach
                                     @else
-                                        <span class="text-xs text-slate-500">None</span>
+                                        <span class="od-muted">None</span>
                                     @endif
                                 </td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="5" class="py-6 px-4 text-center text-sm text-slate-500">No approved events for this venue.</td>
+                                <td colspan="5" class="od-table__empty">No approved events for this venue.</td>
                             </tr>
                         @endforelse
                     </tbody>
                 </table>
             </div>
-        </div>
+        </section>
 @endsection

@@ -7,56 +7,30 @@ use App\Models\EventRequest;
 use App\Models\User;
 use App\Models\Venue;
 use App\Services\EventConflictChecker;
+use App\Services\PlanningOfficeDashboard;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
 
 class PlanningOfficeController extends Controller
 {
-    public function dashboard()
+    public function dashboard(Request $request, PlanningOfficeDashboard $dashboard)
     {
-        $approvedEvents = EventRequest::where('status', 'approved')
-            ->orderBy('start_datetime', 'asc')
-            ->get();
+        $filters = $request->validate([
+            'campus' => ['nullable', Rule::in(User::MAIN_CAMPUSES)],
+            'from' => ['nullable', 'date'],
+            'to' => ['nullable', 'date', 'after_or_equal:from'],
+        ]);
 
-        $events = $approvedEvents->map(function ($event) {
-            return [
-                'title' => $event->title,
-                'start' => $event->start_datetime,
-                'end' => $event->end_datetime,
-                'description' => $event->description,
-                'venue' => $event->venue_name,
-                'campus' => $this->resolveCampus($event),
-                'university_wide' => (bool) $event->is_university_wide,
-                'sdg_number' => $event->sdg_number,
-                'office' => $event->name,
-            ];
-        });
+        $data = $dashboard->build(
+            $filters['campus'] ?? null,
+            isset($filters['from']) ? Carbon::parse($filters['from']) : null,
+            isset($filters['to']) ? Carbon::parse($filters['to']) : null,
+        );
 
-        $campusEventCounts = collect(User::MAIN_CAMPUSES)
-            ->mapWithKeys(function ($campus) use ($approvedEvents) {
-                return [$campus => $approvedEvents->filter(fn ($event) => $this->resolveCampus($event) === $campus)->count()];
-            });
-
-        $universityWideEvents = $approvedEvents->filter(fn ($event) => $this->resolveCampus($event) === 'All Campus')->count();
-        $upcomingEvents = $approvedEvents->filter(fn ($event) => $event->start_datetime >= now())->count();
-
-        $pendingCount = EventRequest::where('status', 'pending')->count();
-        $conflictCount = EventRequest::where('status', 'conflict')->count();
-        $venueCount = Venue::count();
-        $officeCount = User::where('role', 'office')->count();
-
-        return view('superadmin.dashboard', compact(
-            'events',
-            'campusEventCounts',
-            'universityWideEvents',
-            'upcomingEvents',
-            'pendingCount',
-            'conflictCount',
-            'venueCount',
-            'officeCount'
-        ));
+        return view('superadmin.dashboard', $data + ['filters' => array_filter($filters)]);
     }
 
     public function showOffice(User $office)
@@ -106,7 +80,7 @@ class PlanningOfficeController extends Controller
             ->get();
 
         $recentActivity = ActivityLog::latest()->limit(20)->get();
-        $officeNames = User::where('role', 'office')->pluck('name', 'email');
+        $officeNames = User::whereIn('role', ['office', 'planning_office'])->pluck('name', 'email');
 
         return view('superadmin.notifications', compact('needsReview', 'upcomingSoon', 'recentActivity', 'officeNames'));
     }
@@ -151,15 +125,6 @@ class PlanningOfficeController extends Controller
         $user->update(['password' => Hash::make($validated['new_password'])]);
 
         return redirect()->route('planning_office.settings')->with('success', 'Password updated successfully.');
-    }
-
-    private function resolveCampus(EventRequest $event): string
-    {
-        if ($event->campus) {
-            return $event->campus;
-        }
-
-        return User::campusFromText($event->venue_name) ?? 'All Campus';
     }
 
     public function pendingApprovals(EventConflictChecker $conflictChecker)

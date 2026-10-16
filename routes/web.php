@@ -66,6 +66,7 @@ Route::middleware(['auth', 'role:planning_office'])->prefix('planning-office')->
     Route::get('/pending-approvals', [PlanningOfficeController::class, 'pendingApprovals'])->name('planning_office.pending');
     Route::post('/approve/{id}', [EventApprovalController::class, 'approve'])->name('planning_office.approve');
     Route::post('/reject/{id}', [EventApprovalController::class, 'reject'])->name('planning_office.reject');
+    Route::post('/return/{id}', [EventApprovalController::class, 'returnForRevision'])->name('planning_office.return');
     Route::get('/manage-venues', [PlanningOfficeController::class, 'manageVenues'])->name('planning_office.venues');
     Route::post('/manage-venues', [PlanningOfficeController::class, 'storeVenue'])->name('planning_office.venues.store');
     Route::put('/manage-venues/{venue}', [PlanningOfficeController::class, 'updateVenue'])->name('planning_office.venues.update');

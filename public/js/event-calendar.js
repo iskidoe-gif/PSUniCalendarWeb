@@ -137,6 +137,7 @@
         }
         if (ev.office) html += row('Organizer', esc(ev.office));
         if (ev.sdg_number) html += row('SDG', 'SDG ' + esc(ev.sdg_number));
+        if (ev.status_label) html += row('Status', esc(ev.status_label));
         html += '</dl>';
         html += '<div class="ec-description"><p class="ec-description__label">Description</p><p>' +
             (ev.description ? esc(ev.description) : '<span class="ec-muted">No description provided.</span>') + '</p></div>';
@@ -207,12 +208,16 @@
         function toFc(ev) {
             var s = span(ev);
             var endOfStartDay = s.startKey + 'T23:59:59Z';
-            return {
+            var fcEvent = {
                 title: ev.title || 'Untitled event',
                 start: ev.start,
                 end: s.totalDays > 1 ? endOfStartDay : (ev.end || ev.start),
                 extendedProps: { raw: ev }
             };
+            // Optional per-event look (e.g. Planning Office: pending / conflict / university-wide)
+            if (ev.color) fcEvent.backgroundColor = fcEvent.borderColor = ev.color;
+            if (ev.class_names) fcEvent.classNames = ev.class_names;
+            return fcEvent;
         }
 
         // Same rule as the calendar: an event belongs to its start date
@@ -271,6 +276,9 @@
                 if (btn) openModal(matches[Number(btn.dataset.ecIndex)]);
             };
         }
+
+        // PSU theme (blue / gold / white) from event-calendar.css, same on every page
+        opts.calendarEl.classList.add('ec-calendar');
 
         calendar = new FullCalendar.Calendar(opts.calendarEl, Object.assign({
             timeZone: TZ,

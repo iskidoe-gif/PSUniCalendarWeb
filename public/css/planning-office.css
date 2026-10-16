@@ -1,0 +1,190 @@
+/* ==========================================================================
+   Planning Office — extras on top of office-dashboard.css (same PSU portal theme)
+   ========================================================================== */
+
+/* Count badge inside a sidebar link */
+.po-nav-count {
+    margin-left: auto;
+    min-width: 22px;
+    padding: 1px 7px;
+    border-radius: 999px;
+    background: var(--gold-500);
+    color: var(--navy-900);
+    font-size: 11px; font-weight: 700;
+    text-align: center;
+}
+.po-nav-count--muted { background: rgba(255, 255, 255, .12); color: #dfe3f7; font-weight: 600; }
+
+/* Campus groups (Offices) in the sidebar */
+.po-group > summary { list-style: none; cursor: pointer; user-select: none; }
+.po-group > summary::-webkit-details-marker { display: none; }
+.po-group__name { flex: 1; overflow: hidden; text-overflow: ellipsis; }
+.po-subnav {
+    margin: 4px 0 6px 21px;
+    padding-left: 12px;
+    border-left: 1px solid rgba(255, 255, 255, .15);
+    display: flex; flex-direction: column; gap: 2px;
+}
+.po-subnav__link {
+    display: block;
+    padding: 6px 10px;
+    border-radius: 8px;
+    color: #dfe3f7;
+    font-size: 13px;
+    text-decoration: none;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.po-subnav__link:hover { background: rgba(255, 255, 255, .08); color: #fff; }
+.po-subnav__link.is-active { background: rgba(255, 255, 255, .14); color: var(--gold-400); font-weight: 600; }
+.po-subnav__empty { padding: 6px 10px; font-size: 12px; font-style: italic; color: var(--navy-300); }
+
+/* Collapsed rail (desktop): only icons, so hide counts and the office lists */
+@media (min-width: 901px) {
+    .od-sidebar:not(:hover):not(:focus-within) :is(.po-nav-count, .po-subnav) { display: none; }
+}
+
+/* Topbar link-buttons */
+a.od-icon-btn { text-decoration: none; }
+
+/* Danger button */
+.od-btn--danger { border-color: #fecdd3; background: var(--surface); color: var(--rejected); }
+.od-btn--danger:hover { background: #fff1f2; }
+
+/* ==========================================================================
+   Dashboard
+   ========================================================================== */
+
+.po-stats { grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); }
+
+/* Filters bar */
+.po-filterbar {
+    display: grid;
+    grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) minmax(0, 1fr) auto;
+    align-items: end;
+    gap: 12px;
+    padding: 16px 20px;
+}
+.po-filterbar .od-label { margin-bottom: 4px; }
+.po-filterbar__actions { display: flex; gap: 8px; }
+
+/* Compact summary cards with icons */
+.po-summary { grid-template-columns: repeat(6, minmax(0, 1fr)); margin-top: 0; }
+.po-stat { display: flex; align-items: center; gap: 12px; padding: 14px; }
+.po-stat .od-stat__value { font-size: 26px; margin-top: 4px; }
+.po-stat__icon {
+    display: flex; align-items: center; justify-content: center;
+    width: 38px; height: 38px; flex: none;
+    border-radius: 12px;
+    background: var(--navy-50);
+    color: var(--navy-600);
+}
+.po-stat__icon svg { width: 20px; height: 20px; }
+.po-stat.od-stat--approved .po-stat__icon  { background: var(--approved-bg); color: var(--approved); }
+.po-stat.od-stat--pending .po-stat__icon   { background: var(--pending-bg); color: var(--pending); }
+.po-stat.od-stat--rejected .po-stat__icon  { background: var(--rejected-bg); color: var(--rejected); }
+.po-stat.od-stat--cancelled .po-stat__icon { background: var(--cancelled-bg); color: var(--cancelled); }
+
+/* Table search / filters */
+.po-table-filters {
+    display: grid;
+    grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) minmax(0, 1fr);
+    gap: 10px;
+    margin-bottom: 14px;
+}
+.po-actions { flex-wrap: wrap; gap: 10px; }
+.od-link:disabled { color: var(--faint); cursor: not-allowed; text-decoration: none; }
+
+/* Scope tag */
+.po-scope {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 6px;
+    font-size: 11.5px; font-weight: 600;
+    white-space: nowrap;
+}
+.po-scope--campus_specific { background: var(--navy-100); color: var(--navy-700); }
+.po-scope--university_wide { background: var(--approved-bg); color: var(--approved); }
+
+/* Calendar: campus-specific vs university-wide + legend */
+.po-legend { display: flex; flex-wrap: wrap; gap: 6px 14px; margin: 0; padding: 0; list-style: none; font-size: 12px; color: var(--muted); }
+.po-legend li { display: flex; align-items: center; gap: 6px; }
+.po-legend__dot { width: 12px; height: 12px; border-radius: 4px; }
+.po-legend__dot.po-ev--campus     { background: #4a5690; }
+.po-legend__dot.po-ev--university { background: #047857; }
+
+/* Analytics */
+.po-charts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
+.po-chart-card { margin: 0; padding: 14px 16px; border: 1px solid var(--border); border-radius: 14px; }
+.po-chart-card figcaption { margin-bottom: 10px; font-size: 13.5px; font-weight: 700; color: var(--navy-800); }
+.po-chart-card figcaption span { font-weight: 500; color: var(--muted); }
+.po-chart { position: relative; height: 260px; }
+
+/* ==========================================================================
+   Request review
+   ========================================================================== */
+
+.po-review__head {
+    display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: 12px;
+    padding-bottom: 14px;
+    margin-bottom: 16px;
+    border-bottom: 1px solid var(--navy-50);
+}
+.po-review__title { font-size: 17px; font-weight: 700; color: var(--navy-800); }
+.po-review__meta { margin-top: 2px; font-size: 13px; color: var(--muted); }
+.po-review__body { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr); gap: 24px; }
+.po-review__info { display: flex; flex-direction: column; gap: 10px; font-size: 13.5px; }
+.po-review__info strong { color: var(--navy-800); }
+.po-review__docs { display: flex; flex-wrap: wrap; gap: 12px; }
+.po-review__ok { font-weight: 600; color: var(--approved); }
+.po-review__form { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; align-content: start; }
+.po-review__form .po-span { grid-column: 1 / -1; }
+.po-review__actions { display: flex; flex-wrap: wrap; gap: 8px; }
+
+.po-conflict {
+    padding: 10px 12px;
+    border: 1px solid #fecdd3;
+    border-radius: 12px;
+    background: #fff1f2;
+    color: var(--rejected);
+}
+.po-conflict p + p { margin-top: 2px; }
+
+/* ==========================================================================
+   Lists (notifications, office detail) & forms
+   ========================================================================== */
+
+.po-list { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 10px; }
+.po-list__item {
+    display: flex; align-items: flex-start; justify-content: space-between; gap: 12px;
+    padding: 12px 14px;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: var(--surface);
+}
+.po-list__item--conflict { border-color: #fecdd3; background: #fff1f2; }
+.po-list__title { font-weight: 600; color: var(--navy-800); }
+.po-list__meta { margin-top: 2px; font-size: 12.5px; color: var(--muted); }
+.po-list__side { flex: none; font-size: 12px; color: var(--faint); text-align: right; }
+.po-list__side .od-badge { margin-top: 4px; }
+.po-list__date { font-weight: 600; color: var(--navy-800); }
+
+.po-inline-form { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 10px; }
+.po-inline-form .od-field { flex: 1 1 220px; }
+.po-stack { display: flex; flex-direction: column; gap: 24px; }
+.po-stack > .od-card { margin-bottom: 0; }
+.po-sub { display: block; font-size: 12px; color: var(--muted); }
+.po-two-equal { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+
+@media (max-width: 1100px) {
+    .po-review__body, .po-two-equal { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 1280px) {
+    .po-summary { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+@media (max-width: 900px) {
+    .po-filterbar, .po-charts { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 640px) {
+    .po-review__form, .po-table-filters { grid-template-columns: minmax(0, 1fr); }
+    .po-summary { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
