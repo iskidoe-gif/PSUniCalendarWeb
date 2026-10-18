@@ -1,0 +1,86 @@
+/* ==========================================================================
+   Action feedback — shared by every page (Office, Planning Office, Admin, public)
+   - .ui-toast: result of the last action (partials/flash.blade.php)
+   - [data-loading] on a submit button: shown while the form is being sent (js/ui-feedback.js)
+   ========================================================================== */
+
+.ui-toasts {
+    position: fixed;
+    top: 16px;
+    right: 16px;
+    z-index: 70;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: min(380px, calc(100vw - 32px));
+    pointer-events: none;
+}
+
+.ui-toast {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 12px 12px 12px 14px;
+    border: 1px solid #e3e6f0;
+    border-left-width: 4px;
+    border-radius: 10px;
+    background: #fff;
+    color: #1e2340;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    font-size: 13.5px;
+    line-height: 1.45;
+    box-shadow: 0 8px 24px rgba(31, 39, 87, .14);
+    pointer-events: auto;
+    animation: ui-toast-in .18s ease-out;
+}
+.ui-toast.is-leaving { opacity: 0; transform: translateY(-4px); transition: opacity .2s, transform .2s; }
+
+.ui-toast__icon { width: 20px; height: 20px; flex: none; margin-top: 1px; }
+.ui-toast__body { flex: 1; min-width: 0; }
+.ui-toast__title { margin: 0; font-weight: 600; }
+.ui-toast__message { margin: 2px 0 0; color: #4b5070; word-break: break-word; }
+.ui-toast__close {
+    flex: none;
+    width: 28px; height: 28px;
+    margin: -4px -2px 0 0;
+    border: 0;
+    border-radius: 6px;
+    background: transparent;
+    color: #64698a;
+    font-size: 18px;
+    line-height: 1;
+    cursor: pointer;
+}
+.ui-toast__close:hover { background: #f3f4fa; color: #1e2340; }
+.ui-toast__close:focus-visible { outline: 2px solid #4a5690; outline-offset: 1px; }
+
+.ui-toast--success { border-left-color: #047857; }
+.ui-toast--success .ui-toast__icon { color: #047857; }
+.ui-toast--info    { border-left-color: #4a5690; }
+.ui-toast--info .ui-toast__icon { color: #4a5690; }
+.ui-toast--error   { border-left-color: #be123c; }
+.ui-toast--error .ui-toast__icon { color: #be123c; }
+
+@keyframes ui-toast-in { from { opacity: 0; transform: translateY(-6px); } }
+
+/* Submit button while its form is being sent */
+button[data-loading] { position: relative; cursor: progress !important; opacity: .75; }
+button[data-loading]::before {
+    content: "";
+    display: inline-block;
+    width: 13px; height: 13px;
+    margin-right: 6px;
+    vertical-align: -2px;
+    border: 2px solid currentColor;
+    border-right-color: transparent;
+    border-radius: 50%;
+    animation: ui-spin .7s linear infinite;
+}
+@keyframes ui-spin { to { transform: rotate(360deg); } }
+
+@media (prefers-reduced-motion: reduce) {
+    .ui-toast, button[data-loading]::before { animation-duration: 0s; }
+    button[data-loading]::before { animation: none; }
+}
+
+@media print { .ui-toasts { display: none !important; } }

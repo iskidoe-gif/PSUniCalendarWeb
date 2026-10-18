@@ -184,3 +184,7 @@ Do not make assumptions about the existing calendar library or database schema.
 Ask for clarification before making significant changes to role permissions or data structures.
 Explain potentially destructive operations before performing them.
 Keep the application compatible with its existing Laravel version and dependencies.
+
+README file
+
+update the readme file on what the system is for and how the system works, and the roles of users

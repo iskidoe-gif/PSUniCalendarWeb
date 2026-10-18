@@ -18,19 +18,19 @@
             <nav class="bg-white rounded-xl p-3 shadow-sm border border-gray-200 mb-6">
                 <div class="max-w-6xl mx-auto flex justify-between items-center">
                     <div class="flex gap-2 items-center">
-                        <a href="{{ route('admin.calendar') }}" class="px-4 py-2 rounded text-sm bg-slate-100 text-slate-800">Calendar</a>
-                        <a href="{{ route('admin.dashboard') }}#request-form" class="px-4 py-2 rounded text-sm bg-slate-100 text-slate-800">Request event</a>
-                        <a href="{{ route('admin.venues') }}" class="px-4 py-2 rounded text-sm bg-indigo-600 text-white">View Venue Availability</a>
-                        <a href="{{ route('admin.dashboard') }}#request-status" class="px-4 py-2 rounded text-sm bg-slate-100 text-slate-800">Request Status</a>
+                        <a href="{{ route('admin.calendar') }}" class="px-4 py-2 rounded-lg text-sm font-medium bg-slate-100 text-slate-800">Calendar</a>
+                        <a href="{{ route('admin.dashboard') }}#request-form" class="px-4 py-2 rounded-lg text-sm font-medium bg-slate-100 text-slate-800">Request event</a>
+                        <a href="{{ route('admin.venues') }}" class="px-4 py-2 rounded-lg text-sm font-medium bg-[#4a5690] text-white">View Venue Availability</a>
+                        <a href="{{ route('admin.dashboard') }}#request-status" class="px-4 py-2 rounded-lg text-sm font-medium bg-slate-100 text-slate-800">Request Status</a>
                     </div>
                     <form method="POST" action="{{ route('admin.logout') }}">
                         @csrf
-                        <button type="submit" class="px-3 py-2 rounded bg-rose-500 text-white text-sm">Logout</button>
+                        <button type="submit" class="px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-700 text-sm font-medium hover:bg-slate-50">Logout</button>
                     </form>
                 </div>
             </nav>
 
-            <div class="bg-white rounded-3xl shadow-sm border border-slate-200 p-6">
+            <div class="bg-white rounded-lg shadow-sm border border-slate-200 p-6">
                 <div class="overflow-x-auto">
                     <table class="w-full text-left border-collapse">
                         <thead>
@@ -46,7 +46,7 @@
                                     <td class="py-3 px-4 font-semibold text-gray-800">{{ $venue->venue_name }}</td>
                                     <td class="py-3 px-4">{{ $venue->events_count }}</td>
                                     <td class="py-3 px-4">
-                                        <a href="#" class="px-3 py-1 bg-indigo-600 hover:bg-indigo-700 text-white rounded text-xs font-bold">View Events</a>
+                                        <a href="#" class="px-3 py-1 bg-[#4a5690] hover:bg-[#3b4679] text-white rounded text-xs font-bold">View Events</a>
                                     </td>
                                 </tr>
                             @empty

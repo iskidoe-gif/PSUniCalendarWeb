@@ -13,31 +13,6 @@
         <div class="od-alert od-alert--error">{{ $errors->first() }}</div>
     @endif
 
-    <section class="od-card">
-        <div class="od-card__head" style="margin-bottom:0">
-            <div>
-                <h2 class="od-card__title">Campus listing</h2>
-                <p class="od-card__sub">Which group this office appears under in the sidebar.</p>
-            </div>
-            <form method="POST" action="{{ route('planning_office.offices.campus', $office) }}" class="po-inline-form">
-                @csrf
-                @method('PATCH')
-                <label class="od-field" style="flex:0 1 auto">
-                    <span class="sr-only">Campus</span>
-                    <select name="campus" class="od-input od-input--sm" style="width:auto">
-                        @unless($office->campus)
-                            <option value="" selected disabled>Select campus</option>
-                        @endunless
-                        @foreach(\App\Models\User::OFFICE_GROUPS as $campus)
-                            <option value="{{ $campus }}" {{ $office->campus === $campus ? 'selected' : '' }}>{{ $campus }}</option>
-                        @endforeach
-                    </select>
-                </label>
-                <button type="submit" class="od-btn od-btn--primary od-btn--sm">Save</button>
-            </form>
-        </div>
-    </section>
-
     <section class="od-stats po-stats" aria-label="Request summary">
         @foreach([
             ['Awaiting review', $statusCounts['pending'], 'pending'],

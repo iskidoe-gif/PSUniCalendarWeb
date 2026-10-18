@@ -25,31 +25,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Office Dashboard - UniCalendar</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Archivo+Black&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.css" rel="stylesheet">
     <link href="{{ asset('css/event-calendar.css') }}" rel="stylesheet">
     <link href="{{ asset('css/office-dashboard.css') }}" rel="stylesheet">
+    <link href="{{ asset('css/ui-feedback.css') }}" rel="stylesheet">
 </head>
 <body class="od-body">
-    {{-- Reusable wave pattern (same as the login banner) --}}
-    @php
-        $waves = '';
-        for ($i = 0; $i < 18; $i++) {
-            $waves .= '<path d="M0 ' . (150 - $i * 4) . ' C 250 ' . (40 + $i * 6) . ', 450 ' . (220 - $i * 5) . ', 700 ' . (90 + $i * 3) . ' S 1050 ' . (10 + $i * 7) . ', 1200 ' . (120 - $i * 2) . '" />';
-        }
-        $wavesSvg = '<svg class="psu-waves" viewBox="0 0 1200 200" preserveAspectRatio="none" aria-hidden="true"><g fill="none" stroke="#8d98d4" stroke-width="0.8">' . $waves . '</g></svg>';
-    @endphp
-
     <!-- ================= Sidebar ================= -->
     <aside id="sidebar" class="od-sidebar" aria-label="Main navigation">
-        <svg class="psu-waves" viewBox="0 0 200 1200" preserveAspectRatio="none" aria-hidden="true">
-            <g fill="none" stroke="#8d98d4" stroke-width="0.8">
-                @for($i = 0; $i < 14; $i++)
-                    <path d="M{{ 150 - $i * 6 }} 0 C {{ 40 + $i * 8 }} 250, {{ 200 - $i * 7 }} 500, {{ 90 + $i * 4 }} 750 S {{ 10 + $i * 9 }} 1050, {{ 120 - $i * 3 }} 1200" />
-                @endfor
-            </g>
-        </svg>
-
         <div class="od-sidebar__inner">
             <a href="#calendar" class="od-brand">
                 <span class="od-brand__seal">
@@ -124,6 +108,7 @@
                 </div>
 
                 <div class="od-topbar__actions">
+                    <a href="#request-form" class="od-btn od-btn--primary no-print">Request a venue</a>
                     <!-- Notification bell -->
                     <div class="od-notif">
                         <button type="button" id="notif-bell-btn" class="od-icon-btn" aria-label="Notifications">
@@ -181,15 +166,7 @@
                     </p>
                 </div>
             @endif
-            @if(session('success'))
-                <div class="od-alert od-alert--success">{{ session('success') }}</div>
-            @endif
-            @if(session('info'))
-                <div class="od-alert od-alert--info">{{ session('info') }}</div>
-            @endif
-            @if(session('error'))
-                <div class="od-alert od-alert--error">{{ session('error') }}</div>
-            @endif
+            @include('partials.flash')
             @if($errors->any())
                 <div class="od-alert od-alert--error">
                     <ul>
@@ -201,8 +178,7 @@
             @endif
 
             <!-- Welcome hero -->
-            <section class="od-hero psu-banner">
-                {!! $wavesSvg !!}
+            <section class="od-hero">
                 <div class="od-hero__text">
                     <p class="od-hero__eyebrow">{{ $greeting }}</p>
                     <h2 class="od-hero__title">{{ $user->name }}</h2>
@@ -520,8 +496,7 @@
     <!-- ================= All notifications modal ================= -->
     <div id="notifications-modal" class="od-modal hidden" role="dialog" aria-modal="true" aria-labelledby="notifications-title">
         <div class="od-modal__panel od-modal__panel--wide">
-            <div class="od-modal__head psu-banner">
-                {!! $wavesSvg !!}
+            <div class="od-modal__head">
                 <h2 id="notifications-title" class="od-modal__title">All notifications</h2>
                 <button type="button" data-notifications-close class="od-modal__close" aria-label="Close notifications">✕</button>
             </div>
@@ -572,8 +547,7 @@
     <!-- ================= Settings modal ================= -->
     <div id="settings-modal" class="od-modal {{ $settingsOpen ? '' : 'hidden' }}" role="dialog" aria-modal="true" aria-labelledby="settings-title">
         <div class="od-modal__panel">
-            <div class="od-modal__head psu-banner">
-                {!! $wavesSvg !!}
+            <div class="od-modal__head">
                 <h2 id="settings-title" class="od-modal__title">Settings</h2>
                 <button type="button" data-settings-close class="od-modal__close" aria-label="Close settings">✕</button>
             </div>
@@ -677,6 +651,7 @@
 
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
     <script src="{{ asset('js/event-calendar.js') }}"></script>
+    <script src="{{ asset('js/ui-feedback.js') }}"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             var calendarPanel = document.getElementById('calendar-panel');

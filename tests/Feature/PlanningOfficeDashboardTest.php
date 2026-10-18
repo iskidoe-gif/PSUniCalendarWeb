@@ -50,6 +50,24 @@ test('dashboard shows real counts and counts university-wide events once', funct
         ->and(array_sum($byCampus))->toBe(3);
 });
 
+test('overview breaks the numbers down per campus, with university-wide events in their own row', function () {
+    dashboardEvent(['title' => 'Lingayen Intrams']);
+    dashboardEvent(['title' => 'University Meet', 'is_university_wide' => true, 'venue_name' => 'Plaza']);
+    dashboardEvent(['title' => 'Alaminos Request', 'campus' => 'Alaminos Campus', 'venue_name' => 'Alaminos Gym', 'status' => 'pending']);
+
+    $response = $this->actingAs($this->planning)->get('/planning-office')->assertOk()
+        ->assertSee('Show by campus')
+        ->assertDontSee('Apply filters');
+
+    $campuses = $response->viewData('campusSummaries');
+    expect($campuses->keys()->all())->toBe(['Alaminos Campus', 'Binmaley Campus', 'Lingayen Campus', 'University-wide events'])
+        ->and($campuses['Lingayen Campus']['total'])->toBe(1)
+        ->and($campuses['University-wide events']['total'])->toBe(1)
+        ->and($campuses['Alaminos Campus']['pending'])->toBe(1)
+        ->and($campuses['Binmaley Campus']['total'])->toBe(0)
+        ->and($campuses->sum('total'))->toBe($response->viewData('summary')['total']);
+});
+
 test('campus filter keeps that campus plus university-wide events', function () {
     dashboardEvent(['title' => 'Lingayen Intrams']);
     dashboardEvent(['title' => 'Binmaley Fair', 'campus' => 'Binmaley Campus', 'venue_name' => 'Binmaley Hall']);

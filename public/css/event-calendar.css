@@ -23,7 +23,7 @@
 /* ==========================================================================
    Calendar grid — PSU portal theme (blue / gold / white)
    event-calendar.js adds .ec-calendar to every calendar, so all pages match:
-   navy banner toolbar with a gold stripe, white grid, gold "today".
+   plain white toolbar, white grid, gold "today".
    ========================================================================== */
 
 .fc.ec-calendar {
@@ -35,57 +35,38 @@
     --fc-event-border-color: var(--ec-navy-600);
     --fc-now-indicator-color: var(--ec-gold-600);
     --fc-highlight-color: rgba(242, 195, 24, .18);
-    --fc-button-text-color: #fff;
-    --fc-button-bg-color: rgba(255, 255, 255, .12);
-    --fc-button-border-color: rgba(255, 255, 255, .28);
-    --fc-button-hover-bg-color: rgba(255, 255, 255, .22);
-    --fc-button-hover-border-color: rgba(255, 255, 255, .4);
-    --fc-button-active-bg-color: var(--ec-gold-500);
-    --fc-button-active-border-color: var(--ec-gold-500);
+    --fc-button-text-color: var(--ec-text);
+    --fc-button-bg-color: #fff;
+    --fc-button-border-color: #cfd3e3;
+    --fc-button-hover-bg-color: var(--ec-navy-50);
+    --fc-button-hover-border-color: #cfd3e3;
+    --fc-button-active-bg-color: var(--ec-navy-600);
+    --fc-button-active-border-color: var(--ec-navy-600);
     color: var(--ec-text);
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
     font-size: 13px;
     min-height: 0;          /* the grid sets its own height; no blank band under the last week */
-    border-radius: 16px;
+    border: 1px solid var(--ec-border);
+    border-radius: 10px;
     background: #fff;
-    box-shadow: 0 1px 2px rgba(31, 39, 87, .06), 0 4px 16px rgba(31, 39, 87, .08);
 }
 
-/* ---------- Toolbar: navy banner + gold stripe ---------- */
+/* ---------- Toolbar: month title on the left, navigation on the right ---------- */
 
 .fc.ec-calendar .fc-header-toolbar {
-    position: relative;
     margin: 0;
-    padding: 14px 16px 18px;
-    border-radius: 16px 16px 0 0;
-    background: linear-gradient(180deg, var(--ec-navy-600) 0%, var(--ec-navy-500) 55%, #4b5892 100%);
-    overflow: hidden;
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--ec-border);
 }
-.fc.ec-calendar .fc-header-toolbar::before {        /* faint waves, as on the login banner */
-    content: "";
-    position: absolute; inset: 0;
-    background: repeating-radial-gradient(ellipse at 20% 140%, transparent 0 18px, rgba(141, 152, 212, .18) 18px 19px);
-    pointer-events: none;
-}
-.fc.ec-calendar .fc-header-toolbar::after {         /* gold stripe */
-    content: "";
-    position: absolute; left: 0; right: 0; bottom: 0;
-    height: 5px;
-    background: linear-gradient(180deg, var(--ec-gold-400) 0%, var(--ec-gold-600) 60%, var(--ec-gold-700) 100%);
-}
-.fc.ec-calendar .fc-toolbar-chunk { position: relative; z-index: 1; }
 .fc.ec-calendar .fc-toolbar-title {
-    font-family: 'Cinzel', 'Times New Roman', serif;
-    font-size: 22px;
-    font-weight: 700;
-    letter-spacing: .02em;
-    color: #fff;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, .25);
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--ec-text);
 }
 
 .fc.ec-calendar .fc-button {
     padding: 6px 12px;
-    border-radius: 10px;
+    border-radius: 8px;
     font-size: 12.5px;
     font-weight: 600;
     text-transform: capitalize;
@@ -94,18 +75,18 @@
 }
 .fc.ec-calendar .fc-button .fc-icon { font-size: 1.15em; }
 .fc.ec-calendar .fc-button:focus,
-.fc.ec-calendar .fc-button:focus-visible { box-shadow: 0 0 0 3px rgba(242, 195, 24, .55); outline: none; }
+.fc.ec-calendar .fc-button:focus-visible { box-shadow: 0 0 0 3px rgba(74, 86, 144, .25); outline: none; }
 .fc.ec-calendar .fc-button-primary:not(:disabled).fc-button-active,
-.fc.ec-calendar .fc-button-primary:not(:disabled):active { color: var(--ec-navy-900); }
+.fc.ec-calendar .fc-button-primary:not(:disabled):active { color: #fff; }
 .fc.ec-calendar .fc-button-primary:disabled { opacity: .45; }
 .fc.ec-calendar .fc-today-button { margin-left: 8px !important; }
 
 /* ---------- Grid ---------- */
 
-.fc.ec-calendar .fc-view-harness { border-radius: 0 0 16px 16px; }
+.fc.ec-calendar .fc-view-harness { border-radius: 0 0 10px 10px; }
 .fc.ec-calendar .fc-scrollgrid {
     border-left: 0; border-top: 0;
-    border-radius: 0 0 16px 16px;
+    border-radius: 0 0 10px 10px;
     overflow: hidden;
 }
 .fc.ec-calendar .fc-scrollgrid td:last-of-type,
@@ -116,10 +97,8 @@
 .fc.ec-calendar .fc-col-header-cell-cushion {
     padding: 9px 4px;
     color: var(--ec-navy-800);
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: .12em;
-    text-transform: uppercase;
+    font-size: 12px;
+    font-weight: 600;
     text-decoration: none;
 }
 .fc.ec-calendar .fc-col-header-cell.fc-day-sun .fc-col-header-cell-cushion,
@@ -145,8 +124,7 @@
 .fc.ec-calendar .fc-day-today .fc-daygrid-day-number {
     background: var(--ec-gold-500);
     color: var(--ec-navy-900);
-    font-weight: 800;
-    box-shadow: 0 2px 6px rgba(181, 138, 0, .35);
+    font-weight: 700;
 }
 .fc.ec-calendar .fc-daygrid-day.ec-day--selected .fc-daygrid-day-number { background: var(--ec-navy-600); color: #fff; }
 .fc.ec-calendar .fc-daygrid-more-link {
@@ -163,17 +141,17 @@
 .fc.ec-calendar .fc-popover {
     overflow: hidden;
     border: 1px solid var(--ec-border);
-    border-radius: 14px;
-    box-shadow: 0 12px 32px rgba(31, 39, 87, .2);
+    border-radius: 10px;
+    box-shadow: 0 8px 24px rgba(31, 39, 87, .14);
 }
 .fc.ec-calendar .fc-popover-header {
     padding: 8px 12px;
-    border-bottom: 3px solid var(--ec-gold-500);
-    background: var(--ec-navy-600);
-    color: #fff;
-    font-weight: 700;
+    border-bottom: 1px solid var(--ec-border);
+    background: #fff;
+    color: var(--ec-text);
+    font-weight: 600;
 }
-.fc.ec-calendar .fc-popover-close { color: #fff; opacity: .8; }
+.fc.ec-calendar .fc-popover-close { color: var(--ec-muted); }
 .fc.ec-calendar .fc-popover-body { padding: 6px 0 8px; }
 
 /* ---------- Week / day (time grid) ---------- */
@@ -197,10 +175,10 @@
 /* ---------- Small screens ---------- */
 
 @media (max-width: 640px) {
-    .fc.ec-calendar .fc-header-toolbar { flex-direction: column; gap: 10px; padding: 12px 12px 16px; }
-    .fc.ec-calendar .fc-toolbar-title { font-size: 18px; text-align: center; }
+    .fc.ec-calendar .fc-header-toolbar { flex-direction: column; gap: 10px; padding: 12px; }
+    .fc.ec-calendar .fc-toolbar-title { font-size: 17px; text-align: center; }
     .fc.ec-calendar .fc-button { padding: 5px 9px; font-size: 12px; }
-    .fc.ec-calendar .fc-col-header-cell-cushion { font-size: 10px; letter-spacing: .06em; }
+    .fc.ec-calendar .fc-col-header-cell-cushion { font-size: 11px; }
 }
 
 /* ---------- Event bars in month view ---------- */
@@ -210,11 +188,10 @@
     border: 0;
     border-left: 3px solid var(--ec-gold-500);
     border-radius: 6px;
-    box-shadow: 0 1px 3px rgba(31, 39, 87, .2);
     cursor: pointer;
-    transition: filter .15s, transform .15s;
+    transition: filter .15s;
 }
-.fc .ec-event:hover { filter: brightness(1.12); transform: translateY(-1px); }
+.fc .ec-event:hover { filter: brightness(1.12); }
 .fc .ec-event:focus-visible { outline: 2px solid var(--ec-gold-500); outline-offset: 1px; }
 
 /* Event card inside a date cell */
@@ -243,9 +220,9 @@
     margin: 0 0 10px;
     padding: 12px 14px;
     border: 1px solid var(--ec-border);
-    border-left: 4px solid var(--ec-gold-500);
-    border-radius: 12px;
-    background: var(--ec-navy-50);
+    border-left: 3px solid var(--ec-navy-600);
+    border-radius: 8px;
+    background: #fff;
     color: var(--ec-text);
     font: inherit;
     text-align: left;
@@ -253,8 +230,8 @@
     transition: background .15s, border-color .15s;
 }
 .ec-item:last-child { margin-bottom: 0; }
-.ec-item:hover { background: #eceefa; border-color: #cfd3e3; border-left-color: var(--ec-gold-600); }
-.ec-item:focus-visible { outline: 2px solid var(--ec-gold-500); outline-offset: 2px; }
+.ec-item:hover { background: var(--ec-navy-50); border-color: #cfd3e3; border-left-color: var(--ec-navy-700); }
+.ec-item:focus-visible { outline: 2px solid var(--ec-navy-600); outline-offset: 2px; }
 .ec-item__top { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 6px 10px; }
 .ec-item__title { font-weight: 600; color: var(--ec-navy-800); }
 .ec-item__venue {
@@ -271,7 +248,7 @@
 .ec-empty {
     padding: 18px 14px;
     border: 1px dashed #cfd3e3;
-    border-radius: 12px;
+    border-radius: 8px;
     background: var(--ec-navy-50);
     text-align: center;
     font-size: 13px;
@@ -304,10 +281,10 @@
     max-width: 460px;
     max-height: 90vh;
     overflow-y: auto;
-    border-radius: 20px;
+    border-radius: 10px;
     background: #fff;
     color: var(--ec-text);
-    box-shadow: 0 24px 60px rgba(15, 20, 50, .35);
+    box-shadow: 0 12px 32px rgba(15, 20, 50, .2);
     animation: ec-pop .16s ease-out;
 }
 @keyframes ec-pop { from { transform: translateY(8px) scale(.98); opacity: 0; } }
@@ -318,30 +295,24 @@
     align-items: flex-start;
     justify-content: space-between;
     gap: 12px;
-    padding: 18px 22px 20px;
-    background: linear-gradient(180deg, #4a5690 0%, #56639f 55%, #4b5892 100%);
-    color: #fff;
+    padding: 16px 22px;
+    border-bottom: 1px solid var(--ec-border);
+    background: #fff;
+    color: var(--ec-text);
 }
-.ec-modal__head::after {           /* gold stripe, as on the login banner */
-    content: "";
-    position: absolute;
-    left: 0; right: 0; bottom: 0;
-    height: 4px;
-    background: linear-gradient(180deg, #f7d54a, var(--ec-gold-600));
-}
-.ec-modal__eyebrow { margin: 0; font-size: 10.5px; font-weight: 600; letter-spacing: .2em; text-transform: uppercase; color: #f7d54a; }
-.ec-modal__title { margin: 4px 0 0; font-family: 'Cinzel', 'Times New Roman', serif; font-size: 20px; font-weight: 700; line-height: 1.25; word-break: break-word; }
+.ec-modal__eyebrow { margin: 0; font-size: 12.5px; font-weight: 500; color: var(--ec-muted); }
+.ec-modal__title { margin: 2px 0 0; font-size: 18px; font-weight: 600; line-height: 1.3; word-break: break-word; }
 .ec-modal__close {
     flex: none;
     width: 32px; height: 32px;
     border: 0;
     border-radius: 8px;
-    background: rgba(255, 255, 255, .14);
-    color: #fff;
+    background: transparent;
+    color: var(--ec-muted);
     font-size: 14px;
     cursor: pointer;
 }
-.ec-modal__close:hover { background: rgba(255, 255, 255, .25); }
+.ec-modal__close:hover { background: var(--ec-navy-50); color: var(--ec-text); }
 
 .ec-modal__body { padding: 18px 22px 6px; }
 .ec-modal__foot { display: flex; justify-content: flex-end; padding: 12px 22px 20px; }
@@ -359,19 +330,19 @@
 }
 
 .ec-details { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px 18px; margin: 0; }
-.ec-detail dt { font-size: 10.5px; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; color: #9a9fbb; }
+.ec-detail dt { font-size: 12px; font-weight: 500; color: var(--ec-muted); }
 .ec-detail dd { margin: 3px 0 0; font-size: 14px; font-weight: 500; word-break: break-word; }
 .ec-time { display: block; font-weight: 700; color: var(--ec-navy-800); }
 
 .ec-description { margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--ec-navy-50); }
 .ec-description p { margin: 0; font-size: 14px; white-space: pre-line; }
-.ec-description__label { margin-bottom: 4px !important; font-size: 10.5px !important; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; color: #9a9fbb; }
+.ec-description__label { margin-bottom: 4px !important; font-size: 12px !important; font-weight: 500; color: var(--ec-muted); }
 .ec-muted { color: var(--ec-muted); }
 
 .ec-btn {
     padding: 8px 16px;
     border: 0;
-    border-radius: 10px;
+    border-radius: 8px;
     background: var(--ec-navy-600);
     color: #fff;
     font: inherit;
@@ -380,7 +351,7 @@
     cursor: pointer;
 }
 .ec-btn:hover { background: #3b4679; }
-.ec-btn:focus-visible { outline: none; box-shadow: 0 0 0 4px rgba(242, 195, 24, .5); }
+.ec-btn:focus-visible { outline: none; box-shadow: 0 0 0 3px rgba(74, 86, 144, .25); }
 
 @media (max-width: 480px) {
     .ec-details { grid-template-columns: minmax(0, 1fr); }}

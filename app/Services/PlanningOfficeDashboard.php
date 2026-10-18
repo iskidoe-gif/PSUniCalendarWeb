@@ -78,15 +78,18 @@ class PlanningOfficeDashboard
             ])
             ->values();
 
+        $conflictRequests = $conflicts->pluck('request');
+
         return [
-            'summary' => [
-                'total' => $approved->count(),
-                'upcoming' => $approved->filter(fn ($e) => $e->start_datetime > $now)->count(),
-                'ongoing' => $approved->filter(fn ($e) => $e->start_datetime <= $now && $e->end_datetime > $now)->count(),
-                'completed' => $approved->filter(fn ($e) => $e->end_datetime <= $now)->count(),
-                'pending' => $queue->count(),
-                'conflicts' => $conflicts->count(),
-            ],
+            'summary' => $this->summary($approved, $queue, $conflictRequests, $now),
+            // Same numbers per campus; university-wide events in their own row (counted once)
+            'campusSummaries' => collect($this->campusBuckets($filtered))
+                ->mapWithKeys(fn ($bucket) => [$bucket => $this->summary(
+                    $approved->filter(fn ($e) => $this->bucketOf($e) === $bucket),
+                    $queue->filter(fn ($e) => $this->bucketOf($e) === $bucket),
+                    $conflictRequests->filter(fn ($e) => $this->bucketOf($e) === $bucket),
+                    $now,
+                )]),
             'queue' => $queue,
             'conflicts' => $conflicts,
             'upcoming' => $approved->filter(fn ($e) => $e->start_datetime > $now)->take(7)->values(),
@@ -100,6 +103,40 @@ class PlanningOfficeDashboard
             'activity' => ActivityLog::whereIn('action', self::ACTIVITY_ACTIONS)->latest()->limit(10)->get(),
             'accountNames' => User::whereIn('role', ['office', 'planning_office'])->pluck('name', 'email'),
         ];
+    }
+
+    /** The six overview numbers for one set of events. */
+    private function summary(Collection $approved, Collection $queue, Collection $conflictRequests, Carbon $now): array
+    {
+        return [
+            'total' => $approved->count(),
+            'upcoming' => $approved->filter(fn ($e) => $e->start_datetime > $now)->count(),
+            'ongoing' => $approved->filter(fn ($e) => $e->start_datetime <= $now && $e->end_datetime > $now)->count(),
+            'completed' => $approved->filter(fn ($e) => $e->end_datetime <= $now)->count(),
+            'pending' => $queue->count(),
+            'conflicts' => $conflictRequests->count(),
+        ];
+    }
+
+    /** Campus group of an event: one main campus, university-wide, or "Other campuses". */
+    private function bucketOf(EventRequest $e): string
+    {
+        return match (true) {
+            $e->scope() === EventRequest::SCOPE_UNIVERSITY_WIDE => self::UNIVERSITY_WIDE_LABEL,
+            in_array($e->venueCampus(), User::MAIN_CAMPUSES, true) => $e->venueCampus(),
+            default => 'Other campuses',
+        };
+    }
+
+    /** Main campuses + university-wide, plus "Other campuses" only when some event falls there. */
+    private function campusBuckets(Collection $events): array
+    {
+        $buckets = [...User::MAIN_CAMPUSES, self::UNIVERSITY_WIDE_LABEL];
+        if ($events->contains(fn ($e) => $this->bucketOf($e) === 'Other campuses')) {
+            $buckets[] = 'Other campuses';
+        }
+
+        return $buckets;
     }
 
     public static function categoryLabel(?int $sdg): string
@@ -149,15 +186,8 @@ class PlanningOfficeDashboard
 
     private function charts(Collection $approved, Collection $conflicts, ?Carbon $from, ?Carbon $to): array
     {
-        $bucketOf = fn (EventRequest $e) => match (true) {
-            $e->scope() === EventRequest::SCOPE_UNIVERSITY_WIDE => self::UNIVERSITY_WIDE_LABEL,
-            in_array($e->venueCampus(), User::MAIN_CAMPUSES, true) => $e->venueCampus(),
-            default => 'Other campuses',
-        };
-        $buckets = [...User::MAIN_CAMPUSES, self::UNIVERSITY_WIDE_LABEL];
-        if ($approved->contains(fn ($e) => $bucketOf($e) === 'Other campuses')) {
-            $buckets[] = 'Other campuses';
-        }
+        $bucketOf = fn (EventRequest $e) => $this->bucketOf($e);
+        $buckets = $this->campusBuckets($approved);
 
         // Events by campus (each event in exactly one bucket)
         $byCampus = collect($buckets)->mapWithKeys(fn ($b) => [$b => $approved->filter(fn ($e) => $bucketOf($e) === $b)->count()]);

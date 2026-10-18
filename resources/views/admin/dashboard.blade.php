@@ -5,9 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.css" rel="stylesheet">
     <link href="{{ asset('css/event-calendar.css') }}" rel="stylesheet">
+    <link href="{{ asset('css/ui-feedback.css') }}" rel="stylesheet">
 </head>
 <body class="bg-slate-100 min-h-screen">
     <div class="mx-auto max-w-6xl p-6">
@@ -19,21 +20,21 @@
         <nav class="bg-white rounded-xl p-3 shadow-sm border border-gray-200 mb-6">
             <div class="max-w-6xl mx-auto flex justify-between items-center">
                 <div class="flex gap-2 items-center">
-                    <a href="{{ route('admin.calendar') }}" data-nav-section="calendar" class="px-4 py-2 rounded text-sm bg-slate-100 text-slate-800">Calendar</a>
-                    <a href="{{ route('admin.dashboard') }}#request-form" data-nav-section="request-form" class="px-4 py-2 rounded text-sm bg-indigo-600 text-white">Request event</a>
-                    <a href="{{ route('admin.venues') }}" data-nav-section="venues" class="px-4 py-2 rounded text-sm bg-slate-100 text-slate-800">View Venue Availability</a>
-                    <a href="#request-status" data-nav-section="request-status" class="px-4 py-2 rounded text-sm bg-slate-100 text-slate-800">Request Status</a>
+                    <a href="{{ route('admin.calendar') }}" data-nav-section="calendar" class="px-4 py-2 rounded-lg text-sm font-medium bg-slate-100 text-slate-800">Calendar</a>
+                    <a href="{{ route('admin.dashboard') }}#request-form" data-nav-section="request-form" class="px-4 py-2 rounded-lg text-sm font-medium bg-[#4a5690] text-white">Request event</a>
+                    <a href="{{ route('admin.venues') }}" data-nav-section="venues" class="px-4 py-2 rounded-lg text-sm font-medium bg-slate-100 text-slate-800">View Venue Availability</a>
+                    <a href="#request-status" data-nav-section="request-status" class="px-4 py-2 rounded-lg text-sm font-medium bg-slate-100 text-slate-800">Request Status</a>
                 </div>
                 <form method="POST" action="{{ route('admin.logout') }}">
                     @csrf
-                    <button type="submit" class="px-3 py-2 rounded bg-rose-500 text-white text-sm">Logout</button>
+                    <button type="submit" class="px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-700 text-sm font-medium hover:bg-slate-50">Logout</button>
                 </form>
             </div>
         </nav>
 
          @if(isset($accountBadge))
-            <div class="rounded-3xl border border-slate-200 bg-white px-4 py-3 shadow-sm">
-                <p class="text-xs font-semibold uppercase tracking-[0.24em] text-slate-400">Account</p>
+            <div class="rounded-lg border border-slate-200 bg-white px-4 py-3 shadow-sm">
+                <p class="text-sm font-medium text-slate-500">Account</p>
                 <div class="mt-2 flex items-center gap-2">
                     <span class="inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold {{ $accountBadge['style'] }}">{{ $accountBadge['label'] }}</span>
                     <span class="text-sm text-slate-600">{{ $accountBadge['subtitle'] }}</span>
@@ -42,23 +43,19 @@
         @endif
         
         <div class="mt-6 grid gap-4 sm:grid-cols-2">
-            <div class="rounded-3xl bg-white p-5 shadow-sm border border-slate-200">
-                <p class="text-xs font-semibold uppercase tracking-[0.24em] text-slate-400">Total events</p>
+            <div class="rounded-lg bg-white p-5 shadow-sm border border-slate-200">
+                <p class="text-sm font-medium text-slate-500">Total events</p>
                 <p class="mt-2 text-3xl font-bold text-slate-900">{{ $totalEvents ?? 0 }}</p>
             </div>
-            <div class="rounded-3xl bg-white p-5 shadow-sm border border-slate-200">
-                <p class="text-xs font-semibold uppercase tracking-[0.24em] text-slate-400">Upcoming events</p>
+            <div class="rounded-lg bg-white p-5 shadow-sm border border-slate-200">
+                <p class="text-sm font-medium text-slate-500">Upcoming events</p>
                 <p class="mt-2 text-3xl font-bold text-slate-900">{{ $upcomingEvents ?? 0 }}</p>
             </div>
         </div>
 
-        @if(session('success'))
-            <div class="mt-6 rounded-3xl border border-emerald-200 bg-emerald-50 p-4 text-emerald-700">
-                {{ session('success') }}
-            </div>
-        @endif
+        @include('partials.flash')
         @if($errors->any())
-            <div class="mt-6 rounded-3xl border border-rose-200 bg-rose-50 p-4 text-rose-700">
+            <div class="mt-6 rounded-lg border border-rose-200 bg-rose-50 p-4 text-rose-700">
                 <ul class="list-disc list-inside text-sm">
                     @foreach($errors->all() as $error)
                         <li>{{ $error }}</li>
@@ -67,22 +64,22 @@
             </div>
         @endif
 
-        <div id="request-form" class="mt-8 rounded-3xl bg-white border border-slate-200 p-6 shadow-sm">
+        <div id="request-form" class="mt-8 rounded-lg bg-white border border-slate-200 p-6 shadow-sm">
             <form action="{{ route('admin.request') }}" method="POST" enctype="multipart/form-data" class="space-y-5">
                 @csrf
                 <div class="grid gap-4 md:grid-cols-2">
                     <label class="block">
                         <span class="text-sm font-medium text-slate-700">Event Title</span>
-                        <input type="text" name="title" value="{{ old('title') }}" required class="mt-2 w-full rounded-2xl border border-slate-300 px-4 py-3 focus:ring-2 focus:ring-indigo-500" />
+                        <input type="text" name="title" value="{{ old('title') }}" required class="mt-2 w-full rounded-lg border border-slate-300 px-4 py-3 focus:ring-2 focus:ring-[#4a5690]/30 focus:border-[#4a5690]" />
                     </label>
                     <label class="block">
                         <span class="text-sm font-medium text-slate-700">Venue Name</span>
-                        <input type="text" name="venue_name" value="{{ old('venue_name') }}" required class="mt-2 w-full rounded-2xl border border-slate-300 px-4 py-3 focus:ring-2 focus:ring-indigo-500" />
+                        <input type="text" name="venue_name" value="{{ old('venue_name') }}" required class="mt-2 w-full rounded-lg border border-slate-300 px-4 py-3 focus:ring-2 focus:ring-[#4a5690]/30 focus:border-[#4a5690]" />
                     </label>
                 </div>
                 <label class="block">
                     <span class="text-sm font-medium text-slate-700">SDG alignment (optional)</span>
-                    <select name="sdg_number" class="mt-2 w-full rounded-2xl border border-slate-300 px-4 py-3 focus:ring-2 focus:ring-indigo-500">
+                    <select name="sdg_number" class="mt-2 w-full rounded-lg border border-slate-300 px-4 py-3 focus:ring-2 focus:ring-[#4a5690]/30 focus:border-[#4a5690]">
                         <option value="">Not aligned to an SDG</option>
                         @foreach(['No Poverty', 'Zero Hunger', 'Good Health and Well-being', 'Quality Education', 'Gender Equality', 'Clean Water and Sanitation', 'Affordable and Clean Energy', 'Decent Work and Economic Growth', 'Industry, Innovation and Infrastructure', 'Reduced Inequalities', 'Sustainable Cities and Communities', 'Responsible Consumption and Production', 'Climate Action', 'Life Below Water', 'Life on Land', 'Peace, Justice and Strong Institutions', 'Partnerships for the Goals'] as $index => $sdg)
                             <option value="{{ $index + 1 }}" {{ (string) old('sdg_number') === (string) ($index + 1) ? 'selected' : '' }}>SDG {{ $index + 1 }}: {{ $sdg }}</option>
@@ -92,7 +89,7 @@
                 <div class="grid gap-4 md:grid-cols-2">
                     <label class="block">
                         <span class="text-sm font-medium text-slate-700">Campus</span>
-                        <select name="campus" required class="mt-2 w-full rounded-2xl border border-slate-300 px-4 py-3 focus:ring-2 focus:ring-indigo-500">
+                        <select name="campus" required class="mt-2 w-full rounded-lg border border-slate-300 px-4 py-3 focus:ring-2 focus:ring-[#4a5690]/30 focus:border-[#4a5690]">
                             <option value="">Select campus</option>
                             @foreach(\App\Models\User::CAMPUSES as $campusOption)
                                 <option value="{{ $campusOption }}" {{ old('campus') === $campusOption ? 'selected' : '' }}>{{ $campusOption }}</option>
@@ -103,11 +100,11 @@
                 <fieldset>
                     <legend class="text-sm font-medium text-slate-700">Who is this event for?</legend>
                     <div class="mt-2 grid gap-3 md:grid-cols-2">
-                        <label class="flex cursor-pointer items-start gap-3 rounded-2xl border border-slate-300 px-4 py-3 has-[:checked]:border-indigo-500 has-[:checked]:bg-indigo-50">
+                        <label class="flex cursor-pointer items-start gap-3 rounded-lg border border-slate-300 px-4 py-3 has-[:checked]:border-[#4a5690] has-[:checked]:bg-[#f3f4fa]">
                             <input type="radio" name="is_university_wide" value="0" class="mt-1" {{ old('is_university_wide', '0') !== '1' ? 'checked' : '' }} />
                             <span class="text-sm"><span class="block font-semibold text-slate-800">This campus only</span><span class="text-xs text-slate-500">Only the selected campus will see it (e.g. Intrams).</span></span>
                         </label>
-                        <label class="flex cursor-pointer items-start gap-3 rounded-2xl border border-slate-300 px-4 py-3 has-[:checked]:border-indigo-500 has-[:checked]:bg-indigo-50">
+                        <label class="flex cursor-pointer items-start gap-3 rounded-lg border border-slate-300 px-4 py-3 has-[:checked]:border-[#4a5690] has-[:checked]:bg-[#f3f4fa]">
                             <input type="radio" name="is_university_wide" value="1" class="mt-1" {{ old('is_university_wide') === '1' ? 'checked' : '' }} />
                             <span class="text-sm"><span class="block font-semibold text-slate-800">All campuses</span><span class="text-xs text-slate-500">Every campus sees it, even if held at one campus (e.g. a University Meet).</span></span>
                         </label>
@@ -116,17 +113,17 @@
                 <div class="grid gap-4 md:grid-cols-2">
                     <label class="block">
                         <span class="text-sm font-medium text-slate-700">Start Date</span>
-                        <input type="datetime-local" name="start_datetime" value="{{ old('start_datetime') }}" required class="mt-2 w-full rounded-2xl border border-slate-300 px-4 py-3 focus:ring-2 focus:ring-indigo-500" />
+                        <input type="datetime-local" name="start_datetime" value="{{ old('start_datetime') }}" required class="mt-2 w-full rounded-lg border border-slate-300 px-4 py-3 focus:ring-2 focus:ring-[#4a5690]/30 focus:border-[#4a5690]" />
                     </label>
                     <label class="block">
                         <span class="text-sm font-medium text-slate-700">End Date</span>
-                        <input type="datetime-local" name="end_datetime" value="{{ old('end_datetime') }}" required class="mt-2 w-full rounded-2xl border border-slate-300 px-4 py-3 focus:ring-2 focus:ring-indigo-500" />
+                        <input type="datetime-local" name="end_datetime" value="{{ old('end_datetime') }}" required class="mt-2 w-full rounded-lg border border-slate-300 px-4 py-3 focus:ring-2 focus:ring-[#4a5690]/30 focus:border-[#4a5690]" />
                     </label>
                 </div>
 
                 <label class="block">
                     <span class="text-sm font-medium text-slate-700">Description</span>
-                    <textarea name="description" rows="4" class="mt-2 w-full rounded-2xl border border-slate-300 px-4 py-3 focus:ring-2 focus:ring-indigo-500">{{ old('description') }}</textarea>
+                    <textarea name="description" rows="4" class="mt-2 w-full rounded-lg border border-slate-300 px-4 py-3 focus:ring-2 focus:ring-[#4a5690]/30 focus:border-[#4a5690]">{{ old('description') }}</textarea>
                 </label>
 
                 <label class="block">
@@ -135,20 +132,20 @@
                     <input type="file" name="digital_documents[]" multiple class="mt-3 w-full text-sm text-slate-700" />
                 </label>
 
-                <button type="submit" class="rounded-2xl bg-indigo-600 px-6 py-3 text-white font-semibold hover:bg-indigo-700">Request Venue</button>
+                <button type="submit" class="rounded-lg bg-[#4a5690] px-6 py-3 text-white font-semibold hover:bg-[#3b4679]">Request Venue</button>
             </form>
         </div>
 
-        <div id="calendar-panel" class="mt-8 rounded-3xl bg-white border border-slate-200 p-6 shadow-sm">
+        <div id="calendar-panel" class="mt-8 rounded-lg bg-white border border-slate-200 p-6 shadow-sm">
             <div class="mb-4 flex items-center justify-between">
                 <h2 class="text-xl font-bold text-slate-800">Calendar</h2>
-                <span class="rounded-full bg-indigo-100 px-3 py-1 text-xs font-semibold text-indigo-700">Approved events</span>
+                <span class="rounded-full bg-[#e6e9f5] px-3 py-1 text-xs font-semibold text-[#3b4679]">Approved events</span>
             </div>
 
             <div class="mb-4 flex justify-end">
                 <label class="flex items-center gap-2 text-sm font-medium text-slate-700">
                     <span>Filter:</span>
-                    <select id="campus-filter" class="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    <select id="campus-filter" class="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#4a5690]/30 focus:border-[#4a5690]">
                         <option value="All Campus">All Campus</option>
                         @foreach(\App\Models\User::CAMPUSES as $campusOption)
                             <option value="{{ $campusOption }}">{{ $campusOption }}</option>
@@ -160,14 +157,14 @@
             <div id="admin-calendar" class="min-h-[500px]"></div>
         </div>
 
-        <div id="selected-date-events" class="mt-8 rounded-3xl bg-white border border-slate-200 p-6 shadow-sm">
+        <div id="selected-date-events" class="mt-8 rounded-lg bg-white border border-slate-200 p-6 shadow-sm">
             <div class="flex items-center justify-between mb-4">
                 <h2 id="selected-date-label" class="text-xl font-bold text-slate-800">Events for selected date</h2>
             </div>
             <div id="event-list" class="space-y-3"></div>
         </div>
 
-        <div id="request-status" class="mt-8 rounded-3xl bg-white border border-slate-200 p-6 shadow-sm">
+        <div id="request-status" class="mt-8 rounded-lg bg-white border border-slate-200 p-6 shadow-sm">
             <h2 class="text-xl font-bold text-slate-800 mb-4">Request Status</h2>
             <div class="overflow-x-auto">
                 <table class="w-full text-left border-collapse text-sm">
@@ -180,13 +177,21 @@
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-100">
+                        @php
+                            // Same status colours as the Office and Planning Office dashboards
+                            $statusBadge = [
+                                'pending' => 'bg-amber-50 text-amber-800', 'conflict' => 'bg-orange-100 text-orange-800',
+                                'approved' => 'bg-emerald-100 text-emerald-800', 'rejected' => 'bg-rose-100 text-rose-800',
+                                'returned' => 'bg-violet-100 text-violet-800', 'cancelled' => 'bg-slate-200 text-slate-700',
+                            ];
+                        @endphp
                         @forelse($adminRequests ?? [] as $r)
                             <tr>
                                 <td class="py-3 px-4 font-semibold text-gray-800">{{ $r->title }}</td>
                                 <td class="py-3 px-4">{{ $r->venue_name }}</td>
                                 <td class="py-3 px-4">{{ date('M d, Y', strtotime($r->start_datetime)) }}</td>
                                 <td class="py-3 px-4">
-                                    <span class="font-semibold {{ $r->status === 'rejected' ? 'text-rose-700' : ($r->status === 'conflict' ? 'text-amber-700' : 'text-emerald-700') }}">{{ $r->status === 'conflict' ? 'Conflict review' : ucfirst($r->status) }}</span>
+                                    <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold {{ $statusBadge[$r->status] ?? 'bg-slate-100 text-slate-700' }}">{{ \App\Models\EventRequest::statusLabel($r->status) }}</span>
                                     @if($r->planning_note)<p class="mt-1 max-w-xs text-xs text-slate-500">{{ $r->planning_note }}</p>@endif
                                     @if($r->sdg_number)<p class="mt-1 text-xs text-emerald-700">SDG {{ $r->sdg_number }} alignment</p>@endif
                                 </td>
@@ -203,13 +208,14 @@
 
         <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
         <script src="{{ asset('js/event-calendar.js') }}"></script>
+        <script src="{{ asset('js/ui-feedback.js') }}"></script>
         <script>
             document.addEventListener('DOMContentLoaded', function() {
                 var calendarPanel = document.getElementById('calendar-panel');
                 var requestForm = document.getElementById('request-form');
                 var requestStatus = document.getElementById('request-status');
                 var navLinks = document.querySelectorAll('[data-nav-section]');
-                var activeNavClass = ['bg-indigo-600', 'text-white'];
+                var activeNavClass = ['bg-[#4a5690]', 'text-white'];
                 var inactiveNavClass = ['bg-slate-100', 'text-slate-800'];
                 var calendar;
 

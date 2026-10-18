@@ -18,22 +18,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@yield('title', 'Planning Office') - UniCalendar</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Archivo+Black&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="{{ asset('css/office-dashboard.css') }}" rel="stylesheet">
     <link href="{{ asset('css/planning-office.css') }}" rel="stylesheet">
+    <link href="{{ asset('css/ui-feedback.css') }}" rel="stylesheet">
     @stack('head')
 </head>
 <body class="od-body">
     <!-- ================= Sidebar ================= -->
     <aside id="sidebar" class="od-sidebar" aria-label="Main navigation">
-        <svg class="psu-waves" viewBox="0 0 200 1200" preserveAspectRatio="none" aria-hidden="true">
-            <g fill="none" stroke="#8d98d4" stroke-width="0.8">
-                @for($i = 0; $i < 14; $i++)
-                    <path d="M{{ 150 - $i * 6 }} 0 C {{ 40 + $i * 8 }} 250, {{ 200 - $i * 7 }} 500, {{ 90 + $i * 4 }} 750 S {{ 10 + $i * 9 }} 1050, {{ 120 - $i * 3 }} 1200" />
-                @endfor
-            </g>
-        </svg>
-
         <div class="od-sidebar__inner">
             <a href="{{ route('planning_office.dashboard') }}" class="od-brand">
                 <span class="od-brand__seal">
@@ -103,13 +96,6 @@
             </nav>
 
             <div class="od-sidebar__footer">
-                <div class="od-account">
-                    <span class="od-avatar" aria-hidden="true">{{ $initials }}</span>
-                    <div class="od-account__text">
-                        <p class="od-account__name">{{ $user->name }}</p>
-                        <p class="od-account__role">Planning Office account</p>
-                    </div>
-                </div>
                 <form method="POST" action="{{ route('planning_office.logout') }}">
                     @csrf
                     <button type="submit" class="od-logout">
@@ -155,15 +141,7 @@
                 </div>
             </header>
 
-            @if (session('success'))
-                <div class="od-alert od-alert--success">{{ session('success') }}</div>
-            @endif
-            @if (session('info'))
-                <div class="od-alert od-alert--info">{{ session('info') }}</div>
-            @endif
-            @if (session('error'))
-                <div class="od-alert od-alert--error">{{ session('error') }}</div>
-            @endif
+            @include('partials.flash')
 
             @yield('content')
         </div>
@@ -189,6 +167,7 @@
             });
         })();
     </script>
+    <script src="{{ asset('js/ui-feedback.js') }}"></script>
     @stack('scripts')
 </body>
 </html>

@@ -1,37 +1,36 @@
-/* Office Login page — PSU portal styling */
+/* Office / Planning Office login — PSU portal styling (flat, same colours as the dashboards) */
 
 body {
     font-family: 'Inter', system-ui, sans-serif;
 }
 
-/* Blue banner (header + footer) */
+/* Navy banner (header + footer) */
 .psu-banner {
-    background: linear-gradient(180deg, #4a5690 0%, #56639f 55%, #4b5892 100%);
+    background: #3b4679;
 }
 
-/* Serif university name / headings */
+/* University name / headings: same font as the rest of the system */
 .psu-serif {
-    font-family: 'Cinzel', 'Times New Roman', serif;
-    letter-spacing: .02em;
+    font-family: inherit;
+    font-weight: 700;
 }
 
-/* Gold "OFFICE LOGIN" / "OFFICE PORTAL" title */
+/* "OFFICE LOGIN" / "PLANNING OFFICE" portal label */
 .psu-portal {
-    font-family: 'Archivo Black', Impact, sans-serif;
-    color: #f2c318;
-    -webkit-text-stroke: 1px #b58a00;
-    text-shadow: 0 3px 4px rgba(0, 0, 0, .35);
+    font-size: 1rem !important;
+    line-height: 1.5rem !important;
+    font-weight: 600;
+    letter-spacing: .06em;
+    color: #f7d54a;
 }
 
-/* Gold stripe under the banner and on top of the card */
+/* Thin gold accent line under the banner */
 .psu-stripe {
-    background: linear-gradient(180deg, #f7d54a 0%, #e0a800 60%, #b88600 100%);
+    background: #e0a800;
 }
 
-/* Yellow-tinted focus state on the inputs */
 .psu-input:focus {
-    background: #fffbe6;
     border-color: #4a5690;
-    box-shadow: 0 0 0 3px rgba(242, 195, 24, .45);
+    box-shadow: 0 0 0 3px rgba(74, 86, 144, .25);
     outline: none;
 }

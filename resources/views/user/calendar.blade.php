@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>UniCalendar</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.css" rel="stylesheet">
     <link href="{{ asset('css/event-calendar.css') }}" rel="stylesheet">
 </head>
@@ -14,16 +14,16 @@
         <h1 class="text-3xl font-semibold text-slate-900">Pangasinan State University</h1>
         <p class="mt-2 text-slate-500">University Event Calendar · Published events</p>
 
-        <div class="mt-8 rounded-3xl bg-white p-6 shadow-sm border border-slate-200">
+        <div class="mt-8 rounded-lg bg-white p-6 shadow-sm border border-slate-200">
             <div class="mb-4 flex items-center justify-between">
                 <h2 class="text-lg font-bold text-gray-800">Master Live Calendar</h2>
-                <span class="rounded-full bg-indigo-100 px-3 py-1 text-xs font-semibold text-indigo-700">Approved events</span>
+                <span class="rounded-full bg-[#e6e9f5] px-3 py-1 text-xs font-semibold text-[#3b4679]">Approved events</span>
             </div>
 
             <div class="mb-4 flex justify-end">
                 <label class="flex items-center gap-2 text-sm font-medium text-slate-700">
                     <span>Filter:</span>
-                    <select id="campus-filter" class="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    <select id="campus-filter" class="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#4a5690]/30 focus:border-[#4a5690]">
                         <option value="All Campus">All Campus</option>
                         @foreach(\App\Models\User::CAMPUSES as $campusOption)
                             <option value="{{ $campusOption }}">{{ $campusOption }}</option>
@@ -35,7 +35,7 @@
             <div id="calendar" class="min-h-[500px]"></div>
         </div>
 
-        <section class="mt-8 rounded-3xl bg-white p-6 shadow-sm border border-slate-200">
+        <section class="mt-8 rounded-lg bg-white p-6 shadow-sm border border-slate-200">
             <div class="mb-4 flex items-center justify-between gap-4">
                 <h2 class="text-lg font-bold text-gray-800">Published events</h2>
                 <span class="text-sm text-slate-500">View only</span>
@@ -60,7 +60,7 @@
             </div>
         </section>
 
-        <div id="selected-date-events" class="mt-8 rounded-3xl bg-white p-6 shadow-sm border border-slate-200">
+        <div id="selected-date-events" class="mt-8 rounded-lg bg-white p-6 shadow-sm border border-slate-200">
             <div class="flex items-center justify-between mb-4">
                 <h2 id="selected-date-label" class="text-lg font-bold text-gray-800">Events for selected date</h2>
             </div>

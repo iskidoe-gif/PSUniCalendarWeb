@@ -35,7 +35,7 @@
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 .po-subnav__link:hover { background: rgba(255, 255, 255, .08); color: #fff; }
-.po-subnav__link.is-active { background: rgba(255, 255, 255, .14); color: var(--gold-400); font-weight: 600; }
+.po-subnav__link.is-active { background: rgba(255, 255, 255, .14); color: #fff; font-weight: 600; }
 .po-subnav__empty { padding: 6px 10px; font-size: 12px; font-style: italic; color: var(--navy-300); }
 
 /* Collapsed rail (desktop): only icons, so hide counts and the office lists */
@@ -56,16 +56,40 @@ a.od-icon-btn { text-decoration: none; }
 
 .po-stats { grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); }
 
-/* Filters bar */
-.po-filterbar {
-    display: grid;
-    grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) minmax(0, 1fr) auto;
-    align-items: end;
-    gap: 12px;
+/* Overview: all-campus numbers; click to expand the per-campus breakdown */
+.po-overview { padding: 0; }
+.po-overview__summary {
+    display: block;
     padding: 16px 20px;
+    border-radius: var(--radius);
+    list-style: none;
+    cursor: pointer;
 }
-.po-filterbar .od-label { margin-bottom: 4px; }
-.po-filterbar__actions { display: flex; gap: 8px; }
+.po-overview__summary::-webkit-details-marker { display: none; }
+.po-overview__summary:hover { background: #fafbff; }
+.po-overview__summary:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+.po-overview__head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
+.po-overview__toggle { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; color: var(--navy-600); white-space: nowrap; }
+.po-overview__toggle svg { width: 16px; height: 16px; transition: transform .15s; }
+.po-overview__toggle-hide { display: none; }
+.po-overview[open] .po-overview__toggle-show { display: none; }
+.po-overview[open] .po-overview__toggle-hide { display: inline; }
+.po-overview[open] .po-overview__toggle svg { transform: rotate(180deg); }
+.po-overview .po-summary { margin: 0; }
+.po-overview .od-stat__label, .po-overview .od-stat__value { display: block; }
+.po-overview__campuses { padding: 0 20px 20px; }
+.po-overview__campuses .od-card__sub { margin-bottom: 10px; }
+.po-overview__table tbody th[scope="row"] {
+    border-top: 1px solid var(--navy-50);
+    background: transparent;
+    color: var(--text);
+    font-size: 13.5px;
+    letter-spacing: 0;
+    text-align: left;
+    white-space: nowrap;
+}
+.po-overview__table td { text-align: right; font-variant-numeric: tabular-nums; }
+.po-overview__table thead th:not(:first-child) { text-align: right; }
 
 /* Compact summary cards with icons */
 .po-summary { grid-template-columns: repeat(6, minmax(0, 1fr)); margin-top: 0; }
@@ -74,7 +98,7 @@ a.od-icon-btn { text-decoration: none; }
 .po-stat__icon {
     display: flex; align-items: center; justify-content: center;
     width: 38px; height: 38px; flex: none;
-    border-radius: 12px;
+    border-radius: var(--radius);
     background: var(--navy-50);
     color: var(--navy-600);
 }
@@ -114,7 +138,7 @@ a.od-icon-btn { text-decoration: none; }
 
 /* Analytics */
 .po-charts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
-.po-chart-card { margin: 0; padding: 14px 16px; border: 1px solid var(--border); border-radius: 14px; }
+.po-chart-card { margin: 0; padding: 14px 16px; border: 1px solid var(--border); border-radius: var(--radius); }
 .po-chart-card figcaption { margin-bottom: 10px; font-size: 13.5px; font-weight: 700; color: var(--navy-800); }
 .po-chart-card figcaption span { font-weight: 500; color: var(--muted); }
 .po-chart { position: relative; height: 260px; }
@@ -143,7 +167,7 @@ a.od-icon-btn { text-decoration: none; }
 .po-conflict {
     padding: 10px 12px;
     border: 1px solid #fecdd3;
-    border-radius: 12px;
+    border-radius: var(--radius);
     background: #fff1f2;
     color: var(--rejected);
 }
@@ -158,7 +182,7 @@ a.od-icon-btn { text-decoration: none; }
     display: flex; align-items: flex-start; justify-content: space-between; gap: 12px;
     padding: 12px 14px;
     border: 1px solid var(--border);
-    border-radius: 12px;
+    border-radius: var(--radius);
     background: var(--surface);
 }
 .po-list__item--conflict { border-color: #fecdd3; background: #fff1f2; }
@@ -182,7 +206,7 @@ a.od-icon-btn { text-decoration: none; }
     .po-summary { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
 @media (max-width: 900px) {
-    .po-filterbar, .po-charts { grid-template-columns: minmax(0, 1fr); }
+    .po-charts { grid-template-columns: minmax(0, 1fr); }
 }
 @media (max-width: 640px) {
     .po-review__form, .po-table-filters { grid-template-columns: minmax(0, 1fr); }
