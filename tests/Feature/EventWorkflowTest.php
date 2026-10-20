@@ -6,10 +6,11 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 
 uses(RefreshDatabase::class);
 
-test('division request conflicts are flagged and planning office can reschedule and approve', function () {
+test('office request conflicts are flagged and planning office can reschedule and approve', function () {
     $division = User::factory()->create([
-        'email' => 'lingayen.admin@psu.local',
-        'role' => 'admin',
+        'email' => 'lingayen@psu.local',
+        'role' => 'office',
+        'campus' => 'Lingayen Campus',
     ]);
     $planningOffice = User::factory()->create([
         'email' => 'planning@psu.local',
@@ -28,7 +29,7 @@ test('division request conflicts are flagged and planning office can reschedule 
         'status' => 'approved',
     ]);
 
-    $this->actingAs($division)->post('/admin/request-venue', [
+    $this->actingAs($division)->post('/office/request-venue', [
         'title' => 'Division seminar',
         'venue_name' => 'Main Auditorium',
         'campus' => 'Lingayen Campus',

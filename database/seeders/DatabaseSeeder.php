@@ -35,43 +35,6 @@ class DatabaseSeeder extends Seeder
             'remember_token' => \Illuminate\Support\Str::random(10),
         ])->save();
 
-        // Create campus-specific admin users for testing.
-        $campusAdmins = [
-            [
-                'email' => 'alaminos.admin@psu.local',
-                'name' => 'Alaminos Campus Admin',
-            ],
-            [
-                'email' => 'lingayen.admin@psu.local',
-                'name' => 'Lingayen Campus Admin',
-            ],
-            [
-                'email' => 'binmaley.admin@psu.local',
-                'name' => 'Binmaley Campus Admin',
-            ],
-        ];
-
-        foreach ($campusAdmins as $campusAdmin) {
-            $admin = User::firstOrCreate(
-                ['email' => $campusAdmin['email']],
-                [
-                    'name' => $campusAdmin['name'],
-                    'email_verified_at' => now(),
-                    'password' => Hash::make('Admin@123'),
-                    'role' => 'admin',
-                    'remember_token' => \Illuminate\Support\Str::random(10),
-                ]
-            );
-
-            $admin->forceFill([
-                'name' => $campusAdmin['name'],
-                'email_verified_at' => now(),
-                'password' => Hash::make('Admin@123'),
-                'role' => 'admin',
-                'remember_token' => \Illuminate\Support\Str::random(10),
-            ])->save();
-        }
-
         // University offices and campus offices. All use the password Office@123.
         // 'University Offices' and the campus names are the sidebar groups in the Planning Office.
         $officeAccounts = [

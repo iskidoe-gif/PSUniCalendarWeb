@@ -124,62 +124,14 @@ test('planning office can review pending requests with campus metadata', functio
     $response->assertSee('Reject request');
 });
 
-test('admin dashboard totals are scoped to the admin campus plus university-wide events', function () {
-    $user = User::factory()->create([
-        'email' => 'alaminos.admin@psu.local',
-        'role' => 'admin',
-    ]);
-
-    EventRequest::create([
-        'name' => 'Alaminos Admin',
-        'email' => 'alaminos.admin@psu.local',
-        'title' => 'Alaminos Event',
-        'venue_name' => 'Alaminos Hall',
-        'campus' => 'Alaminos Campus',
-        'description' => 'Local event',
-        'start_datetime' => now()->addDay()->format('Y-m-d H:i:s'),
-        'end_datetime' => now()->addDay()->addHour()->format('Y-m-d H:i:s'),
-        'status' => 'approved',
-    ]);
-
-    EventRequest::create([
-        'name' => 'University Admin',
-        'email' => 'general.admin@psu.local',
-        'title' => 'University Event',
-        'venue_name' => 'University Plaza',
-        'campus' => 'All Campus',
-        'description' => 'University-wide event',
-        'start_datetime' => now()->addDays(2)->format('Y-m-d H:i:s'),
-        'end_datetime' => now()->addDays(2)->addHour()->format('Y-m-d H:i:s'),
-        'status' => 'approved',
-    ]);
-
-    EventRequest::create([
-        'name' => 'Lingayen Admin',
-        'email' => 'lingayen.admin@psu.local',
-        'title' => 'Lingayen Event',
-        'venue_name' => 'Lingayen Hall',
-        'campus' => 'Lingayen Campus',
-        'description' => 'Other campus event',
-        'start_datetime' => now()->addDays(3)->format('Y-m-d H:i:s'),
-        'end_datetime' => now()->addDays(3)->addHour()->format('Y-m-d H:i:s'),
-        'status' => 'approved',
-    ]);
-
-    $response = $this->actingAs($user)->get('/admin');
-
-    $response->assertOk()
-        ->assertViewHas('totalEvents', 2)
-        ->assertViewHas('upcomingEvents', 2);
-});
-
-test('admin request submission stores the campus from which the request came', function () {
+test('office request submission stores the campus from which the request came', function () {
     $user = User::factory()->create([
         'email' => 'admin@psu.local',
-        'role' => 'admin',
+        'role' => 'office',
+        'campus' => 'Lingayen Campus',
     ]);
 
-    $response = $this->actingAs($user)->post('/admin/request-venue', [
+    $response = $this->actingAs($user)->post('/office/request-venue', [
         'title' => 'Campus Meeting',
         'venue_name' => 'Lingayen Hall',
         'campus' => 'Lingayen Campus',
